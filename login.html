@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+      <link type="text/css" rel="stylesheet" href="styles/css/bootstrap.min.css">
+      <link type="text/css" rel="stylesheet" href="login.css">
+      <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.1/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+      <!-- <link href="node_modules/electron-virtual-keyboard/virtual-keyboard.css" type="text/css" rel="stylesheet"/> -->
+    <title>Login</title>
+  </head>
+  <body>
+    <div class="center container">
+      <img id="mainlogo" src="res/logo.gif" alt="ReQuench Logo">
+      <h3 id="headerinstruction">Please enter login mode.</h3>
+      <button id="scanbutton" class="btn btn-primary" type="button" name="button">Scan my ID</button>
+      <button id="enterotpbutton" class="btn btn-success" type="button" name="button">Enter OTP</button>
+    </div>
+
+    <div id="input_container_id" class="input_container container">
+      <h4 id="inputheader">Scanning.</h4>
+      <input id="otp_field" type="text" name="" value="" disabled/>
+      <ul id="keyboard">
+          <div id = "first" class="row">
+                  <li class="symbol key">1</li>
+                  <li class="symbol key">2</li>
+                  <li class="symbol key">3</li>
+                  <li class="symbol key">4</li>
+                  <li class="symbol key">5</li>
+                  <li class="symbol key">6</li>
+                  <li class="symbol key">7</li>
+                  <li class="symbol key">8</li>
+                  <li class="symbol key">9</li>
+                  <li class="symbol key">0</li>
+                  <li class="delete lastitem" id="delete"><span class="fas fa-angle-left"></li>
+          </div>
+          <div id = "second" class="row">
+                  <li class="letter" id="q">q</li>
+                  <li class="letter key">w</li>
+                  <li class="letter key">e</li>
+                  <li class="letter key">r</li>
+                  <li class="letter key">t</li>
+                  <li class="letter key">y</li>
+                  <li class="letter key">u</li>
+                  <li class="letter key">i</li>
+                  <li class="letter key">o</li>
+                  <li class="letter key">p</li>
+                  <li id = "return" class="return"><span id = "return_label">Enter</span></li>
+          </div>
+          <div id = "third" class="row">
+                  <li id = "capslock" class="capslock"><span id = "caps_label" class="fas fa-angle-double-up"></li>
+                  <li class="letter key">a</li>
+                  <li class="letter key">s</li>
+                  <li class="letter key">d</li>
+                  <li class="letter key">f</li>
+                  <li class="letter key">g</li>
+                  <li class="letter key">h</li>
+                  <li class="letter key">j</li>
+                  <li class="letter key">k</li>
+                  <li class="letter key">l</li>
+          </div>
+          <div id = "fourth" class="row">
+              <li id = "left-shift-button" class="left-shift"><span id="left-shift" class="fas fa-angle-up"></span></li>
+              <li class="letter key">z</li>
+              <li class="letter key">x</li>
+              <li class="letter key">c</li>
+              <li class="letter key">v</li>
+              <li class="letter key">b</li>
+              <li class="letter key">n</li>
+              <li class="letter key">m</li>
+              <li id = "right-shift-button" class="left-shift lastitem"><span id="right-shift" class="fas fa-angle-up"></li>
+          </div>
+      </ul>
+    </div>
+    <script type="text/javascript" src="linkers\executeScan.js"></script>
+    <script type="text/javascript" src="login.js"></script>
+    <script type="text/javascript" src="HttpRequest.js"></script>
+  </body>
+</html>

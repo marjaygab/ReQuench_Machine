@@ -1,0 +1,15 @@
+.row{
+    flex-wrap: unset;
+    margin-bottom: 50px
+}
+
+.container{
+    margin-top: 150px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+button{
+    width: 150px;
+    height: 150px;
+}

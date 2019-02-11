@@ -1,0 +1,82 @@
+{
+    "Maintenance_Steps": [
+        {
+            "step_header":"Step 1: Prepare the Materials ",
+            "step_content":"Please prepare the materials to be used: (Rubber Gloves,Scrub Brush,Damp Clean Soft Cloth, a Gallon of Hot Water)",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 2: Drain",
+            "step_content":"Please wait as I drain any remaining water in the system.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 3: Remove the Bottle",
+            "step_content":"Please remove the currentlyt installed water bottle",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 4: Hot Water",
+            "step_content":"Please put hot water in the reservoir until half of the tank is filled.",
+            "timer_control":true,
+            "initial_time":1
+        },
+        {
+            "step_header":"Step 5: Manual Cleaning",
+            "step_content":"The machine will be turned off for you to clean the reservoir manually. Pressing next will turn off the machine. Turn on the machine afterwards.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 6 : Draining Again",
+            "step_content":"Please wait as I drain all the water remaining. ",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 7: Hot Water again",
+            "step_content":"Please fill the reservoir with hot water again until half of the tank is filled.",
+            "timer_control":true,
+            "initial_time":5
+        },
+        {
+            "step_header":"Step 8: Draining. AGAIN.",
+            "step_content":"Please wait as I drain.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 9: Cleaning",
+            "step_content":"Please clean the outside container with a soft damp cloth.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 10: Drip Tray",
+            "step_content":"Please remove the drip tray and clean it.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 11: Install the Uninstalled",
+            "step_content":"Please attach all the uninstalled parts again.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 12: Water Bottle",
+            "step_content":"Please install a new water bottle.",
+            "timer_control":false,
+            "initial_time":0
+        },
+        {
+            "step_header":"Step 13: Wait",
+            "step_content":"Please wait for an hour to enjoy hot and cold water. If you do not want to wait, you can press next and the machine will be operational again. (Water may not be cold and hot enough though)",
+            "timer_control":true,
+            "initial_time":60
+        }
+    ]   
+}

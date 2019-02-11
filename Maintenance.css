@@ -1,0 +1,50 @@
+.button-container{
+    text-align: center;
+}
+
+.button-container button{
+    width: 100px;
+    height: 50px;
+    margin-top: 100px;
+}
+
+.button-container #right_button{
+    display: none;
+}
+
+/* #step_timer{
+    
+} */
+
+
+.container{
+    margin-top: 20%;
+}
+
+.timer_controls{
+    visibility: hidden;
+    text-align: center;
+}
+
+.progress_circle{
+    border-radius: 50%;
+    opacity: 0.5; 
+    background: #d3d3d3;
+    width: 25px;
+    height: 25px;
+    vertical-align: middle;
+    text-align: center;
+    margin-left: 2px;
+    margin-right: 2px;
+}
+
+.progress_indicator{
+    text-align: center;
+    margin-top: 50px;
+}
+
+.selected{
+    background: #1EB3BE;
+    opacity: 1;
+    color: #fff;
+}

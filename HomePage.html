@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap-toggle.min.css">
+    <script type="text/javascript" src="styles/js/bootstrap-toggle.min.js"></script>
+    <script type="text/javascript" src="engine.js"></script>
+    <style media="screen">
+      #hot-button{
+        width: 100%;
+        height: 100px;
+        margin: 0 auto;
+        font-size: 40px;
+        font-weight: 100;
+      }
+      #cold-button{
+        width: 100%;
+        height: 100px;
+        margin: 0 auto;
+        font-size: 40px;
+        font-weight: 100;
+      }
+      #water-level{
+        height: 300px;
+        width: 137px;
+        background-color: #2FBDC1;
+        position: absolute;
+        left: 36%;
+        bottom:29%;
+        z-index: 10;
+        border-radius: 10px;
+      }
+      img{
+        height: 400px;
+      }
+      .bottle-image{
+        position: relative;
+        z-index: 20;
+      }
+      .hot-cold,.bottle-image{
+        text-align: center;
+      }
+      .btn{
+        text-align: center;
+        margin: 0 auto;
+      }
+      .toggle_switch{
+        display: block;
+      }
+      .mode_switch{
+        text-align: center;
+        padding: 20px;
+      }
+      .toggle-handle{
+        width: 20px;
+        background: #fff;
+      }
+      .jumbotron{
+        text-align: center;
+        margin-bottom: 0px;
+      }
+      #branding_image{
+        height: 80px;
+      }
+      #amount{
+        width: 80px;
+        border: none;
+        text-align: center;
+        padding: 6px;
+        background-color: #d9d9d9;
+        line-height: 1.5em;
+        vertical-align: middle;
+      }
+      #increase{
+        border-radius: 0 20px 20px 0;
+      }
+      #decrease{
+        border-radius: 20px 0 0 20px;
+      }
+      
+      .navbar-brand{
+        background: url("res/bannerwhite.png") center / contain no-repeat;
+        transform: translateX(-50%);
+        left: 50%;
+        position: absolute;
+        width: 200px; /* no height needed ... image will resize automagically */
+      }
+
+      .navbar{
+        padding: 1.5rem 1rem;
+      }
+
+      .card{
+        width: 200px;
+        margin-top: 40px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+
+      .card-body{
+        padding: 0.25rem
+      }
+
+      .col-6{
+        padding: 0;
+      }
+    </style>
+   <title>ReQuench</title>
+  </head>
+  <body>
+    <nav class="navbar navbar-light bg-dark">
+        <span class="navbar-brand mb-0 h1"><img id="banner" src="" height="30" alt=""></span>
+    </nav>
+    <div class="card text-center text-white bg-info">
+      <div class="card-body">
+        <h6 class="card-title">Balance</h6>
+        <h2 id="ml_label">0.00 mL</h2>
+      </div>
+    </div>
+    <div class="bottle-image container">
+      <img src="styles/images/bottle.png" alt="">
+    </div>
+    <div id="water-level" class="water-level">
+    </div>
+    <div class="mode_switch container">
+      <input id="toggle_switch" class="toggle_switch" type="checkbox" checked data-toggle="toggle" data-on="Automatic" data-off="Manual" data-onstyle="info" data-offstyle="danger">
+    </div>
+    <div class="hot-cold row">
+      <div class="col-6">
+        <button id="cold-button" type="button" name="button" class="btn btn-primary">COLD</button>
+      </div>
+      <div class="col-6">
+        <button id="hot-button" type="button" name="button" class="btn btn-danger">HOT</button>
+      </div>
+    </div>
+  </body>
+</html>

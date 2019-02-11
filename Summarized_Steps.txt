@@ -1,0 +1,24 @@
+1) Prepare Materials
+    * Gloves
+    * Scrub Brush
+    * Damp Clean Soft Cloth
+    * A Gallon Hot Water
+2) Draining Remaining Water from tubings and Cold Water Tank
+3) Remove Water Bottle
+4) Put Hot water in the reservoir until it reaches half of the Tank
+*timer starts*
+5) *Prompt to turn off the machine for manual cleaning
+Wearing rubber gloves, use cleaning pad or scrub brush
+to gently and carefully clean the reservoir.
+*admin turns on the machine
+6) *Draining all the water completely
+7) Refill the reservois with remaining half gallon of hot water
+timer starts for 5 mins
+8) Draining all the water
+9) clean the outside of the dispenser with soft cloth
+10) Remove the drip tray and clean it
+11) Attach all the uninstalled parts again
+12) Place new water Bottle
+13) Wait for an hour to enjoy hot and cold water.
+*timer starts*
+*machine goes to login page*

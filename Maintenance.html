@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Admin Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap-toggle.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="Maintenance.css" />
+    <script type="text/javascript" src="styles/js/bootstrap-toggle.min.js"></script>
+    <script src="Maintenance.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-dark">
+        <span class="navbar-brand mb-0 h1"><img src="res/brandwlogo.png" height="30" alt=""></span>
+    </nav>
+    <div class="progress_indicator">
+        <div class="progress_circle d-inline-block">1</div>
+        <div class="progress_circle d-inline-block">2</div>
+        <div class="progress_circle d-inline-block">3</div>
+        <div class="progress_circle d-inline-block">4</div>
+        <div class="progress_circle d-inline-block">5</div>
+        <div class="progress_circle d-inline-block">6</div>
+        <div class="progress_circle d-inline-block">7</div>
+        <div class="progress_circle d-inline-block">8</div>
+        <div class="progress_circle d-inline-block">9</div>
+        <div class="progress_circle d-inline-block">10</div>
+        <div class="progress_circle d-inline-block">11</div>
+        <div class="progress_circle d-inline-block">12</div>
+        <div class="progress_circle d-inline-block">13</div>
+    </div>
+    <div id = "main_container_div" class="container main_container">
+        <h3 id="step_header">Welcome Admin!</h3>
+            <p id="step_content">Beyond this point, everything that you will see must be followed faithfully to have a 
+                successful maintenance session for this machine. Any steps skipped might lead to future problems. 
+            Are you ready?</p>
+        <br>
+        <div id="timer_controls" class="timer_controls">
+            <h2 id="step_timer">0:00</h2>
+            <button id="toggle_timer" class="btn btn-primary d-inline-block btn-sm">Start Timer</button>
+            <button id="reset_timer" class="btn btn-danger d-inline-block btn-sm">Reset Timer</button>
+        </div>
+        <div class="button-container">
+            <button id="left_button" class="btn btn-success">Start</button>
+            <button id="right_button" class="btn btn-primary">Next Step</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+      "Operation_Variables": {
+            "Manual": 1,
+            "Automatic": 0,
+            "Requested_Amount": 5
+      },
+      "Command_Variable": {
+            "Dispense_Hot": 0,
+            "Dispense_Cold": 0
+      }
+}
