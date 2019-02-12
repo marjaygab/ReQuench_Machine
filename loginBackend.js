@@ -12,12 +12,10 @@ exports.httpRequest = function(method,url,parameters,fn) {
 
 
 exports.http_post = function(url,parameters,fn_response,fn_error) {
-  const https = require('https')
-  const data = JSON.stringify(parameters)
-  console.log('Http Post Entry');
-  
+  const https = require('https');
+  const data = JSON.stringify(parameters);
   const options = {
-    hostname: 'requench.herokuapp.com',
+    hostname: 'requench-rest.herokuapp.com',
     port: 443,
     path: `/${url}`,
     method: 'POST',
@@ -29,7 +27,6 @@ exports.http_post = function(url,parameters,fn_response,fn_error) {
 
   const req = https.request(options, (res) => {
     res.on('data', (d) => {
-      console.log('Response');
       var data_string = d.toString('utf8');
       var new_data_string = `${data_string}`;
       var json_object = JSON.parse(new_data_string);

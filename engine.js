@@ -31,6 +31,8 @@ function main(){
   var user_information = store.get('User_Information');
   var ml_label = document.getElementById('ml_label');
   var history = store.get('History');
+  var purchase_history = store.get('Purchase_History');
+  var transaction_history = store.get('Transaction_History');
   var temp_array_transaction = [];
   var temp_array_purchase = [];
   var full_size = 0;
@@ -72,18 +74,22 @@ function main(){
   });
 
   var params = {};
-  params.Acc_ID = store.get('User_Information').Account.Acc_ID;
+  params.Acc_ID = store.get('User_Information').Acc_ID;
   httpcustomrequest.http_post('Machine_Init.php',params,function(json_object) {
-    store.set('History',json_object);
+    store.set('Purchase_History',json_object.Purchase_History);
+    store.set('Transaction_History',json_object.Transaction_History);
   },function(error) {
     console.log(`Error: ${error}`);
   });
   
-  for (var i = 0; i < history.Transaction_History.length; i++) {
-    temp_array_transaction.push(history.Transaction_History[i]);
+  var purchase_history = store.get('Purchase_History');
+  var transaction_history = store.get('Transaction_History');
+
+  for (var i = 0; i < transaction_history.length; i++) {
+    temp_array_transaction.push(transaction_history[i]);
   }
-  for (var i = 0; i < history.Purchase_History.length; i++) {
-    temp_array_purchase.push(history.Purchase_History[i]);
+  for (var i = 0; i < purchase_history.length; i++) {
+    temp_array_purchase.push(purchase_history[i]);
   }
 
   var compare_function = function(a,b) {
@@ -132,7 +138,7 @@ function main(){
   computed_height = size_percentage * 250;
   $("#water-level").animate({height:computed_height+'px'});
 
-  ml_label.innerHTML = `${user_information.Account.Balance} mL`;
+  ml_label.innerHTML = `${user_information.Balance} mL`;
   $('#toggle_switch').bootstrapToggle('on');
   $("button").click(function(){
     var current = $(this).text();

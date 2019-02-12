@@ -202,28 +202,26 @@ for (let index = 0; index < key.length; index++) {
         params.OTP_Entered = $("input:text").val();
         //put error handling for user. if there is an error in loging in, show swal then
         //try again to restart the logging process
-        httpcustomrequest.http_post('machinelogin.php',params,function(json_object) {
+
+
+        httpcustomrequest.http_post('Machine_Initialize.php',params,function(json_object) {
           // sessionstorage.setItem('User_Information',json_object);
-          store.set('User_Information',json_object);
+          store.set('User_Information',json_object.Account);
           params = {};
           params.Acc_ID = json_object.Account.Acc_ID;
-          httpcustomrequest.http_post('Machine_Init.php',params,function(json_object) {
             //check user persmissions first
-            store.set('History',json_object);
-            var user_info_object = store.get('User_Information');
-            console.log(user_info_object.Account.Access_Level);
-            
-            if(user_info_object.Account.Access_Level == 'USER'){
-              window.location.assign("HomePage.html");
-            }else if (user_info_object.Account.Access_Level == 'ADMIN') {
-              window.location.assign("admin.html");
-            }else{
+          store.set('Purchase_History',json_object.Purchase_History);
+          store.set('Transaction_History',json_object.Transaction_History);
+          var user_info_object = store.get('User_Information');
+          console.log(user_info_object);
+          
+          if(user_info_object.Access_Level == 'USER'){
+            window.location.assign("HomePage.html");
+          }else if (user_info_object.Access_Level == 'ADMIN') {
+            window.location.assign("admin.html");
+          }else{
 
-            }
-
-          },function(error) {
-            console.log(`Error 2: ${error}`);
-          });
+          }
         },function(error) {
           console.log(`Error 1: ${error}`);
         });
