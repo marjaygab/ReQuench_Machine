@@ -5,7 +5,6 @@ const Store = require('electron-store');
 const store = new Store();
 let httpcustomrequest = require('./loginBackend.js');
 'use strict';
-var sessionstorage = require('sessionstorage');
 $(document).ready(main);
 
 function main() {
@@ -91,7 +90,6 @@ function main() {
       otp_string = '';
     }
   }
-
 
   lshift.onclick = function() {
     key_pressed.press('LSHIFT',letters);
