@@ -31,7 +31,8 @@ function main() {
   var key_register = 0;
   var char_array = [];
   var otp_string = '';
-
+  var current_value = '000000000';
+  var present_value = '000000000';
   var key_pressed = {
     lshift : false,
     rshift : false,
@@ -91,6 +92,30 @@ function main() {
     }
   }
 
+  input_text_field.oninput = function() {
+  
+    if (this.value.length % 10 == 0 && this.value.length > 10) {
+      present_value = this.value;
+      this.value = '';
+      this.value = (present_value).slice(10);
+      console.log(`Present Value: ${present_value}`);
+      console.log(`Current Value: ${current_value}`);
+      console.log(`TextBox Value: ${this.value}`);
+      //http request here
+    }else if (this.value.length == 10) {
+      present_value = this.value;
+      console.log(present_value);
+      current_value = present_value;
+      console.log(`Present Value: ${present_value}`);
+      console.log(`Current Value: ${current_value}`);
+      console.log(`TextBox Value: ${this.value}`);
+      //http request here
+
+    }
+
+    
+  }
+
   lshift.onclick = function() {
     key_pressed.press('LSHIFT',letters);
   }
@@ -104,7 +129,10 @@ function main() {
   }
 
   scanbutton.onclick = function(){
-    // execScan();
+    input_text_field.value = '';
+    scanning();
+    input_text_field.style.visibility = 'visible';
+    input_text_field.focus();
   };
 
   delete_button.onclick = function() {
@@ -120,8 +148,7 @@ function main() {
 
 
   input_text_field.onfocus = function() {
-    keyboard.style.visibility = "visible";
-    $("#keyboard").animate({'opacity':'1'});
+    
   };
 
   keyboard_div.onclick = function() {
@@ -179,7 +206,8 @@ for (let index = 0; index < key.length; index++) {
       $('#enterotpbutton').removeClass().addClass("btn");
       $('#enterotpbutton').text("Cancel");
       $("input:text").prop('disabled', false);
-      input_text_field.focus();
+      keyboard.style.visibility = "visible";
+      $("#keyboard").animate({'opacity':'1'});
         break;
       case "Cancel":
         //handle cancellation of entry
@@ -189,7 +217,6 @@ for (let index = 0; index < key.length; index++) {
       $('#enterotpbutton').prop('disabled',false);
       $("input:text").prop('disabled', true);
       $("input:text").val("");
-      input_text_field.blur();
       $("#keyboard").animate({'opacity':'0'});
       char_array = [];
       otp_string = '';
@@ -198,7 +225,7 @@ for (let index = 0; index < key.length; index++) {
       case "Login":
         var params = {};
         params.OTP_Entered = $("input:text").val();
-        //put error handling for user. if there is an error in loging in, show swal then
+        //put error handling for user. if there is an error in logging in, show swal then
         //try again to restart the logging process
 
 
@@ -243,6 +270,33 @@ function getScanInput() {
     clearInterval(scaninterval);
   }
 }
+
+function scanning() {
+  counter = 0;
+  var inputheader = document.getElementById('inputheader');
+  var input_text_field = document.getElementById('otp_field');
+  inputheader.style.visibility = 'visible';
+  input_text_field.style.visibility = 'visible';
+  var timer = setInterval(function() {
+    input_text_field.focus();
+    if (inputheader.innerHTML == 'Scanning....') {
+      inputheader.innerHTML = 'Scanning.';
+    } else {
+      inputheader.innerHTML = inputheader.innerHTML + '.';
+    }
+  
+    $("input:text").prop('disabled', false);
+    counter++;
+    if (counter == 10) {
+      clearInterval(timer);
+      input_text_field.style.visibility = 'hidden';
+      input_text_field.blur();
+      inputheader.style.visibility = 'hidden';
+    }
+  },1000);
+}
+
+
 
 
 function toggleShifts(shift,letters) {
