@@ -42,41 +42,41 @@ function main(){
   var options = {
     scriptPath: path.join(__dirname,'/python_scripts')
   }
-  var filename = 'main.py';
-  var py_object = new PythonShell(filename,options);
+  // var filename = 'main.py';
+  // var py_object = new PythonShell(filename,options);
   
-  var previous_size = 0;
-  py_object.on('message', function (message) {
-    try {
-      console.log(message);
+  // var previous_size = 0;
+  // py_object.on('message', function (message) {
+  //   try {
+  //     console.log(message);
       
-      var json_object = JSON.parse(message);
-      if (current_size >= 0) {
-        var total = json_object.Total;
-        console.log(`Info from Python: ${total}`);
-        total = parseInt(total);
-        total = Math.round(total)
-        current_size = previous_size - total; 
-        console.log(`Current Balnce: ${current_size}`);
+  //     var json_object = JSON.parse(message);
+  //     if (current_size >= 0) {
+  //       var total = json_object.Total;
+  //       console.log(`Info from Python: ${total}`);
+  //       total = parseInt(total);
+  //       total = Math.round(total)
+  //       current_size = previous_size - total; 
+  //       console.log(`Current Balnce: ${current_size}`);
         
-        size_percentage = (current_size/full_size);
-        computed_height = size_percentage * 250;
-        $("#water-level").animate({height:computed_height+'px'}); 
-        ml_label.innerHTML = `${current_size} mL`;
-      }else{
-        //let python know that there is nothing left
-        endDispenseCold(file);
-        endDispenseHot(file);
-        console.log('Nothing left!');
-      }
-    } catch (error) {
-     throw error; 
-    }
-  });
+  //       size_percentage = (current_size/full_size);
+  //       computed_height = size_percentage * 250;
+  //       $("#water-level").animate({height:computed_height+'px'}); 
+  //       ml_label.innerHTML = `${current_size} mL`;
+  //     }else{
+  //       //let python know that there is nothing left
+  //       endDispenseCold(file);
+  //       endDispenseHot(file);
+  //       console.log('Nothing left!');
+  //     }
+  //   } catch (error) {
+  //    throw error; 
+  //   }
+  // });
 
-  py_object.end(function (err,code,signal) {
-    if (err) throw err;
-  });
+  // py_object.end(function (err,code,signal) {
+  //   if (err) throw err;
+  // });
 
   var params = {};
   params.Acc_ID = store.get('User_Information').Acc_ID;
