@@ -53,6 +53,8 @@ function main(){
       var json_object = JSON.parse(message);
       if (current_size >= 0) {
         var total = json_object.Total;
+        total = parseInt(total);
+        total = Math.round(total)
         current_size = previous_size - total; 
         console.log(`Current Balnce: ${current_size}`);
         
