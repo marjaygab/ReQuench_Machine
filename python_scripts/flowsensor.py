@@ -22,21 +22,21 @@ time_zero = time.time()
 
 try:
     while True:
-	rate_cnt = 0
-	pulses = 0
-	time_start= time.time()
-	while pulses <= 5:
-		gpio_cur = GPIO.input(inpt)
-		if gpio_cur != 0 and gpio_cur != gpio_last:
-			pulses += 1
-		gpio_last = gpio_cur
-    rate_cnt += 1
-    tot_cnt += 1
-    time_end = time.time()
-    lmin = round((rate_cnt * constant)/(time_end-time_start),2)
-    total_liters = round(tot_cnt * constant, 1)
-    print(json.dumps({'LMin':lmin,'Total':total_liters}))
-    sys.stdout.flush()
+        rate_cnt = 0
+        pulses = 0
+        time_start= time.time()
+        while pulses <= 5:
+            gpio_cur = GPIO.input(inpt)
+            if gpio_cur != 0 and gpio_cur != gpio_last:
+                pulses += 1
+            gpio_last = gpio_cur
+        rate_cnt += 1
+        tot_cnt += 1
+        time_end = time.time()
+        lmin = round((rate_cnt * constant)/(time_end-time_start),2)
+        total_liters = round(tot_cnt * constant, 1)
+        print(json.dumps({'LMin':lmin,'Total':total_liters}))
+        sys.stdout.flush()
 except KeyboardInterrupt:
     GPIO.cleanup()
     sys.exit
