@@ -64,6 +64,8 @@ function main(){
         ml_label.innerHTML = `${current_size} mL`;
       }else{
         //let python know that there is nothing left
+        endDispenseCold(file);
+        endDispenseHot(file);
         console.log('Nothing left!');
       }
     } catch (error) {
