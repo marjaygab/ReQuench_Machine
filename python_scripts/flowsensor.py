@@ -25,7 +25,7 @@ try:
         rate_cnt = 0
         pulses = 0
         time_start= time.time()
-        while pulses <= 5:
+        while pulses <= 4:
             gpio_cur = GPIO.input(inpt)
             if gpio_cur != 0 and gpio_cur != gpio_last:
                 pulses += 1
