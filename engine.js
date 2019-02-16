@@ -118,7 +118,7 @@ function main(){
     full_size = parseInt(temp_array_transaction[0].Amount) + parseInt(temp_array_transaction[0].Remaining_Balance);
     current_size = parseInt(temp_array_transaction[0].Remaining_Balance);
   }else if (Date.parse(temp_array_transaction[0].Date) <  Date.parse(temp_array_purchase[0].Date)) {
-    full_size = parseInt(user_information.Account.Balance);
+    full_size = parseInt(user_information.Balance);
     current_size = full_size;
   }else{
     if (temp_array_transaction[0].Time > temp_array_purchase[0].Time) {
@@ -126,7 +126,7 @@ function main(){
       current_size = parseInt(temp_array_transaction[0].Remaining_Balance);
     }else if (temp_array_transaction[0].Time < temp_array_purchase[0].Time) {
   
-      full_size = parseInt(user_information.Account.Balance);
+      full_size = parseInt(user_information.Balance);
       current_size = full_size;
     }
   }

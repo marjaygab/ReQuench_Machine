@@ -116,6 +116,44 @@ function main() {
     
   }
 
+
+  input_text_field.onkeypress = function(e) {
+    if (e.keyCode == 13) {
+      var params = {};
+      params.RFID_ID = $("input:text").val();
+      params.Login_Method = 'RFID';
+      //put error handling for user. if there is an error in logging in, show swal then
+      //try again to restart the logging process
+
+
+      httpcustomrequest.http_post('Machine_Initialize.php',params,function(json_object) {
+        // sessionstorage.setItem('User_Information',json_object);
+        store.set('User_Information',json_object.Account);
+          //check user persmissions first
+        store.set('Purchase_History',json_object.Purchase_History);
+        store.set('Transaction_History',json_object.Transaction_History);
+        var user_info_object = store.get('User_Information');
+        
+        if (json_object.Account_Type == 'Recorded') {
+          if(user_info_object.Access_Level == 'USER'){
+            window.location.assign("HomePage.html");
+          }else if (user_info_object.Access_Level == 'ADMIN') {
+            window.location.assign("admin.html");
+          }else{
+  
+          }  
+        } else {
+          window.location.assign("HomePage.html");
+        }
+      },function(error) {
+        console.log(`Error 1: ${error}`);
+      });
+    }
+  }
+
+
+
+
   lshift.onclick = function() {
     key_pressed.press('LSHIFT',letters);
   }
@@ -225,6 +263,7 @@ for (let index = 0; index < key.length; index++) {
       case "Login":
         var params = {};
         params.OTP_Entered = $("input:text").val();
+        params.Login_Method = 'OTP';
         //put error handling for user. if there is an error in logging in, show swal then
         //try again to restart the logging process
 

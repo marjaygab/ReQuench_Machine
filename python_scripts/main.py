@@ -9,12 +9,6 @@ inpt1 = 7
 GPIO.setup(inpt1, GPIO.OUT)
 GPIO.setup(inpt, GPIO.IN)
 
-
-
-
-
-
-
 def check_operation():
         with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as json_file:
                 data = json.load(json_file)
