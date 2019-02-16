@@ -270,7 +270,7 @@ function main(){
 
 
 function jsonWrite(file) {
-  fs.writeFile('/home/pi/Documents/ReQuench/MachineApp/operations.json', JSON.stringify(file,null,6), function (err) {
+  fs.writeFile('/home/pi/Documents/ReQuench_Machine/operations.json', JSON.stringify(file,null,6), function (err) {
     if (err) return console.log(err);
   });
 }

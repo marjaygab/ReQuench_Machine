@@ -10,7 +10,7 @@ GPIO.setup(inpt1, GPIO.OUT)
 GPIO.setup(inpt, GPIO.IN)
 
 def check_operation():
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as json_file:
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as json_file:
                 data = json.load(json_file)
                 temp_manual = data['Operation_Variables']['Manual']
                 temp_automatic = data['Operation_Variables']['Automatic']
@@ -22,7 +22,7 @@ def check_operation():
                         return 'Error'
 
 def checkCommand():
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as json_file:
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as json_file:
                 data = json.load(json_file)
                 temp_hot = data['Command_Variable']['Dispense_Hot']
                 temp_cold = data['Command_Variable']['Dispense_Cold']
@@ -36,7 +36,7 @@ def checkCommand():
                         return 'Error'
 
 def getRequestedAmount():
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as json_file:
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as json_file:
                 data = json.load(json_file)
                 temp_amount = data['Operation_Variables']['Requested_Amount']
         return temp_amount
@@ -91,7 +91,6 @@ def manualDispense(command):
 
 def automaticDispense(command,amount_requested):
         counter = 0
-        GPIO.output(inpt1, 1)
         rate_cnt = 0
         tot_cnt = 0
         time_zero = 0.0
@@ -125,25 +124,25 @@ def automaticDispense(command,amount_requested):
 
 def dispenseIsDoneManual(mode):
         # write json file here   
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as outfile:  
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as outfile:  
                 json_data = json.load(outfile)
                 if mode=='HOT':
                         json_data['Command_Variable']['Dispense_Hot'] = 0
                 else:
                         json_data['Command_Variable']['Dispense_Cold'] = 0
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json', 'w') as file:
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json', 'w') as file:
                 json.dump(json_data, file, indent=6)
 
 def dispenseIsDoneAutomatic(mode):
         # write json file here   
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json') as outfile:  
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as outfile:  
                 json_data = json.load(outfile)
                 if mode=='HOT':
                         json_data['Command_Variable']['Dispense_Hot'] = 0
                 else:
                         json_data['Command_Variable']['Dispense_Cold'] = 0
                 json_data['Operation_Variables']['Requested_Amount'] = 0
-        with open('/home/pi/Documents/ReQuench/MachineApp/operations.json', 'w') as file:
+        with open('/home/pi/Documents/ReQuench_Machine/operations.json', 'w') as file:
                 json.dump(json_data, file, indent=6)
   
 
