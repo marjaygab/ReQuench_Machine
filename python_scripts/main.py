@@ -100,9 +100,10 @@ def automaticDispense(command,amount_requested):
         gpio_last = 0
         pulses = 0
         constant = 1.79
+        total_liters = 0
         time_zero = time.time()
         GPIO.output(7, 1)
-        while amount_requested != counter:
+        while amount_requested <= total_liters:
                 rate_cnt = 0
                 pulses = 0
                 time_start= time.time()
