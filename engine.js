@@ -53,6 +53,7 @@ function main(){
       var json_object = JSON.parse(message);
       if (current_size >= 0) {
         var total = json_object.Total;
+        console.log(`Info from Python: ${total}`);
         total = parseInt(total);
         total = Math.round(total)
         current_size = previous_size - total; 
