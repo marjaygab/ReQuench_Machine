@@ -247,13 +247,14 @@ function main(){
 
         },
         onClose: () => {
-          setRequestedAmount(file,amount);
-          if (current == 'HOT') {
-            startDispenseHot(file);
-          } else {
-            startDispenseCold(file);
-          }
-          amount = 0;
+          setRequestedAmount(file,amount,function(){
+            if (current == 'HOT') {
+              startDispenseHot(file);
+            } else {
+              startDispenseCold(file);
+            }
+            amount = 0;  
+          });
         }
       });
 
@@ -283,7 +284,7 @@ function main(){
 
 
 function jsonWrite(file) {
-  fs.writeFile('/home/pi/Documents/ReQuench/MachineApp/operations.json', JSON.stringify(file,null,6), function (err) {
+  fs.writeFile('/home/pi/Documents/ReQuench_Machine/operations.json', JSON.stringify(file,null,6), function (err) {
     if (err) return console.log(err);
   });
 }
@@ -300,9 +301,10 @@ function toggle_operation(file,operation) {
   jsonWrite(file);
 }
 
-function setRequestedAmount(file,amount) {
+function setRequestedAmount(file,amount,callback) {
   file.Operation_Variables.Requested_Amount = amount; 
   jsonWrite(file);
+  callback();
 }
 
 function startDispenseHot(file) {
