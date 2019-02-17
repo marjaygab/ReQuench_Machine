@@ -6,8 +6,9 @@ let file = require('./operations');
 let httpcustomrequest = require('./loginBackend.js');
 const Store = require('electron-store');
 const store = new Store();
+const io = require('socket.io-client');
 let current_ml_dispensed = 0;
-let operation_json_format = {
+let operation_json = {
   "Operation_Variables":{
     "Manual": 0,
     "Automatic":0,
@@ -20,7 +21,6 @@ let operation_json_format = {
 };
 
 $(document).ready(main);
-
 
 function main(){
   //update user data every reloading of the page
@@ -39,38 +39,55 @@ function main(){
   var current_size = 0;
   var size_percentage = 0;
   var computed_height = 0;
+  var socket  = io('http://localhost:3000');
   var options = {
     scriptPath: path.join(__dirname,'/python_scripts')
   }
   var filename = 'main.py';
   var py_object = new PythonShell(filename,options);
-  
   var previous_size = 0;
+ 
   py_object.on('message', function (message) {
-    try {
-      console.log(message);
+    console.log(message);
+    // try {
+    //   console.log(message);
       
-      var json_object = JSON.parse(message);
-      if (current_size >= 0) {
-        var total = json_object.Total;
-        current_size = previous_size - total; 
-        console.log(`Current Balnce: ${current_size}`);
+    //   var json_object = JSON.parse(message);
+    //   if (current_size >= 0) {
+    //     var total = json_object.Total;
+    //     current_size = previous_size - total; 
+    //     console.log(`Current Balnce: ${current_size}`);
         
-        size_percentage = (current_size/full_size);
-        computed_height = size_percentage * 250;
-        $("#water-level").animate({height:computed_height+'px'}); 
-        ml_label.innerHTML = `${current_size} mL`;
-      }else{
-        //let python know that there is nothing left
-        console.log('Nothing left!');
-      }
-    } catch (error) {
-     throw error; 
-    }
+    //     size_percentage = (current_size/full_size);
+    //     computed_height = size_percentage * 250;
+    //     $("#water-level").animate({height:computed_height+'px'}); 
+    //     ml_label.innerHTML = `${current_size} mL`;
+    //   }else{
+    //     //let python know that there is nothing left
+    //     console.log('Nothing left!');
+    //   }
+    // } catch (error) {
+    //  throw error; 
+    // }
   });
 
   py_object.end(function (err,code,signal) {
     if (err) throw err;
+  });
+
+ ml_label.onclick = function() {
+   var msg = {
+     destination:'Python',
+     content:{
+      command:'Toggle_Manual'
+     }
+   };
+  socket.emit('socket-event', msg);
+  console.log('Clicked');
+ }
+
+ socket.on('socket-event', function(msg){
+    console.log(msg);
   });
 
   var params = {};
@@ -155,9 +172,10 @@ function main(){
           $(this).removeClass().addClass("btn");
           // interval = setInterval(mouseaction,100,current_ml_dispensed);
           // interval = setInterval(tester,100);
-          startDispenseHot(file);
+          // startDispenseHot(file);
           $(this).text("Stop");
           // $("#cold-button").prop('disabled',true);
+          socket.emit('dispense-hot-event', 'start');
         }else{
           data.command = 'stop';
           $('#toggle_switch').bootstrapToggle('enable');
@@ -247,10 +265,10 @@ function main(){
   $('#toggle_switch').change(function() {
     if ($(this).prop('checked') == false) {
         toggle_state = 'Manual';
-        toggle_operation(file,'Manual');
+        // toggle_operation(file,'Manual');
     }else{
       toggle_state = 'Automatic';
-      toggle_operation(file,'Automatic');
+      // toggle_operation(file,'Automatic');
     }
   });
 

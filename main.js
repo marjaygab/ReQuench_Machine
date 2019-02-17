@@ -3,6 +3,34 @@ const {app, BrowserWindow} = require('electron')
 
 const Store = require('electron-store');
 const store = new Store();
+const python_id_index = 1;
+const js_id_index = 0;
+var http = require('http').Server(app);
+var io = require('socket.io')(http);
+var socket_ids = [];
+http.listen(3000, function(){
+  console.log('listening on *:3000');
+});
+
+io.on('connection', function(socket){
+  console.log('A User has Connected');
+  socket_ids.push(socket.id);
+  console.log(socket.id);
+  
+  socket.on('socket-event', function(msg){
+    if (socket_ids.length >= 2) {
+      if(msg.destination === 'Python'){
+        io.to(socket_ids[python_id_index]).emit('socket-event',msg.content);
+      }else if(msg.destination === 'JS'){
+        io.to(socket_ids[js_id_index]).emit('socket-event',msg.content);
+      }else{
+        console.log(msg);
+      }  
+    }
+  });
+});
+
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
