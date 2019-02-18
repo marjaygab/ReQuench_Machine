@@ -8,17 +8,25 @@ const js_id_index = 0;
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var socket_ids = [];
+var connection_counter = 0;
 http.listen(3000, function(){
   console.log('listening on *:3000');
 });
 
 io.on('connection', function(socket){
-  console.log('A User has Connected');
+  if (connection_counter >= 2) {
+    socket_ids = [];
+    connection_counter = 0; 
+  }
   socket_ids.push(socket.id);
-  console.log(socket.id);
-  
+  if (socket_ids.length == 2) {
+    console.log(socket_ids);
+  }else{
+    console.log(socket_ids);
+  }
+  connection_counter++;
   socket.on('socket-event', function(msg){
-    if (socket_ids.length >= 2) {
+    if (socket_ids.length == 2) {
       if(msg.destination === 'Python'){
         io.to(socket_ids[python_id_index]).emit('socket-event',msg.content);
       }else if(msg.destination === 'JS'){
@@ -28,6 +36,12 @@ io.on('connection', function(socket){
       }  
     }
   });
+
+  socket.on('reconnect',function() {
+    console.log('User has reconnected');
+  });
+
+
 });
 
 

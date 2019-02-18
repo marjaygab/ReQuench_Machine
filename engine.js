@@ -82,19 +82,38 @@ function main(){
       command:'Toggle_Manual'
      }
    };
-  socket.emit('socket-event', msg);
+  commandPy(socket,{command:'Toggle_Manual'});
   console.log('Clicked');
  }
 
  socket.on('socket-event', function(msg){
     console.log(msg);
-  });
+    if (msg != 'Stopped Dispense') {
+      
+    } else {
+      enableAll();
+    }
+});
 
   var params = {};
   params.Acc_ID = store.get('User_Information').Acc_ID;
   httpcustomrequest.http_post('Machine_Init.php',params,function(json_object) {
-    store.set('Purchase_History',json_object.Purchase_History);
-    store.set('Transaction_History',json_object.Transaction_History);
+    if (json_object != false) {
+      store.set('Purchase_History',json_object.Purchase_History);
+      store.set('Transaction_History',json_object.Transaction_History);
+    } else {
+      Swal.fire({
+        title: 'An error occured. Refreshing page..',
+        type: 'error',
+        confirmButtonColor: '#3085d6',
+        confirmButtonText: 'Ok',
+        onClose:function() {
+          location.reload();  
+        }
+      }).then((result) => {
+        location.reload();
+      })
+    }
   },function(error) {
     console.log(`Error: ${error}`);
   });
@@ -127,8 +146,6 @@ function main(){
 
   temp_array_transaction.sort(compare_function);
   temp_array_purchase.sort(compare_function);
-  
-
 
   //Logic for finding the Full and Current Size for representation
   if (Date.parse(temp_array_transaction[0].Date) >  Date.parse(temp_array_purchase[0].Date)) {
@@ -172,10 +189,10 @@ function main(){
           $(this).removeClass().addClass("btn");
           // interval = setInterval(mouseaction,100,current_ml_dispensed);
           // interval = setInterval(tester,100);
-          // startDispenseHot(file);
           $(this).text("Stop");
-          // $("#cold-button").prop('disabled',true);
-          socket.emit('dispense-hot-event', 'start');
+          $("#cold-button").prop('disabled',true);
+          $('#toggle_switch').prop('disable',true);
+          commandPy(socket,{command:'Toggle_Hot'});
         }else{
           data.command = 'stop';
           $('#toggle_switch').bootstrapToggle('enable');
@@ -183,8 +200,9 @@ function main(){
           $(this).text("HOT");
           // clearInterval(interval);
           previous_size = current_size;
-          endDispenseHot(file);
           $("#cold-button").prop('disabled',false);
+          $('#toggle_switch').prop('disable',false);
+          commandPy(socket,{command:'Stop_Dispense'});
         }
           break;
 
@@ -193,16 +211,18 @@ function main(){
           data.command = 'start';
           $('#toggle_switch').bootstrapToggle('disable');
           $(this).removeClass().addClass("btn");
-          startDispenseCold(file);
           $(this).text("Stop");
-          $("#hot-button").prop('disabled',true)
+          $("#hot-button").prop('disabled',true);
+          $('#toggle_switch').prop('disable',true);
+          commandPy(socket,{command:'Toggle_Cold'});
         }else{
           data.command = 'stop';
           $('#toggle_switch').bootstrapToggle('enable');
           $(this).removeClass().addClass("btn btn-primary");
           $(this).text("COLD");
-          endDispenseCold(file);
-          $("#hot-button").prop('disabled',false)
+          $("#hot-button").prop('disabled',false);
+          $('#toggle_switch').prop('disable',false);
+          commandPy(socket,{command:'Stop_Dispense'});
         }
           break;
         default:
@@ -247,14 +267,20 @@ function main(){
 
         },
         onClose: () => {
-          setRequestedAmount(file,amount,function(){
-            if (current == 'HOT') {
-              startDispenseHot(file);
-            } else {
-              startDispenseCold(file);
-            }
-            amount = 0;  
-          });
+          commandPy(socket,{command:'Set_Amount',amount:amount});
+          if (current == 'HOT') {
+            commandPy(socket,{command:'Toggle_Hot'});
+
+            $(this).text("Stop");
+            $("#cold-button").prop('disabled',true);
+            $('#toggle_switch').prop('disable',true);
+          } else {
+            commandPy(socket,{command:'Toggle_Cold'});
+            $(this).text("Stop");
+            $("#hot-button").prop('disabled',true);
+            $('#toggle_switch').prop('disable',true);
+          }
+          amount = 0;  
         }
       });
 
@@ -266,10 +292,11 @@ function main(){
   $('#toggle_switch').change(function() {
     if ($(this).prop('checked') == false) {
         toggle_state = 'Manual';
-        // toggle_operation(file,'Manual');
+        commandPy(socket,{command:'Toggle_Manual'});
+        
     }else{
       toggle_state = 'Automatic';
-      // toggle_operation(file,'Automatic');
+      commandPy(socket,{command:'Toggle_Auto'});
     }
   });
 
@@ -283,49 +310,20 @@ function main(){
 }
 
 
-function jsonWrite(file) {
-  fs.writeFile('/home/pi/Documents/ReQuench_Machine/operations.json', JSON.stringify(file,null,6), function (err) {
+
+function commandPy(socket,content) {
+  var msg = {
+    destination:'Python',
+    content:content
+  };
+ socket.emit('socket-event', msg);
+}
+
+function jsonWrite(directory,file) {
+  // Sample Directory :'/home/pi/Documents/ReQuench_Machine/operations.json'
+  fs.writeFile(directory, JSON.stringify(file,null,6), function (err) {
     if (err) return console.log(err);
   });
-}
-
-
-function toggle_operation(file,operation) {
-  if (operation == 'Manual') {
-    file.Operation_Variables.Manual = 1; 
-    file.Operation_Variables.Automatic = 0; 
-  } else {
-    file.Operation_Variables.Manual = 0; 
-    file.Operation_Variables.Automatic = 1; 
-  }  
-  jsonWrite(file);
-}
-
-function setRequestedAmount(file,amount,callback) {
-  file.Operation_Variables.Requested_Amount = amount; 
-  jsonWrite(file);
-  callback();
-}
-
-function startDispenseHot(file) {
-  file.Command_Variable.Dispense_Hot = 1;
-  file.Command_Variable.Dispense_Cold = 0; 
-  jsonWrite(file);
-}
-
-function startDispenseCold(file) {
-  file.Command_Variable.Dispense_Hot = 0;
-  file.Command_Variable.Dispense_Cold = 1;
-  jsonWrite(file);
-}
-
-function endDispenseHot(file) {
-  file.Command_Variable.Dispense_Hot = 0;
-  jsonWrite(file);
-}
-function endDispenseCold(file) {
-  file.Command_Variable.Dispense_Cold = 0;
-  jsonWrite(file);
 }
 
 function mouseaction(){
@@ -339,40 +337,14 @@ function display_output() {
   console.log('Value: ' + current_ml_dispensed);
 }
 
-// function startdispense(callback) {
-//   var options = {
-//     scriptPath: path.join(__dirname,'/python_scripts'),
-//     args : [current_ml_dispensed]
-//   }
-//   var filename = 'manual_dispense.py';
-//   var py_object = new PythonShell(filename,options);
+function disableAllExcept(element_id) {
+  
+}
 
-//   PythonShell.run(filename, options, function (err, results) {
-//     if (err) throw err;
-//     current_ml_dispensed = results[0];
-//     callback();
-//   });
-
-// }
-
-
-
-
-function autostartdispense(amount,callback) {
-  var options = {
-    scriptPath: path.join(__dirname,'/python_scripts'),
-    args : [amount]
-  }
-  var filename = 'test1.py';
-  var filename2 = 'test2.py';
-  var py_object = new PythonShell(filename,options);
-
-  py_object.on('message', function (message) {
-    callback(message);
-  });
-
-  py_object.end(function (err,code,signal) {
-    if (err) throw err;
-  });
-
+function enableAll() {
+  $("#hot-button").text("HOT");
+  $("#cold-button").text("COLD");
+  $("#hot-button").prop('disabled',false);
+  $("#cold-button").prop('disabled',false);
+  $('#toggle_switch').prop('disable',false);
 }

@@ -29,16 +29,20 @@ exports.http_post = function(url,parameters,fn_response,fn_error) {
     res.on('data', (d) => {
       var data_string = d.toString('utf8');
       var new_data_string = `${data_string}`;
-      var json_object = JSON.parse(new_data_string);
-      fn_response(json_object);
+      var json_object = tryParse(new_data_string);
+      if (json_object != false) {
+        fn_response(json_object);
+      } else {
+        fn_response(false);
+      }
     });
   });
   req.on('error', (error) => {
     fn_error(error);
   });
 
-  req.write(data)
-  req.end()
+  req.write(data);
+  req.end();
 }
 
 exports.tester = function(a) {
@@ -63,4 +67,18 @@ exports.tester = function(a) {
       console.log(obj.Acc_ID);
     }
   };
+}
+
+function tryParse(jsonString) {
+    try {
+      var o = JSON.parse(jsonString);
+      if (o && typeof o === "object") {
+        return o;
+      }
+    } catch (error) {
+      console.log(error)
+      console.log(jsonString);
+      
+    }
+    return false
 }
