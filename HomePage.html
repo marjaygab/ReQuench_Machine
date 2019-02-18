@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <link type="text/css" rel="stylesheet" href="styles/css/bootstrap.min.css">
     <link type="text/css" rel="stylesheet" href="styles/css/bootstrap-toggle.min.css">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
     <script type="text/javascript" src="styles/js/bootstrap-toggle.min.js"></script>
     <script type="text/javascript" src="engine.js"></script>
     <style media="screen">
@@ -87,10 +88,6 @@
         width: 200px; /* no height needed ... image will resize automagically */
       }
 
-      .navbar{
-        padding: 1.5rem 1rem;
-      }
-
       .card{
         width: 200px;
         margin-top: 40px;
@@ -111,7 +108,9 @@
   <body>
     <nav class="navbar navbar-light bg-dark">
         <span class="navbar-brand mb-0 h1"><img id="banner" src="" height="30" alt=""></span>
-        
+        <li class="nav-item ml-auto">
+          <button class="btn btn-outline-info" type="button" id="logout_button">Logout</button>
+        </li>
     </nav>
     <div class="card text-center text-white bg-info">
       <div class="card-body">
@@ -129,10 +128,10 @@
     </div>
     <div class="hot-cold row">
       <div class="col-6">
-        <button id="cold-button" type="button" name="button" class="btn btn-primary">COLD</button>
+        <button id="cold-button" type="button" name="button" class="btn btn-primary main-controls">COLD</button>
       </div>
       <div class="col-6">
-        <button id="hot-button" type="button" name="button" class="btn btn-danger">HOT</button>
+        <button id="hot-button" type="button" name="button" class="btn btn-danger main-controls">HOT</button>
       </div>
     </div>
   </body>

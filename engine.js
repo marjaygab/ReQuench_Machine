@@ -33,6 +33,7 @@ function main(){
   var history = store.get('History');
   var purchase_history = store.get('Purchase_History');
   var transaction_history = store.get('Transaction_History');
+  var logout_button = document.getElementById('logout_button');
   var temp_array_transaction = [];
   var temp_array_purchase = [];
   var full_size = 0;
@@ -46,7 +47,43 @@ function main(){
   var filename = 'main.py';
   var py_object = new PythonShell(filename,options);
   var previous_size = 0;
- 
+  // in seconds
+  const idle_timeout = 10;
+  const idle_interval = 1000;
+  var idle_time = 0;
+  var idle_prompt = setInterval(function() {
+    idle_time = idle_time + 1;
+    if (idle_time == idle_timeout) {
+      let timerInterval
+      Swal.fire({
+        title: 'Auto close alert!',
+        html: '<button id="present" class="btn btn-info">' +
+        "I'm still here!" +
+      '</button><br/>',
+        timer: 2000,
+        showConfirmButton:true,
+        confirmButtonText: "I'm still here!",
+        onBeforeOpen: () => {
+          Swal.showLoading()
+          timerInterval = setInterval(() => {
+            Swal.getContent().querySelector('strong')
+              .textContent = Swal.getTimerLeft()
+          }, 100)
+        },
+        onClose: () => {
+          clearInterval(timerInterval);
+          idle_time = 0;
+        }
+      }).then((result) => {
+        if (
+          // Read more about handling dismissals
+          result.dismiss === Swal.DismissReason.timer
+        ) {
+          console.log('I was closed by the timer')
+        }
+      })
+    }
+  },idle_interval);
   py_object.on('message', function (message) {
     console.log(message);
     // try {
@@ -74,6 +111,31 @@ function main(){
   py_object.end(function (err,code,signal) {
     if (err) throw err;
   });
+
+
+
+  window.onmousemove = function(e) {
+    idle_time = 0;
+  }
+
+
+
+  logout_button.onclick = function(){
+    Swal.fire({
+      title: 'Are you done?',
+      type: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, Log me out'
+    }).then((result) => {
+      if (result.value) {
+        console.log(result.value);
+      }
+    })
+  }
+
+
 
  ml_label.onclick = function() {
    var msg = {
@@ -174,7 +236,7 @@ function main(){
 
   ml_label.innerHTML = `${user_information.Balance} mL`;
   $('#toggle_switch').bootstrapToggle('on');
-  $("button").click(function(){
+  $(".main-controls").click(function(){
     var current = $(this).text();
     var current_id = $(this).attr("id");
 
@@ -272,13 +334,15 @@ function main(){
             commandPy(socket,{command:'Toggle_Hot'});
 
             $(this).text("Stop");
+            $("#hot-button").prop('disabled',true);
             $("#cold-button").prop('disabled',true);
-            $('#toggle_switch').prop('disable',true);
+            $('#toggle_switch').prop('disabled',true);
           } else {
             commandPy(socket,{command:'Toggle_Cold'});
             $(this).text("Stop");
             $("#hot-button").prop('disabled',true);
-            $('#toggle_switch').prop('disable',true);
+            $("#cold-button").prop('disabled',true);
+            $('#toggle_switch').prop('disabled',true);
           }
           amount = 0;  
         }
