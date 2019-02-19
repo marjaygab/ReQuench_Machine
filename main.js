@@ -40,9 +40,20 @@ io.on('connection', function(socket){
   socket.on('reconnect',function() {
     console.log('User has reconnected');
   });
-
+  socket.on('disconnect', (reason) => {
+    if (reason === 'io server disconnect') {
+      // the disconnection was initiated by the server, you need to reconnect manually
+      socket.connect();
+    }else{
+      console.log('Python has disconnected');
+      
+    }
+    // else the socket will automatically try to reconnect
+  });
 
 });
+
+
 
 
 // Keep a global reference of the window object, if you don't, the window will

@@ -75,11 +75,14 @@ function main(){
           idle_time = 0;
         }
       }).then((result) => {
-        if (
-          // Read more about handling dismissals
-          result.dismiss === Swal.DismissReason.timer
-        ) {
-          console.log('I was closed by the timer')
+        if (result.dismiss === Swal.DismissReason.timer) {
+          //handle exits here
+          store.delete('User_Information');
+          store.delete('Purchase_History');
+          store.delete('Transaction_History');
+          commandPy(socket,{command:'Terminate'});
+          console.log('Terminated, hopefully');
+          window.location.assign('login.html');
         }
       })
     }
@@ -110,6 +113,8 @@ function main(){
 
   py_object.end(function (err,code,signal) {
     if (err) throw err;
+    console.log('Ended');
+    
   });
 
 
@@ -130,7 +135,12 @@ function main(){
       confirmButtonText: 'Yes, Log me out'
     }).then((result) => {
       if (result.value) {
-        console.log(result.value);
+        store.delete('User_Information');
+        store.delete('Purchase_History');
+        store.delete('Transaction_History');
+        commandPy(socket,{command:'Terminate'});
+        console.log('Terminated, hopefully');
+        window.location.assign('login.html');
       }
     })
   }

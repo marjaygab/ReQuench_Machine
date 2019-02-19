@@ -16,7 +16,7 @@ mode_auto = False
 temp_hot = False
 temp_cold = False
 auto_amount  = 0
-
+terminate_flag = False
 
 
 @sio.on('connect')
@@ -31,6 +31,7 @@ def on_message(data):
         global temp_hot
         global temp_cold
         global auto_amount
+        global terminate_flag
         command = data['command']
         if command == 'Toggle_Auto':
                 mode_auto = True
@@ -49,6 +50,10 @@ def on_message(data):
         elif command == 'Stop_Dispense':
                 temp_cold = False
                 temp_hot = False
+        elif command == 'Terminate':
+                # GPIO.cleanup()
+                terminate_flag = True
+
                 
 @sio.on('disconnect')
 def on_disconnect():
@@ -174,31 +179,6 @@ def automaticDispense(command,amount_requested):
         # GPIO.output(7, 0)
         # dispenseIsDoneAutomatic(command)
 
-def dispenseIsDoneManual(mode):
-        # write json file here   
-        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as outfile:  
-                json_data = json.load(outfile)
-                if mode=='HOT':
-                        json_data['Command_Variable']['Dispense_Hot'] = 0
-                else:
-                        json_data['Command_Variable']['Dispense_Cold'] = 0
-        with open('/home/pi/Documents/ReQuench_Machine/operations.json', 'w') as file:
-                json.dump(json_data, file, indent=6)
-
-def dispenseIsDoneAutomatic(mode):
-        # write json file here   
-        with open('/home/pi/Documents/ReQuench_Machine/operations.json') as outfile:  
-                json_data = json.load(outfile)
-                if mode=='HOT':
-                        json_data['Command_Variable']['Dispense_Hot'] = 0
-                else:
-                        json_data['Command_Variable']['Dispense_Cold'] = 0
-                json_data['Operation_Variables']['Requested_Amount'] = 0
-        with open('/home/pi/Documents/ReQuench_Machine/operations.json', 'w') as file:
-                json.dump(json_data, file, indent=6)
-  
-
-
 # runs continuously after instantiated from javascript
 while True:
         mode  = check_operation()
@@ -208,4 +188,11 @@ while True:
         else :
                 command = checkCommand()
                 automaticMode(command)
+        
+        if terminate_flag:
+                break
         time.sleep(1)
+
+sio.disconnect()
+sys.exit()
+
