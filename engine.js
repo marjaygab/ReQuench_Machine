@@ -6,9 +6,8 @@ let file = require('./operations');
 let httpcustomrequest = require('./loginBackend.js');
 const Store = require('electron-store');
 const store = new Store();
-const io = require('socket.io-client');
 let current_ml_dispensed = 0;
-let operation_json = {
+let operation_json_format = {
   "Operation_Variables":{
     "Manual": 0,
     "Automatic":0,
@@ -22,6 +21,7 @@ let operation_json = {
 
 $(document).ready(main);
 
+
 function main(){
   //update user data every reloading of the page
   let Swal = require('sweetalert2');
@@ -33,170 +33,56 @@ function main(){
   var history = store.get('History');
   var purchase_history = store.get('Purchase_History');
   var transaction_history = store.get('Transaction_History');
-  var logout_button = document.getElementById('logout_button');
   var temp_array_transaction = [];
   var temp_array_purchase = [];
   var full_size = 0;
   var current_size = 0;
   var size_percentage = 0;
   var computed_height = 0;
-  var socket  = io('http://localhost:3000');
   var options = {
     scriptPath: path.join(__dirname,'/python_scripts')
   }
-  var filename = 'main.py';
-  var py_object = new PythonShell(filename,options);
-  var previous_size = 0;
-  // in seconds
-  const idle_timeout = 3600;
-  const idle_interval = 1000;
-  var idle_time = 0;
-  var idle_prompt = setInterval(function() {
-    idle_time = idle_time + 1;
-    if (idle_time == idle_timeout) {
-      let timerInterval
-      Swal.fire({
-        title: 'Auto close alert!',
-        html: '<button id="present" class="btn btn-info">' +
-        "I'm still here!" +
-      '</button><br/>',
-        timer: 2000,
-        showConfirmButton:true,
-        confirmButtonText: "I'm still here!",
-        onBeforeOpen: () => {
-          Swal.showLoading()
-          timerInterval = setInterval(() => {
-            Swal.getContent().querySelector('strong')
-              .textContent = Swal.getTimerLeft()
-          }, 100)
-        },
-        onClose: () => {
-          clearInterval(timerInterval);
-          idle_time = 0;
-        }
-      }).then((result) => {
-        if (result.dismiss === Swal.DismissReason.timer) {
-          //handle exits here
-          store.delete('User_Information');
-          store.delete('Purchase_History');
-          store.delete('Transaction_History');
-          commandPy(socket,{command:'Terminate'});
-          console.log('Terminated, hopefully');
-          window.location.assign('login.html');
-        }
-      })
-    }
-  },idle_interval);
-  py_object.on('message', function (message) {
-    console.log(message);
-    // try {
-    //   console.log(message);
+  // var filename = 'main.py';
+  // var py_object = new PythonShell(filename,options);
+  
+  // var previous_size = 0;
+  // py_object.on('message', function (message) {
+  //   try {
+  //     console.log(message);
       
-    //   var json_object = JSON.parse(message);
-    //   if (current_size >= 0) {
-    //     var total = json_object.Total;
-    //     current_size = previous_size - total; 
-    //     console.log(`Current Balnce: ${current_size}`);
+  //     var json_object = JSON.parse(message);
+  //     if (current_size >= 0) {
+  //       var total = json_object.Total;
+  //       console.log(`Info from Python: ${total}`);
+  //       total = parseInt(total);
+  //       total = Math.round(total)
+  //       current_size = previous_size - total; 
+  //       console.log(`Current Balnce: ${current_size}`);
         
-    //     size_percentage = (current_size/full_size);
-    //     computed_height = size_percentage * 250;
-    //     $("#water-level").animate({height:computed_height+'px'}); 
-    //     ml_label.innerHTML = `${current_size} mL`;
-    //   }else{
-    //     //let python know that there is nothing left
-    //     console.log('Nothing left!');
-    //   }
-    // } catch (error) {
-    //  throw error; 
-    // }
-  });
+  //       size_percentage = (current_size/full_size);
+  //       computed_height = size_percentage * 250;
+  //       $("#water-level").animate({height:computed_height+'px'}); 
+  //       ml_label.innerHTML = `${current_size} mL`;
+  //     }else{
+  //       //let python know that there is nothing left
+  //       endDispenseCold(file);
+  //       endDispenseHot(file);
+  //       console.log('Nothing left!');
+  //     }
+  //   } catch (error) {
+  //    throw error; 
+  //   }
+  // });
 
-  py_object.end(function (err,code,signal) {
-    if (err) throw err;
-    console.log('Ended');
-    
-  });
-
-
-
-  window.onmousemove = function(e) {
-    idle_time = 0;
-  }
-
-
-
-  logout_button.onclick = function(){
-    Swal.fire({
-      title: 'Are you done?',
-      type: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, Log me out'
-    }).then((result) => {
-      if (result.value) {
-        store.delete('User_Information');
-        store.delete('Purchase_History');
-        store.delete('Transaction_History');
-        commandPy(socket,{command:'Terminate'});
-        console.log('Terminated, hopefully');
-        window.location.assign('login.html');
-      }
-    })
-  }
-
-
-
- ml_label.onclick = function() {
-   var msg = {
-     destination:'Python',
-     content:{
-      command:'Toggle_Manual'
-     }
-   };
-  commandPy(socket,{command:'Toggle_Manual'});
-  console.log('Clicked');
- }
-
- socket.on('socket-event', function(msg){
-    console.log('Message:' + msg);
-    if (msg != 'Stopped Dispense') {
-      // if (current_size >= 0) {
-      //   var total = msg.Total;
-      //   current_size = previous_size - total; 
-      //   console.log(`Current Balnce: ${current_size}`);
-      //   size_percentage = (current_size/full_size);
-      //   computed_height = size_percentage * 250;
-      //   $("#water-level").animate({height:computed_height+'px'}); 
-      //   ml_label.innerHTML = `${current_size} mL`;
-      // }else{
-      //   //let python know that there is nothing left
-      //   console.log('Nothing left!');
-      // }
-    } else {
-      enableAll();
-    }
-});
+  // py_object.end(function (err,code,signal) {
+  //   if (err) throw err;
+  // });
 
   var params = {};
   params.Acc_ID = store.get('User_Information').Acc_ID;
   httpcustomrequest.http_post('Machine_Init.php',params,function(json_object) {
-    if (json_object != false) {
-      store.set('Purchase_History',json_object.Purchase_History);
-      store.set('Transaction_History',json_object.Transaction_History);
-    } else {
-      Swal.fire({
-        title: 'An error occured. Refreshing page..',
-        type: 'error',
-        confirmButtonColor: '#3085d6',
-        confirmButtonText: 'Ok',
-        onClose:function() {
-          location.reload();  
-        }
-      }).then((result) => {
-        location.reload();
-      })
-    }
+    store.set('Purchase_History',json_object.Purchase_History);
+    store.set('Transaction_History',json_object.Transaction_History);
   },function(error) {
     console.log(`Error: ${error}`);
   });
@@ -229,6 +115,8 @@ function main(){
 
   temp_array_transaction.sort(compare_function);
   temp_array_purchase.sort(compare_function);
+  
+
 
   //Logic for finding the Full and Current Size for representation
   if (Date.parse(temp_array_transaction[0].Date) >  Date.parse(temp_array_purchase[0].Date)) {
@@ -257,7 +145,7 @@ function main(){
 
   ml_label.innerHTML = `${user_information.Balance} mL`;
   $('#toggle_switch').bootstrapToggle('on');
-  $(".main-controls").click(function(){
+  $("button").click(function(){
     var current = $(this).text();
     var current_id = $(this).attr("id");
 
@@ -272,10 +160,9 @@ function main(){
           $(this).removeClass().addClass("btn");
           // interval = setInterval(mouseaction,100,current_ml_dispensed);
           // interval = setInterval(tester,100);
+          startDispenseHot(file);
           $(this).text("Stop");
-          $("#cold-button").prop('disabled',true);
-          $('#toggle_switch').prop('disable',true);
-          commandPy(socket,{command:'Toggle_Hot'});
+          // $("#cold-button").prop('disabled',true);
         }else{
           data.command = 'stop';
           $('#toggle_switch').bootstrapToggle('enable');
@@ -283,9 +170,8 @@ function main(){
           $(this).text("HOT");
           // clearInterval(interval);
           previous_size = current_size;
+          endDispenseHot(file);
           $("#cold-button").prop('disabled',false);
-          $('#toggle_switch').prop('disable',false);
-          commandPy(socket,{command:'Stop_Dispense'});
         }
           break;
 
@@ -294,18 +180,16 @@ function main(){
           data.command = 'start';
           $('#toggle_switch').bootstrapToggle('disable');
           $(this).removeClass().addClass("btn");
+          startDispenseCold(file);
           $(this).text("Stop");
-          $("#hot-button").prop('disabled',true);
-          $('#toggle_switch').prop('disable',true);
-          commandPy(socket,{command:'Toggle_Cold'});
+          $("#hot-button").prop('disabled',true)
         }else{
           data.command = 'stop';
           $('#toggle_switch').bootstrapToggle('enable');
           $(this).removeClass().addClass("btn btn-primary");
           $(this).text("COLD");
-          $("#hot-button").prop('disabled',false);
-          $('#toggle_switch').prop('disable',false);
-          commandPy(socket,{command:'Stop_Dispense'});
+          endDispenseCold(file);
+          $("#hot-button").prop('disabled',false)
         }
           break;
         default:
@@ -350,22 +234,14 @@ function main(){
 
         },
         onClose: () => {
-          commandPy(socket,{command:'Set_Amount',amount:amount});
-          if (current == 'HOT') {
-            commandPy(socket,{command:'Toggle_Hot'});
-
-            $(this).text("Stop");
-            $("#hot-button").prop('disabled',true);
-            $("#cold-button").prop('disabled',true);
-            $('#toggle_switch').prop('disabled',true);
-          } else {
-            commandPy(socket,{command:'Toggle_Cold'});
-            $(this).text("Stop");
-            $("#hot-button").prop('disabled',true);
-            $("#cold-button").prop('disabled',true);
-            $('#toggle_switch').prop('disabled',true);
-          }
-          amount = 0;  
+          setRequestedAmount(file,amount,function(){
+            if (current == 'HOT') {
+              startDispenseHot(file);
+            } else {
+              startDispenseCold(file);
+            }
+            amount = 0;  
+          });
         }
       });
 
@@ -377,11 +253,10 @@ function main(){
   $('#toggle_switch').change(function() {
     if ($(this).prop('checked') == false) {
         toggle_state = 'Manual';
-        commandPy(socket,{command:'Toggle_Manual'});
-        
+        toggle_operation(file,'Manual');
     }else{
       toggle_state = 'Automatic';
-      commandPy(socket,{command:'Toggle_Auto'});
+      toggle_operation(file,'Automatic');
     }
   });
 
@@ -395,20 +270,49 @@ function main(){
 }
 
 
-
-function commandPy(socket,content) {
-  var msg = {
-    destination:'Python',
-    content:content
-  };
- socket.emit('socket-event', msg);
-}
-
-function jsonWrite(directory,file) {
-  // Sample Directory :'/home/pi/Documents/ReQuench_Machine/operations.json'
-  fs.writeFile(directory, JSON.stringify(file,null,6), function (err) {
+function jsonWrite(file) {
+  fs.writeFile('/home/pi/Documents/ReQuench_Machine/operations.json', JSON.stringify(file,null,6), function (err) {
     if (err) return console.log(err);
   });
+}
+
+
+function toggle_operation(file,operation) {
+  if (operation == 'Manual') {
+    file.Operation_Variables.Manual = 1; 
+    file.Operation_Variables.Automatic = 0; 
+  } else {
+    file.Operation_Variables.Manual = 0; 
+    file.Operation_Variables.Automatic = 1; 
+  }  
+  jsonWrite(file);
+}
+
+function setRequestedAmount(file,amount,callback) {
+  file.Operation_Variables.Requested_Amount = amount; 
+  jsonWrite(file);
+  callback();
+}
+
+function startDispenseHot(file) {
+  file.Command_Variable.Dispense_Hot = 1;
+  file.Command_Variable.Dispense_Cold = 0; 
+  jsonWrite(file);
+}
+
+function startDispenseCold(file) {
+  file.Command_Variable.Dispense_Hot = 0;
+  file.Command_Variable.Dispense_Cold = 1;
+  jsonWrite(file);
+}
+
+function endDispenseHot(file) {
+  file.Command_Variable.Dispense_Hot = 0;
+  jsonWrite(file);
+}
+function endDispenseCold(file) {
+  file.Command_Variable.Dispense_Cold = 0;
+  jsonWrite(file);
 }
 
 function mouseaction(){
@@ -422,14 +326,40 @@ function display_output() {
   console.log('Value: ' + current_ml_dispensed);
 }
 
-function disableAllExcept(element_id) {
-  
-}
+// function startdispense(callback) {
+//   var options = {
+//     scriptPath: path.join(__dirname,'/python_scripts'),
+//     args : [current_ml_dispensed]
+//   }
+//   var filename = 'manual_dispense.py';
+//   var py_object = new PythonShell(filename,options);
 
-function enableAll() {
-  $("#hot-button").text("HOT");
-  $("#cold-button").text("COLD");
-  $("#hot-button").prop('disabled',false);
-  $("#cold-button").prop('disabled',false);
-  $('#toggle_switch').prop('disable',false);
+//   PythonShell.run(filename, options, function (err, results) {
+//     if (err) throw err;
+//     current_ml_dispensed = results[0];
+//     callback();
+//   });
+
+// }
+
+
+
+
+function autostartdispense(amount,callback) {
+  var options = {
+    scriptPath: path.join(__dirname,'/python_scripts'),
+    args : [amount]
+  }
+  var filename = 'test1.py';
+  var filename2 = 'test2.py';
+  var py_object = new PythonShell(filename,options);
+
+  py_object.on('message', function (message) {
+    callback(message);
+  });
+
+  py_object.end(function (err,code,signal) {
+    if (err) throw err;
+  });
+
 }
