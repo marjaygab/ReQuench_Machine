@@ -5,8 +5,8 @@ import socketio
 import sys
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
-# GPIO.setwarnings(False)
-# GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
 inpt = 11
 inpt1 = 7
 pump_1 = 11
