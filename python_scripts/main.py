@@ -133,13 +133,13 @@ def manualDispense(command):
                 rate_cnt = 0
                 pulses = 0
                 time_start= time.time()
-                while pulses <= 5 or checkCommand() != 'Standby':
+                while pulses <= 5:
                         gpio_cur = GPIO.input(flowmeter)
                         if gpio_cur != 0 and gpio_cur != gpio_last:
                                 pulses += 1
                         gpio_last = gpio_cur
-                        print('This loop is running')
-                        sys.stdout.flush()
+                        if checkCommand() == 'Standby':
+                                break
                 rate_cnt += 1
                 tot_cnt += 1
                 time_end = time.time()
