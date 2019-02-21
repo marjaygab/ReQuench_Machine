@@ -144,7 +144,6 @@ def manualDispense(command):
         # while checkCommand() != 'Standby':
         #         sio.emit('socket-event',{"destination":'JS',"content":command})
         #         time.sleep(0.5)
-        sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
         GPIO.output(pump_1, 1)
         GPIO.output(solenoid_1, 1)
 
