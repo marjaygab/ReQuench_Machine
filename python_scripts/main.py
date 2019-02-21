@@ -12,7 +12,7 @@ inpt1 = 7
 # GPIO.setup(inpt1, GPIO.OUT)
 # GPIO.setup(inpt, GPIO.IN)
 mode_manual = False
-mode_auto = False
+mode_auto = True
 temp_hot = False
 temp_cold = False
 auto_amount  = 0
