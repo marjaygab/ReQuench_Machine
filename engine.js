@@ -42,8 +42,8 @@ function main(){
   var options = {
     scriptPath: path.join(__dirname,'/python_scripts')
   }
-  // var filename = 'main.py';
-  // var py_object = new PythonShell(filename,options);
+   var filename = 'main.py';
+   var py_object = new PythonShell(filename,options);
   
   // var previous_size = 0;
   py_object.on('message', function (message) {
