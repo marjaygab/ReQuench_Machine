@@ -40,6 +40,8 @@ def on_message(data):
         global auto_amount
         global terminate_flag
         command = data['command']
+        print(command)
+        sys.stdout.flush()
         if command == 'Toggle_Auto':
                 mode_auto = True
                 mode_manual = False
