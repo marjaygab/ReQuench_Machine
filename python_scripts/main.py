@@ -12,7 +12,7 @@ inpt1 = 7
 # GPIO.setup(inpt1, GPIO.OUT)
 # GPIO.setup(inpt, GPIO.IN)
 mode_manual = False
-mode_auto = False
+mode_auto = True
 temp_hot = False
 temp_cold = False
 auto_amount  = 0
@@ -181,16 +181,25 @@ def automaticDispense(command,amount_requested):
 
 # runs continuously after instantiated from javascript
 while True:
-        mode  = check_operation()
-        if (mode == 'Manual'):
-                command = checkCommand()
-                manualMode(command)
-        else :
-                command = checkCommand()
-                automaticMode(command)
+        global mode_manual
+        global mode_auto
+        global temp_hot
+        global temp_cold
+        global auto_amount
+        global terminate_flag
+        # mode  = check_operation()
+        # if (mode == 'Manual'):
+        #         command = checkCommand()
+        #         manualMode(command)
+        # else :
+        #         command = checkCommand()
+        #         automaticMode(command)
         
-        if terminate_flag:
-                break
+        # if terminate_flag:
+        #         break
+        operation = {"Mode_Manual":mode_manual,"Mode_Auto":mode_auto,"Temp_Hot":temp_hot,"Temp_cold":temp_cold}
+        print(operation)
+        sys.stdout.flush()
         time.sleep(1)
 
 sio.disconnect()
