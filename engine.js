@@ -48,7 +48,7 @@ function main(){
   var py_object = new PythonShell(filename,options);
   var previous_size = 0;
   // in seconds
-  const idle_timeout = 10;
+  const idle_timeout = 3600;
   const idle_interval = 1000;
   var idle_time = 0;
   var idle_prompt = setInterval(function() {

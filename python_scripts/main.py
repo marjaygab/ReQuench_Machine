@@ -26,8 +26,6 @@ def on_connect():
 
 @sio.on('socket-event')
 def on_message(data):
-        print(data)
-        sys.stdout.flush()
         global mode_manual
         global mode_auto
         global temp_hot
@@ -36,9 +34,7 @@ def on_message(data):
         global terminate_flag
         destination = data['destination']
         if destination == 'Python' :
-                print(destination)
-                sys.stdout.flush()
-                command = data['command']
+                command = data['content']['command']
                 if command == 'Toggle_Auto':
                         mode_auto = True
                         mode_manual = False
@@ -59,7 +55,6 @@ def on_message(data):
                 elif command == 'Terminate':
                         # GPIO.cleanup()
                         terminate_flag = True
-
                 
 @sio.on('disconnect')
 def on_disconnect():
@@ -140,6 +135,8 @@ def manualDispense(command):
         #         total_liters = round(tot_cnt * constant, 1)
         #         print(json.dumps({'LMin':lmin,'Total':total_liters}))
         #         sys.stdout.flush()
+        command = checkCommand()
+        sio.emit('socket-event',{"destination":'JS',"content":command})
         while checkCommand() != 'Standby':
                 sio.emit('socket-event',{"destination":'JS',"content":command})
                 time.sleep(0.5)
@@ -197,6 +194,7 @@ while True:
         
         if terminate_flag:
                 break
+
         time.sleep(1)
 
 sio.disconnect()
