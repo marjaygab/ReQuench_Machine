@@ -181,12 +181,6 @@ def automaticDispense(command,amount_requested):
 
 # runs continuously after instantiated from javascript
 while True:
-        global mode_manual
-        global mode_auto
-        global temp_hot
-        global temp_cold
-        global auto_amount
-        global terminate_flag
         # mode  = check_operation()
         # if (mode == 'Manual'):
         #         command = checkCommand()
