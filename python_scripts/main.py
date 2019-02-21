@@ -23,7 +23,8 @@ temp_hot = False
 temp_cold = False
 auto_amount  = 0
 terminate_flag = False
-
+GPIO.output(pump_1, 1)
+GPIO.output(solenoid_1, 1)
 
 @sio.on('connect')
 def on_connect():
@@ -123,8 +124,8 @@ def manualDispense(command):
         pulses = 0
         constant = 1.79
         time_zero = time.time()
-        GPIO.output(pump_1, 1)
-        GPIO.output(solenoid_1, 1)
+        GPIO.output(pump_1, 0)
+        GPIO.output(solenoid_1, 0)
         while checkCommand() != 'Standby':
                 rate_cnt = 0
                 pulses = 0
@@ -144,8 +145,8 @@ def manualDispense(command):
         #         sio.emit('socket-event',{"destination":'JS',"content":command})
         #         time.sleep(0.5)
         sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
-        GPIO.output(pump_1, 0)
-        GPIO.output(solenoid_1, 0)
+        GPIO.output(pump_1, 1)
+        GPIO.output(solenoid_1, 1)
 
 def automaticDispense(command,amount_requested):
         counter = 0
