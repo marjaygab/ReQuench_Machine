@@ -136,7 +136,7 @@ def manualDispense(command):
         #         sys.stdout.flush()
         while checkCommand() != 'Standby':
                 sio.emit('socket-event',{"destination":'JS',"content":command})
-                time.sleep(0.5)
+                time.sleep(1)
         sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
         # GPIO.output(7, 0)
 
