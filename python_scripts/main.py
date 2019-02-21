@@ -126,27 +126,29 @@ def manualDispense(command):
         time_zero = time.time()
         GPIO.output(pump_1, 0)
         GPIO.output(solenoid_1, 0)
-        while checkCommand() != 'Standby':
-                sio.emit('socket-event',{"destination":'JS',"content":'Testing'})
-                rate_cnt = 0
-                pulses = 0
-                time_start= time.time()
-                while pulses <= 5:
-                        gpio_cur = GPIO.input(flow_meter)
-                        if gpio_cur != 0 and gpio_cur != gpio_last:
-                                pulses += 1
-                        gpio_last = gpio_cur
-                rate_cnt += 1
-                tot_cnt += 1
-                time_end = time.time()
-                lmin = round((rate_cnt * constant)/(time_end-time_start),2)
-                total_liters = round(tot_cnt * constant, 1)
-                sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})
+        print(checkCommand())
+        sys.stdout.flush()
+        # while checkCommand() != 'Standby':
+                # sio.emit('socket-event',{"destination":'JS',"content":'Testing'})
+                # rate_cnt = 0
+                # pulses = 0
+                # time_start= time.time()
+                # while pulses <= 5:
+                #         gpio_cur = GPIO.input(flow_meter)
+                #         if gpio_cur != 0 and gpio_cur != gpio_last:
+                #                 pulses += 1
+                #         gpio_last = gpio_cur
+                # rate_cnt += 1
+                # tot_cnt += 1
+                # time_end = time.time()
+                # lmin = round((rate_cnt * constant)/(time_end-time_start),2)
+                # total_liters = round(tot_cnt * constant, 1)
+                # sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})
         # while checkCommand() != 'Standby':
         #         sio.emit('socket-event',{"destination":'JS',"content":command})
         #         time.sleep(0.5)
-        GPIO.output(pump_1, 1)
-        GPIO.output(solenoid_1, 1)
+        # GPIO.output(pump_1, 1)
+        # GPIO.output(solenoid_1, 1)
 
 def automaticDispense(command,amount_requested):
         counter = 0
