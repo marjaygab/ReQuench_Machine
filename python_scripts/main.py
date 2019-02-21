@@ -138,6 +138,8 @@ def manualDispense(command):
                         if gpio_cur != 0 and gpio_cur != gpio_last:
                                 pulses += 1
                         gpio_last = gpio_cur
+                        print('This loop is running')
+                        sys.stdout.flush()
                 rate_cnt += 1
                 tot_cnt += 1
                 time_end = time.time()
