@@ -161,18 +161,18 @@ function main(){
  socket.on('socket-event', function(msg){
     console.log(msg);
     if (msg != 'Stopped Dispense') {
-      if (current_size >= 0) {
-        var total = msg.Total;
-        current_size = previous_size - total; 
-        console.log(`Current Balnce: ${current_size}`);
-        size_percentage = (current_size/full_size);
-        computed_height = size_percentage * 250;
-        $("#water-level").animate({height:computed_height+'px'}); 
-        ml_label.innerHTML = `${current_size} mL`;
-      }else{
-        //let python know that there is nothing left
-        console.log('Nothing left!');
-      }
+      // if (current_size >= 0) {
+      //   var total = msg.Total;
+      //   current_size = previous_size - total; 
+      //   console.log(`Current Balnce: ${current_size}`);
+      //   size_percentage = (current_size/full_size);
+      //   computed_height = size_percentage * 250;
+      //   $("#water-level").animate({height:computed_height+'px'}); 
+      //   ml_label.innerHTML = `${current_size} mL`;
+      // }else{
+      //   //let python know that there is nothing left
+      //   console.log('Nothing left!');
+      // }
     } else {
       enableAll();
     }
