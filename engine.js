@@ -159,7 +159,7 @@ function main(){
  }
 
  socket.on('socket-event', function(msg){
-    console.log(msg);
+    console.log('Message:' + msg);
     if (msg != 'Stopped Dispense') {
       // if (current_size >= 0) {
       //   var total = msg.Total;
