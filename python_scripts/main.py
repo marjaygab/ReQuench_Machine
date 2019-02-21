@@ -147,8 +147,8 @@ def manualDispense(command):
                 sio.emit('socket-event',{"destination":'JS',"content":command})
                 time.sleep(0.5)
         sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
-        GPIO.output(pump_1,0)
-        GPIO.output(solenoid_1,0)
+        GPIO.output(pump_1,1)
+        GPIO.output(solenoid_1,1)
         # GPIO.output(7, 0)
 
 def automaticDispense(command,amount_requested):
