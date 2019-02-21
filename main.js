@@ -26,15 +26,7 @@ io.on('connection', function(socket){
   }
   connection_counter++;
   socket.on('socket-event', function(msg){
-    if (socket_ids.length == 2) {
-      if(msg.destination === 'Python'){
-        io.to(socket_ids[python_id_index]).emit('socket-event',msg.content);
-      }else if(msg.destination === 'JS'){
-        io.to(socket_ids[js_id_index]).emit('socket-event',msg.content);
-      }else{
-        console.log(msg);
-      }  
-    }
+    io.emit('socket-event',msg);
   });
 
   socket.on('reconnect',function() {

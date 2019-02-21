@@ -26,33 +26,39 @@ def on_connect():
 
 @sio.on('socket-event')
 def on_message(data):
+        print(data)
+        sys.stdout.flush()
         global mode_manual
         global mode_auto
         global temp_hot
         global temp_cold
         global auto_amount
         global terminate_flag
-        command = data['command']
-        if command == 'Toggle_Auto':
-                mode_auto = True
-                mode_manual = False
-        elif command == 'Toggle_Manual':
-                mode_auto = False
-                mode_manual = True
-        elif command == 'Toggle_Hot':
-                temp_cold = False
-                temp_hot = True
-        elif command == 'Toggle_Cold':
-                temp_cold = True
-                temp_hot = False
-        elif command == 'Set_Amount':
-                auto_amount = data['amount']
-        elif command == 'Stop_Dispense':
-                temp_cold = False
-                temp_hot = False
-        elif command == 'Terminate':
-                # GPIO.cleanup()
-                terminate_flag = True
+        destination = data['destination']
+        if destination == 'Python' :
+                print(destination)
+                sys.stdout.flush()
+                command = data['command']
+                if command == 'Toggle_Auto':
+                        mode_auto = True
+                        mode_manual = False
+                elif command == 'Toggle_Manual':
+                        mode_auto = False
+                        mode_manual = True
+                elif command == 'Toggle_Hot':
+                        temp_cold = False
+                        temp_hot = True
+                elif command == 'Toggle_Cold':
+                        temp_cold = True
+                        temp_hot = False
+                elif command == 'Set_Amount':
+                        auto_amount = data['amount']
+                elif command == 'Stop_Dispense':
+                        temp_cold = False
+                        temp_hot = False
+                elif command == 'Terminate':
+                        # GPIO.cleanup()
+                        terminate_flag = True
 
                 
 @sio.on('disconnect')
