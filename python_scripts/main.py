@@ -181,16 +181,25 @@ def automaticDispense(command,amount_requested):
 
 # runs continuously after instantiated from javascript
 while True:
-        mode  = check_operation()
-        if (mode == 'Manual'):
-                command = checkCommand()
-                manualMode(command)
-        else :
-                command = checkCommand()
-                automaticMode(command)
+        global mode_manual
+        global mode_auto
+        global temp_hot
+        global temp_cold
+        global auto_amount
+        global terminate_flag
+        # mode  = check_operation()
+        # if (mode == 'Manual'):
+        #         command = checkCommand()
+        #         manualMode(command)
+        # else :
+        #         command = checkCommand()
+        #         automaticMode(command)
         
-        if terminate_flag:
-                break
+        # if terminate_flag:
+        #         break
+        operation = {"Mode_Manual":mode_manual,"Mode_Auto":mode_auto,"Temp_Hot":temp_hot,"Temp_cold":temp_cold}
+        print(operation)
+        sys.stdout.flush()
         time.sleep(1)
 
 sio.disconnect()
