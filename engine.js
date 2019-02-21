@@ -159,16 +159,14 @@ function main(){
  }
 
  socket.on('socket-event', function(msg){
-   console.log(msg);
-   
-  //  if (msg.destination === 'JS') {
-  //   console.log(msg);
-  //   if (msg != 'Stopped Dispense') {
+   if (msg.destination === 'JS') {
+    console.log(msg);
+    if (msg != 'Stopped Dispense') {
       
-  //   } else {
-  //     enableAll();
-  //   }
-  //  }
+    } else {
+      enableAll();
+    }
+   }
 });
 
   var params = {};
