@@ -192,6 +192,8 @@ def automaticDispense(command,amount_requested):
 # runs continuously after instantiated from javascript
 while True:
         mode  = check_operation()
+        print('Python Running')
+        sys.stdout.flush()
         if (mode == 'Manual'):
                 command = checkCommand()
                 manualMode(command)
