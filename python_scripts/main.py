@@ -1,29 +1,29 @@
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import json
 import time
 import socketio
 import sys
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
+# GPIO.setwarnings(False)
+# GPIO.setmode(GPIO.BOARD)
 inpt = 11
 inpt1 = 7
 pump_1 = 11
 flowmeter = 40
 solenoid_1 = 15
 # GPIO.setup(inpt1, GPIO.OUT)
-GPIO.setup(pump_1, GPIO.OUT)
-GPIO.setup(solenoid_1, GPIO.OUT)
-GPIO.setup(flowmeter, GPIO.IN)
+# GPIO.setup(pump_1, GPIO.OUT)
+# GPIO.setup(solenoid_1, GPIO.OUT)
+# GPIO.setup(flowmeter, GPIO.IN)
 mode_manual = False
 mode_auto = False
 temp_hot = False
 temp_cold = False
 auto_amount  = 0
 terminate_flag = False
-GPIO.output(pump_1,1)
-GPIO.output(solenoid_1,1)
+# GPIO.output(pump_1,1)
+# GPIO.output(solenoid_1,1)
 
 @sio.on('connect')
 def on_connect():
@@ -127,19 +127,28 @@ def manualDispense(command):
         pulses = 0
         constant = 1.79
         time_zero = time.time()
-        GPIO.output(pump_1,0)
-        GPIO.output(solenoid_1,0)
+        gpio_cur = 0
+        # GPIO.output(pump_1,0)
+        # GPIO.output(solenoid_1,0)
         while checkCommand() != 'Standby':
                 rate_cnt = 0
                 pulses = 0
                 time_start= time.time()
                 while pulses <= 5:
-                        gpio_cur = GPIO.input(flowmeter)
+                        # gpio_cur = GPIO.input(flowmeter)
+                        temp_time_end = time.time()
+
                         if gpio_cur != 0 and gpio_cur != gpio_last:
                                 pulses += 1
-                        gpio_last = gpio_cur
-                        if checkCommand() == 'Standby':
+                        elif (temp_time_end - time_start) >= 5:
+                                stop_dispense()
                                 break
+                        gpio_last = gpio_cur
+
+                        if checkCommand() == 'Standby':
+                                stop_dispense()
+                                break
+                        
                 rate_cnt += 1
                 tot_cnt += 1
                 time_end = time.time()
@@ -148,8 +157,8 @@ def manualDispense(command):
                 sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})
                 time.sleep(0.5)
         
-        GPIO.output(pump_1,1)
-        GPIO.output(solenoid_1,1)
+        # GPIO.output(pump_1,1)
+        # GPIO.output(solenoid_1,1)
         # command = checkCommand()
         # while checkCommand() != 'Standby':
         #         sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})

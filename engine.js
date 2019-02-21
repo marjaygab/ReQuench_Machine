@@ -159,18 +159,38 @@ function main(){
  }
 
  socket.on('socket-event', function(msg){
-   if (msg.destination === 'JS') {
-    console.log(msg);
-    if (msg != 'Stopped Dispense') {
-      
-    } else {
-      enableAll();
-    }
+     if (msg.destination === 'JS') {
+        if (msg != 'Stopped Dispense') {
+            console.log(msg);
+            try {
+                if (current_size >= 0) {
+                    var total = msg.content.Total;
+                    current_size = previous_size - total; 
+                    current_size = Math.round(current_size)
+                    console.log(`Current Size: ${current_size}`);
+                    console.log(`Previous Size: ${previous_size}`);
+                    console.log(`Current Balnce: ${current_size}`);
+                    
+                    size_percentage = (current_size/full_size);
+                    computed_height = size_percentage * 250;
+                    $("#water-level").animate({height:computed_height+'px'}); 
+                    ml_label.innerHTML = `${current_size} mL`;
+                }else{
+                    //let python know that there is nothing left
+                    console.log('Nothing left!');
+                }
+            } catch (error) {
+                throw error; 
+            }
+        } else {
+        enableAll();
+        }
    }
 });
 
   var params = {};
   params.Acc_ID = store.get('User_Information').Acc_ID;
+
   httpcustomrequest.http_post('Machine_Init.php',params,function(json_object) {
     if (json_object != false) {
       store.set('Purchase_History',json_object.Purchase_History);
@@ -195,6 +215,8 @@ function main(){
   var purchase_history = store.get('Purchase_History');
   var transaction_history = store.get('Transaction_History');
 
+  console.log(purchase_history);
+  
   for (var i = 0; i < transaction_history.length; i++) {
     temp_array_transaction.push(transaction_history[i]);
   }
@@ -218,21 +240,22 @@ function main(){
     }
   }
 
-  temp_array_transaction.sort(compare_function);
-  temp_array_purchase.sort(compare_function);
+
 
   //Logic for finding the Full and Current Size for representation
-  if (Date.parse(temp_array_transaction[0].Date) >  Date.parse(temp_array_purchase[0].Date)) {
-    full_size = parseInt(temp_array_transaction[0].Amount) + parseInt(temp_array_transaction[0].Remaining_Balance);
-    current_size = parseInt(temp_array_transaction[0].Remaining_Balance);
-  }else if (Date.parse(temp_array_transaction[0].Date) <  Date.parse(temp_array_purchase[0].Date)) {
+  console.log(temp_array_purchase);
+  console.log(temp_array_transaction);
+  if (Date.parse(transaction_history.Date) >  Date.parse(purchase_history.Date)) {
+    full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
+    current_size = parseInt(transaction_history.Remaining_Balance);
+  }else if (Date.parse(transaction_history.Date) <  Date.parse(purchase_history.Date)) {
     full_size = parseInt(user_information.Balance);
     current_size = full_size;
   }else{
-    if (temp_array_transaction[0].Time > temp_array_purchase[0].Time) {
-      full_size = parseInt(temp_array_transaction[0].Amount) + parseInt(temp_array_transaction[0].Remaining_Balance);
-      current_size = parseInt(temp_array_transaction[0].Remaining_Balance);
-    }else if (temp_array_transaction[0].Time < temp_array_purchase[0].Time) {
+    if (transaction_history.Time > purchase_history.Time) {
+      full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
+      current_size = parseInt(transaction_history.Remaining_Balance);
+    }else if (transaction_history.Time < purchase_history.Time) {
   
       full_size = parseInt(user_information.Balance);
       current_size = full_size;

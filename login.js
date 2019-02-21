@@ -132,6 +132,7 @@ function main() {
           //check user persmissions first
         store.set('Purchase_History',json_object.Purchase_History);
         store.set('Transaction_History',json_object.Transaction_History);
+        store.set('Login_Method','RFID');
         var user_info_object = store.get('User_Information');
         
         if (json_object.Account_Type == 'Recorded') {
@@ -276,9 +277,11 @@ for (let index = 0; index < key.length; index++) {
             //check user persmissions first
           store.set('Purchase_History',json_object.Purchase_History);
           store.set('Transaction_History',json_object.Transaction_History);
+          store.set('Login_Method','OTP');
           var user_info_object = store.get('User_Information');
-          console.log(user_info_object);
+          console.log(json_object);
           
+
           if(user_info_object.Access_Level == 'USER'){
             window.location.assign("HomePage.html");
           }else if (user_info_object.Access_Level == 'ADMIN') {
