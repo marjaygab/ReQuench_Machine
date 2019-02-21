@@ -1,15 +1,19 @@
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import json
 import time
 import socketio
 import sys
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
-# GPIO.setwarnings(False)
-# GPIO.setmode(GPIO.BOARD)
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)
 inpt = 11
 inpt1 = 7
+pump_1 = 11
+solenoid_1 = 15
 # GPIO.setup(inpt1, GPIO.OUT)
+GPIO.setup(pump_1, GPIO.OUT)
+GPIO.setup(solenoid_1, GPIO.OUT)
 # GPIO.setup(inpt, GPIO.IN)
 mode_manual = False
 mode_auto = False
@@ -17,7 +21,8 @@ temp_hot = False
 temp_cold = False
 auto_amount  = 0
 terminate_flag = False
-
+GPIO.output(pump_1,1)
+GPIO.output(solenoid_1,1)
 
 @sio.on('connect')
 def on_connect():
@@ -135,12 +140,15 @@ def manualDispense(command):
         #         total_liters = round(tot_cnt * constant, 1)
         #         print(json.dumps({'LMin':lmin,'Total':total_liters}))
         #         sys.stdout.flush()
+        GPIO.output(pump_1,0)
+        GPIO.output(solenoid_1,0)
         command = checkCommand()
-        sio.emit('socket-event',{"destination":'JS',"content":command})
         while checkCommand() != 'Standby':
                 sio.emit('socket-event',{"destination":'JS',"content":command})
                 time.sleep(0.5)
         sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
+        GPIO.output(pump_1,0)
+        GPIO.output(solenoid_1,0)
         # GPIO.output(7, 0)
 
 def automaticDispense(command,amount_requested):
