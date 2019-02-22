@@ -217,7 +217,8 @@ while True:
         
         if terminate_flag:
                 break
-
+        print('Python Running')
+        sys.stdout.flush()
         time.sleep(1)
 
 sio.disconnect()
