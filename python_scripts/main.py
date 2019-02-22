@@ -144,7 +144,7 @@ def manualDispense(command):
                 pulses = 0
                 time_start= time.time()
                 while pulses <= 5:
-                        # gpio_cur = GPIO.input(flowmeter)
+                        gpio_cur = GPIO.input(flowmeter)
                         temp_time_end = time.time()
                         if gpio_cur != 0 and gpio_cur != gpio_last:
                                 pulses += 1
