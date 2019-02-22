@@ -10,8 +10,10 @@ GPIO.setmode(GPIO.BOARD)
 inpt = 11
 inpt1 = 7
 pump_1 = 11
-flowmeter = 40
 solenoid_1 = 15
+pump_2 = 13
+solenoid_2 = 19
+flowmeter = 40
 # GPIO.setup(inpt1, GPIO.OUT)
 GPIO.setup(pump_1, GPIO.OUT)
 GPIO.setup(solenoid_1, GPIO.OUT)
@@ -128,8 +130,12 @@ def manualDispense(command):
         constant = 1.79
         time_zero = time.time()
         gpio_cur = 0
-        GPIO.output(pump_1,0)
-        GPIO.output(solenoid_1,0)
+        if command == 'COLD':
+                GPIO.output(pump_1,0)
+                GPIO.output(solenoid_1,0)
+        else:
+                GPIO.output(pump_2,0)
+                GPIO.output(solenoid_2,0)
         while checkCommand() != 'Standby':
                 rate_cnt = 0
                 pulses = 0
@@ -137,14 +143,9 @@ def manualDispense(command):
                 while pulses <= 5:
                         # gpio_cur = GPIO.input(flowmeter)
                         temp_time_end = time.time()
-
                         if gpio_cur != 0 and gpio_cur != gpio_last:
                                 pulses += 1
-                        elif (temp_time_end - time_start) >= 5:
-                                stop_dispense()
-                                break
                         gpio_last = gpio_cur
-
                         if checkCommand() == 'Standby':
                                 stop_dispense()
                                 break
@@ -159,6 +160,8 @@ def manualDispense(command):
         
         GPIO.output(pump_1,1)
         GPIO.output(solenoid_1,1)
+        GPIO.output(pump_2,1)
+        GPIO.output(solenoid_2,1)
         # command = checkCommand()
         # while checkCommand() != 'Standby':
         #         sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})
