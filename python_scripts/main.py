@@ -28,7 +28,8 @@ auto_amount  = 0
 terminate_flag = False
 GPIO.output(pump_1,1)
 GPIO.output(solenoid_1,1)
-
+GPIO.output(pump_2,1)
+GPIO.output(solenoid_2,1)
 @sio.on('connect')
 def on_connect():
         print("I'm connected!")
