@@ -17,6 +17,8 @@ flowmeter = 40
 # GPIO.setup(inpt1, GPIO.OUT)
 GPIO.setup(pump_1, GPIO.OUT)
 GPIO.setup(solenoid_1, GPIO.OUT)
+GPIO.setup(pump_2, GPIO.OUT)
+GPIO.setup(solenoid_2, GPIO.OUT)
 GPIO.setup(flowmeter, GPIO.IN)
 mode_manual = False
 mode_auto = False
