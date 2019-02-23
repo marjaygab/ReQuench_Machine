@@ -26,9 +26,9 @@ rate_cnt = 0
 GPIO.output(pump_1, 0)
 GPIO.output(solenoid_1, 0)
 try:
+    time_start= time.time()
     while True:
         # pulses = 0
-        time_start= time.time()
         # while pulses <= 5:
         #     gpio_cur = GPIO.input(inpt)
         #     if gpio_cur != 0 and gpio_cur != gpio_last:
@@ -43,6 +43,7 @@ try:
             total_liters = round(ml_constant * counter, 1)
             print(json.dumps({'LMin':lmin,'Total':total_liters}))
             sys.stdout.flush()
+            time_start = time.time()
 
         # lmin = round((rate_cnt * constant)/(time_end-time_start),2)
 except KeyboardInterrupt:
