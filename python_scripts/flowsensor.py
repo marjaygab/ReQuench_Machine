@@ -3,8 +3,8 @@ import time, sys
 import json
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
-pump_1 = 11
-solenoid_1 = 15
+pump_1 = 13
+solenoid_1 = 19
 flowmeter = 40
 GPIO.setup(pump_1, GPIO.OUT)
 GPIO.setup(solenoid_1, GPIO.OUT)
@@ -22,7 +22,7 @@ constant = 1.79
 ml_constant = 16.6
 time_zero = time.time()
 rate_cnt = 0
-
+counter = 0
 GPIO.output(pump_1, 0)
 GPIO.output(solenoid_1, 0)
 try:
