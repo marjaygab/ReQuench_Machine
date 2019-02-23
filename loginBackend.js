@@ -1,17 +1,19 @@
 
-exports.httpRequest = function(method,url,parameters,fn) {
-    var xhr = new XMLHttpRequest();
-    var parameter_objects = {};
-    xhr.timeout = 60000;
-    xhr.open(method,url,true);
-    xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
-    var data = JSON.stringify(parameters);
-    xhr.send(data);
-    xhr.onreadystatechange = fn;
+exports.httpRequest = function (method, url, parameters, fn) {
+  var xhr = new XMLHttpRequest();
+  var parameter_objects = {};
+  xhr.timeout = 60000;
+  xhr.open(method, url, true);
+  xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+  var data = JSON.stringify(parameters);
+  xhr.send(data);
+  xhr.onreadystatechange = fn;
 }
 
 
-exports.http_post = function(url,parameters,fn_response,fn_error) {
+exports.http_post = function (url, parameters, fn_response, fn_error) {
+  console.log('Called');
+
   const https = require('https');
   const data = JSON.stringify(parameters);
   const options = {
@@ -43,42 +45,43 @@ exports.http_post = function(url,parameters,fn_response,fn_error) {
 
   req.write(data);
   req.end();
+  console.log('Written');
 }
 
-exports.tester = function(a) {
+exports.tester = function (a) {
   var xhr = new XMLHttpRequest();
   var sampleobject = {};
   sampleobject.Acc_ID = a;
   var data = JSON.stringify(sampleobject);
-  xhr.open('POST',"http://requench.000webhostapp.com/Tester.php",true);
-  xhr.setRequestHeader('Content-type','application/json; charset=utf-8');
+  xhr.open('POST', "http://requench.000webhostapp.com/Tester.php", true);
+  xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
   console.log(data);
   xhr.send(data);
-  xhr.onreadystatechange = function(e) {
+  xhr.onreadystatechange = function (e) {
     console.log(xhr.status);
-    if(xhr.readyState == 4 && xhr.status == 200){
+    if (xhr.readyState == 4 && xhr.status == 200) {
       var response = this.responseText;
-      response = response.replace('[','');
-      response = response.replace(']','');
+      response = response.replace('[', '');
+      response = response.replace(']', '');
       console.log(response);
       var obj = JSON.parse(response);
-      console.log(typeof(xhr.response));
-      console.log(typeof(obj));
+      console.log(typeof (xhr.response));
+      console.log(typeof (obj));
       console.log(obj.Acc_ID);
     }
   };
 }
 
 function tryParse(jsonString) {
-    try {
-      var o = JSON.parse(jsonString);
-      if (o && typeof o === "object") {
-        return o;
-      }
-    } catch (error) {
-      console.log(error)
-      console.log(jsonString);
-      
+  try {
+    var o = JSON.parse(jsonString);
+    if (o && typeof o === "object") {
+      return o;
     }
-    return false
+  } catch (error) {
+    console.log(error)
+    console.log(jsonString);
+
+  }
+  return false
 }
