@@ -3,11 +3,14 @@ import time, sys
 import json
 GPIO.setwarnings(False)
 GPIO.setmode(GPIO.BOARD)
-inpt = 11
-inpt1 = 7
-GPIO.setup(inpt1, GPIO.OUT)
-GPIO.setup(inpt, GPIO.IN)
-GPIO.output(inpt1, 1)
+pump_1 = 11
+solenoid_1 = 15
+flowmeter = 40
+GPIO.setup(pump_1, GPIO.OUT)
+GPIO.setup(solenoid_1, GPIO.OUT)
+GPIO.setup(flowmeter, GPIO.IN)
+GPIO.output(pump_1, 1)
+GPIO.output(solenoid_1, 1)
 rate_cnt = 0
 tot_cnt = 0
 time_zero = 0.0
@@ -20,7 +23,8 @@ ml_constant = 16.6
 time_zero = time.time()
 rate_cnt = 0
 
-
+GPIO.output(pump_1, 0)
+GPIO.output(solenoid_1, 0)
 try:
     while True:
         # pulses = 0
