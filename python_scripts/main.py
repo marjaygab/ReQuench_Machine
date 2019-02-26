@@ -147,16 +147,39 @@ def manualDispense(command):
     while checkCommand() != 'Standby':
         rate_cnt = 0
         pulses = 0
+        constant = 1.79
+        time_zero = time.time()
+        gpio_cur = 0
+        if command == 'COLD':
+                GPIO.output(pump_1,0)
+                GPIO.output(solenoid_1,0)
+        else:
+                GPIO.output(pump_2,0)
+                GPIO.output(solenoid_2,0)
         time_start = time.time()
-        while pulses <= 5:
-            # gpio_cur = GPIO.input(flowmeter)
-            temp_time_end = time.time()
-            if gpio_cur != 0 and gpio_cur != gpio_last:
-                pulses += 1
-            gpio_last = gpio_cur
-            if checkCommand() == 'Standby':
-                stop_dispense()
-                break
+        while checkCommand() != 'Standby':
+                time_end = time.time()
+                time_duration =time_end - time_start
+                time_duration = round(time_duration)
+                if time_duration == 0.05:
+                        total_liters = total_liters + 1
+                        time_start= time.time()
+                        sio.emit('socket-event',{"destination":"JS","content":{"Total":total_liters}})
+                if checkCommand() == 'Standby':
+                        total_liters = 0
+                        stop_dispense()
+                        break
+                total_liters = round(tot_cnt * constant, 1)
+        GPIO.output(pump_1,1)
+        GPIO.output(solenoid_1,1)
+        GPIO.output(pump_2,1)
+        GPIO.output(solenoid_2,1)
+        # command = checkCommand()
+        # while checkCommand() != 'Standby':
+        #         sio.emit('socket-event',{"destination":'JS',"content":{'LMin':lmin,'Total':total_liters}})
+        #         time.sleep(0.5)
+        # sio.emit('socket-event', {"destination":'JS',"content":'Stopped Dispense'})
+        # GPIO.output(7, 0)
 
         rate_cnt += 1
         tot_cnt += 1
