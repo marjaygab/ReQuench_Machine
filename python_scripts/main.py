@@ -149,8 +149,9 @@ def manualDispense(command):
                 time_end = time.time()
                 time_duration =time_end - time_start
                 time_duration = round(time_duration,2)
-                if time_duration == 0.05:
-                        total_liters = total_liters + 1
+                if time_duration == 0
+                if time_duration == 20:
+                        total_liters = total_liters + 20
                         time_start= time.time()
                         sio.emit('socket-event',{"destination":"JS","content":{"Total":total_liters}})
                 if checkCommand() == 'Standby':
