@@ -135,6 +135,7 @@ function main() {
 
     socket.on('socket-event', function (msg) {
         if (msg.destination === 'JS') {
+            console.log(msg);
             if (msg.content != 'Stopped Dispense') {
                 console.log(msg);
                 try {

@@ -26,6 +26,7 @@ io.on('connection', function(socket){
   }
   connection_counter++;
   socket.on('socket-event', function(msg){
+    console.log(msg);
     io.emit('socket-event',msg);
   });
 
