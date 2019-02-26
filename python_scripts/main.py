@@ -149,7 +149,6 @@ def manualDispense(command):
                 time_end = time.time()
                 time_duration =time_end - time_start
                 time_duration = round(time_duration,2)
-                if time_duration == 0
                 if time_duration == 1:
                         total_liters = total_liters + 20
                         time_start= time.time()
