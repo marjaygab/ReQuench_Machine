@@ -34,6 +34,8 @@ function main() {
     var purchase_history = store.get('Purchase_History');
     var transaction_history = store.get('Transaction_History');
     var logout_button = document.getElementById('logout_button');
+    var  cold_label = document.getElementById('cold_label');
+    var  hot_label = document.getElementById('hot_label');
     var temp_array_transaction = [];
     var temp_array_purchase = [];
     var full_size = 0;
@@ -49,6 +51,9 @@ function main() {
     // in seconds
     const idle_timeout = 3600;
     const idle_interval = 1000;
+    const temperature_interval = 5000;
+    const cold_probe_path = '/sys/bus/w1/devices/28-XXXXXXXXXXXX/w!_slave';
+    const hot_probe_path = '/sys/bus/w1/devices/28-XXXXXXXXXXXX/w!_slave';
     var idle_time = 0;
     var py_ready = false;
     var js_ready = false;
@@ -93,6 +98,25 @@ function main() {
 
 
 
+    var read_temp = function(){
+        fs.readFile(cold_probe_path,'utf8',function(err,data) {
+            var index = data.indexOf('t=');
+            var temp = data.substring(index+2,data.length);
+            var temperature = parseInt(temp)/1000
+            console.log(temperature);
+            cold_label.innerHTML = `${temperature}`;
+        });
+
+        fs.readFile(hot_probe_path,'utf8',function(err,data) {
+            var index = data.indexOf('t=');
+            var temp = data.substring(index+2,data.length);
+            var temperature = parseInt(temp)/1000
+            console.log(temperature);
+            hot_label.innerHTML = `${temperature}`;
+        });
+    }
+
+    var temperature_reading = setInterval(read_temp,temperature_interval);
 
     window.onmousemove = function (e) {
         idle_time = 0;
@@ -116,6 +140,7 @@ function main() {
                 commandPy(socket, { command: 'Terminate' });
                 console.log('Terminated, hopefully');
                 window.location.assign('login.html');
+                clearInterval(temperature_interval)
             }
         })
     }
@@ -153,6 +178,7 @@ function main() {
                         ml_label.innerHTML = `${current_size} mL`;
                     } else {
                         //let python know that there is nothing left
+                        commandPy(socket, {command: 'Stop_Dispense'});
                         console.log('Nothing left!');
                     }
                 } catch (error) {
