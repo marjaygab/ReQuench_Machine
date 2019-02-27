@@ -103,6 +103,7 @@ function main() {
             var index = data.indexOf('t=');
             var temp = data.substring(index+2,data.length);
             var temperature = parseInt(temp)/1000
+	    temperature = Math.round(temperature);
             console.log(temperature);
             cold_label.innerHTML = `${temperature}`;
         });
@@ -111,6 +112,7 @@ function main() {
             var index = data.indexOf('t=');
             var temp = data.substring(index+2,data.length);
             var temperature = parseInt(temp)/1000
+	    temperature = Math.round(temperature);
             console.log(temperature);
             hot_label.innerHTML = `${temperature}`;
         });
