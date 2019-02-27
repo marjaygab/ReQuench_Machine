@@ -52,8 +52,8 @@ function main() {
     const idle_timeout = 3600;
     const idle_interval = 1000;
     const temperature_interval = 5000;
-    const cold_probe_path = '/sys/bus/w1/devices/28-XXXXXXXXXXXX/w!_slave';
-    const hot_probe_path = '/sys/bus/w1/devices/28-XXXXXXXXXXXX/w!_slave';
+    const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
+    const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
     var idle_time = 0;
     var py_ready = false;
     var js_ready = false;
