@@ -13,23 +13,32 @@ pump_1 = 11
 solenoid_1 = 15
 pump_2 = 13
 solenoid_2 = 19
+compressor = 21 
+heater = 22 
 flowmeter = 40
 GPIO.setup(inpt1, GPIO.OUT)
 GPIO.setup(pump_1, GPIO.OUT)
 GPIO.setup(solenoid_1, GPIO.OUT)
 GPIO.setup(pump_2, GPIO.OUT)
 GPIO.setup(solenoid_2, GPIO.OUT)
+GPIO.setup(compressor, GPIO.OUT)
+GPIO.setup(heater, GPIO.OUT)
 GPIO.setup(flowmeter, GPIO.IN)
 mode_manual = False
 mode_auto = False
 temp_hot = False
 temp_cold = False
+cooling = True
+heating = True
+
 auto_amount = 0
 terminate_flag = False
 GPIO.output(pump_1,1)
 GPIO.output(solenoid_1,1)
 GPIO.output(pump_2,1)
 GPIO.output(solenoid_2,1)
+GPIO.output(compressor,0) 
+GPIO.output(heater,0)
 @sio.on('connect')
 def on_connect():
     print("I'm connected!")
@@ -64,6 +73,18 @@ def on_message(data):
         elif command == 'Stop_Dispense':
             temp_cold = False
             temp_hot = False
+        elif command == 'Compressor On':
+            cooling = True
+            GPIO.output(compressor,0)
+        elif command == 'Compressor Off':
+            cooling = False
+            GPIO.output(compressor,1)
+        elif command == 'Heater On':
+            heating = True
+            GPIO.output(heater,0)
+        elif command == 'Heater Off':
+            heating = False
+            GPIO.output(heater,1)
         elif command == 'Terminate':
             # GPIO.cleanup()
             terminate_flag = True
