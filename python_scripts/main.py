@@ -146,6 +146,18 @@ def stop_dispense():
 
 
 def manualDispense(command):
+        rate_cnt = 0
+        tot_cnt = 0
+        time_zero = 0.0
+        time_start = 0.0
+        time_end = 0.0
+        lmin = 0
+        total_liters = 0
+        gpio_last = 0
+        pulses = 0
+        constant = 1.79
+        time_zero = time.time()
+        gpio_cur = 0
         if command == 'COLD':
                 GPIO.output(pump_1,0)
                 GPIO.output(solenoid_1,0)
@@ -173,31 +185,44 @@ def manualDispense(command):
 
 
 def automaticDispense(command, amount_requested):
-    total_liters = 0
-    if command == 'COLD':
-                GPIO.output(pump_1,0)
-                GPIO.output(solenoid_1,0)
-        else:
-                GPIO.output(pump_2,0)
-                GPIO.output(solenoid_2,0)        
-                
-        time_start = time.time()
-        while amount_requested != total_liters:
-                time_end = time.time()
-                time_duration =time_end - time_start
-                time_duration = round(time_duration,2)
-                if time_duration == 1:
-                        total_liters = total_liters + 20
-                        time_start= time.time()
-                        sio.emit('socket-event',{"destination":"JS","content":{"Total":total_liters}})
-                if checkCommand() == 'Standby':
-                        total_liters = 0
-                        stop_dispense()
-                        break
-        GPIO.output(pump_1,1)
-        GPIO.output(solenoid_1,1)
-        GPIO.output(pump_2,1)
-        GPIO.output(solenoid_2,1)
+    counter = 0
+    while counter < amount_requested:
+        sio.emit('socket-event', {"destination": 'JS', "content": command})
+        counter = counter + 1
+        time.sleep(0.5)
+    sio.emit('socket-event', {"destination": 'JS',
+                              "content": 'Stopped Dispense'})
+    stop_dispense()
+    # rate_cnt = 0
+    # tot_cnt = 0
+    # time_zero = 0.0
+    # time_start = 0.0
+    # time_end = 0.0
+    # gpio_last = 0
+    # pulses = 0
+    # constant = 1.79
+    # total_liters = 0
+    # time_zero = time.time()
+    # GPIO.output(7, 1)
+    # while amount_requested <= total_liters:
+    #         rate_cnt = 0
+    #         pulses = 0
+    #         time_start= time.time()
+    #         while pulses <= 5:
+    #                 gpio_cur = GPIO.input(11)
+    #                 if gpio_cur != 0 and gpio_cur != gpio_last:
+    #                         pulses += 1
+    #                 gpio_last = gpio_cur
+    #         rate_cnt += 1
+    #         tot_cnt += 1
+    #         time_end = time.time()
+    #         lmin = round((rate_cnt * constant)/(time_end-time_start),2)
+    #         total_liters = round(tot_cnt * constant, 1)
+    #         print(json.dumps({'LMin':lmin,'Total':total_liters}))
+    #         sys.stdout.flush()
+    #         time.sleep(0.5)
+    # GPIO.output(7, 0)
+    # dispenseIsDoneAutomatic(command)
 
 
 print('Ready')
