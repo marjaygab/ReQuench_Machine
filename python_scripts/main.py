@@ -86,7 +86,7 @@ def on_message(data):
             heating = False
             GPIO.output(heater,1)
         elif command == 'Terminate':
-            # GPIO.cleanup()
+            GPIO.cleanup()
             terminate_flag = True
 
 
