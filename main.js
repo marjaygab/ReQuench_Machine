@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 const { app, BrowserWindow } = require('electron')
 const fs = require('fs');
+let file = require('./maintenance_data');
 const Store = require('electron-store');
 const store = new Store();
 const python_id_index = 1;
@@ -96,7 +97,12 @@ function createWindow() {
     // Create the browser window.
     mainWindow = new BrowserWindow({ width: 500, height: 856 })
     // and load the index.html of the app.
-    mainWindow.loadFile('index.html');
+    if (!file.from_maintenance) {
+        mainWindow.loadFile('index.html');
+    } else {
+        mainWindow.loadFile('admin.html');
+    }
+
     store.set('path', app.getPath('userData'));
     // Open the DevTools.
     // mainWindow.webContents.openDevTools()

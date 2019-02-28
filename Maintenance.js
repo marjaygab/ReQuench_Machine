@@ -1,5 +1,16 @@
 let $ = require('jquery');
 let fs = require('fs');
+let { PythonShell } = require('python-shell');
+const maintenance_data_file = require('./maintenance_data');
+const py_filename = 'maintenance.py';
+const io = require('socket.io-client');
+var socket = io('http://localhost:3000');
+const path = require('path');
+let Swal = require('sweetalert2');
+var options = {
+    scriptPath: path.join(__dirname, '/python_scripts')
+}
+const draining_time = 5;
 $(document).ready(function() {
     var main_container_div = document.getElementById('main_container_div');
     var left_button = document.getElementById('left_button');
@@ -11,6 +22,7 @@ $(document).ready(function() {
     var timer_controls = document.getElementById('timer_controls');
     var toggle_timer = document.getElementById('toggle_timer');
     var reset_timer = document.getElementById('reset_timer');
+    var steps_control = document.getElementsByClassName('steps_control');
     var steps_size;
     var steps_list;
     var timer;
@@ -18,17 +30,181 @@ $(document).ready(function() {
     var seconds;
     var current_step_selected;
 
+
+    Swal.fire({
+        title: 'Please wait..',
+        allowOutsideClick: false,
+        onBeforeOpen: () => {
+            Swal.showLoading();
+            console.log('Before Opened');
+        },
+        onOpen: () => {
+            console.log('Opened');
+            py_object = new PythonShell(py_filename, options);
+            py_object.on('message', function (message) {
+                console.log(message);
+                if (message == 'Ready') {
+                    py_ready = true;
+                    Swal.close();
+                }
+            });
+
+            py_object.end(function (err, code, signal) {
+                if (err) throw err;
+                Swal.fire({
+                    title: 'An error occured. Refreshing page..',
+                    type: 'error',
+                    confirmButtonColor: '#3085d6',
+                    confirmButtonText: 'Ok',
+                    onClose: function () {
+                        location.reload();
+                    }
+                }).then((result) => {
+                    location.reload();
+                })
+            });
+        },
+        onClose: () => {
+        }
+    }).then((result) => {
+        if (
+            result.dismiss === Swal.DismissReason.timer
+        ) {
+            console.log('I was closed by the timer')
+        }
+    })
+
+
     readStepsFile(function(list,size) {
         steps_list = list;
         steps_size = size;
         seconds = 0;
-        current_step_selected = 0;
+        current_step_selected = maintenance_data_file.current_step;
+        current_step_select = 0;
         console.log(steps_list);
-        
         minute = steps_list[current_step_selected].initial_time;
         console.log(`${minute}:0${seconds}`);
-        
+        if (maintenance_data_file.from_maintenance) {
+            current_step_selected = maintenance_data_file.current_step;
+            left_button.disabled = true;
+            left_button.classList.remove("btn-success");
+            left_button.classList.add("btn-secondary");
+            for (let index = 0; index <= current_step_selected; index++) {
+                left_button.innerHTML = 'Previous';
+                right_button.style.display = 'unset';
+                progress_circles[index].classList.add('selected');
+                showStep(steps_list[current_step_selected],function(initial_time) {
+                    minute = initial_time;
+                    seconds = 0;
+                }); 
+            }
+        }else{
+            current_step_select = 0;
+        }
     });
+
+
+    
+    for (let index = 0; index < steps_control.length; index++) {
+        const element = steps_control[index];
+        element.addEventListener("click",function() {
+            if (this.id == 'left_button') {
+                if (this.innerHTML == 'Start') {
+                    this.innerHTML = 'Previous';
+                    right_button.style.display = 'unset';
+                    progress_circles[current_step_selected].classList.add('selected');
+                    console.log(steps_list[current_step_selected]);
+                    showStep(steps_list[current_step_selected],function(initial_time) {
+                        minute = initial_time;
+                        seconds = 0;
+                    });
+                } else {
+                    if (current_step_selected > 0) {
+                        this.disabled = false;
+                        this.classList.remove("btn-secondary");
+                        this.classList.add("btn-success");
+                        progress_circles[current_step_selected].classList.remove('selected');
+                        current_step_selected--;
+                        showStep(steps_list[current_step_selected],function(initial_time) {
+                            minute = initial_time;
+                            seconds = 0;
+                        });
+                    }
+                }
+            } else {
+                if (right_button.innerHTML == 'Next Step') {
+                    if (current_step_selected < steps_size-1) {
+                        ++current_step_selected;
+                        progress_circles[current_step_selected].classList.add('selected');
+                        showStep(steps_list[current_step_selected],function(initial_time) {
+                            minute = initial_time;
+                            seconds = 0;
+                        });
+                    }
+                    if(current_step_selected == 4){
+                        //command pi to shutdown
+                        maintenance_data_file.from_maintenance = true;
+                        maintenance_data_file.current_step = 5;
+
+                        fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
+                            if (err) return console.log(err);
+                        });
+                    }
+                    if (current_step_selected == steps_size-1) {
+                        right_button.innerHTML = 'Finish';
+                    }   
+                }else{
+                    commandPy(socket, { command: 'Terminate' });
+                    maintenance_data_file.from_maintenance = false;
+                    maintenance_data_file.current_step = 0;
+                    window.location.assign('login.html');
+                    fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
+                        if (err) return console.log(err);
+                    });
+                }
+            }
+
+            if (current_step_selected == 5 && maintenance_data_file.from_maintenance) {
+                left_button.disabled = true;
+                left_button.classList.remove("btn-success");
+                left_button.classList.add("btn-secondary");
+                console.log(this.classList);
+            }else{
+                left_button.disabled = false;
+                left_button.classList.remove("btn-secondary");
+                left_button.classList.add("btn-success");
+            }
+            console.log(current_step_selected);
+            
+            if (current_step_selected == 1 || current_step_selected == 5 || current_step_selected == 7) {
+                //run python here
+                commandPy(socket, { command: 'Start_Drain' });
+                var counter = 0;
+                left_button.disabled = true;
+                right_button.disabled = true;
+                var drain_interval = setInterval(() => {
+                    counter++;
+                    console.log('Draining');
+                    if (counter == draining_time) {
+                        //command python here
+                        if (maintenance_data_file.from_maintenance) {
+                            left_button.disabled = true;
+                        }else{
+                            left_button.disabled = false;
+                        }
+                        right_button.disabled = false;
+                        console.log('Draining Done');
+                        commandPy(socket, { command: 'Stop_Drain' });
+                        clearInterval(drain_interval);
+                    }
+                }, 1000);
+            }
+
+            
+        });
+    }
+
+
 
     toggle_timer.onclick = function() {
         if (toggle_timer.innerHTML == 'Start Timer') {
@@ -70,47 +246,6 @@ $(document).ready(function() {
         });
     }
 
-    left_button.onclick = function() {
-        if (this.innerHTML == 'Start') {
-            this.innerHTML = 'Previous';
-            right_button.style.display = 'unset';
-            progress_circles[current_step_selected].classList.add('selected');
-            console.log(steps_list[current_step_selected]);
-            showStep(steps_list[current_step_selected],function(initial_time) {
-                minute = initial_time;
-                seconds = 0;
-            });
-        } else {
-            if (current_step_selected > 0) {
-                progress_circles[current_step_selected].classList.remove('selected');
-                current_step_selected--;
-                showStep(steps_list[current_step_selected],function(initial_time) {
-                    minute = initial_time;
-                    seconds = 0;
-                });
-            }
-        }
-    }
-
-    right_button.onclick = function() {
-        if (right_button.innerHTML == 'Next Step') {
-            if (current_step_selected < steps_size-1) {
-                ++current_step_selected;
-                progress_circles[current_step_selected].classList.add('selected');
-                showStep(steps_list[current_step_selected],function(initial_time) {
-                    minute = initial_time;
-                    seconds = 0;
-                });
-            }
-            if (current_step_selected == steps_size-1) {
-                right_button.innerHTML = 'Finish';
-            }   
-        }else{
-            window.location.assign('login.html');
-        }
-    }
-
-
 function showStep(step,callback) {
     step_header.innerHTML = step.step_header;
     step_content.innerHTML = step.step_content;
@@ -139,6 +274,14 @@ function readStepsFile(callback) {
         });
         callback(list,list.length);
     });
+}
+
+function commandPy(socket, content) {
+    var msg = {
+        destination: 'Python',
+        content: content
+    };
+    socket.emit('socket-event', msg);
 }
 
 

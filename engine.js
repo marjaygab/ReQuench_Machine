@@ -98,36 +98,36 @@ function main() {
 
 
     // Use this function if Python will run AFTER login
-    // var read_temp = function(){
-    //     fs.readFile(cold_probe_path,'utf8',function(err,data) {
-    //         var index = data.indexOf('t=');
-    //         var temp = data.substring(index+2,data.length);
-    //         var temperature = parseInt(temp)/1000
-	//     temperature = Math.round(temperature);
-    //         console.log(temperature);
-    //         cold_label.innerHTML = `${temperature}`;
-    //         if (temperature <= 5) {
-    //             commandPy(socket, { command: 'Compressor Off' });
-    //         } else if(temperature >=7){
-    //             commandPy(socket, { command: 'Compressor On' });
-    //         }
-    //     });
+    var read_temp = function(){
+        fs.readFile(cold_probe_path,'utf8',function(err,data) {
+            var index = data.indexOf('t=');
+            var temp = data.substring(index+2,data.length);
+            var temperature = parseInt(temp)/1000
+	    temperature = Math.round(temperature);
+            console.log(temperature);
+            cold_label.innerHTML = `${temperature}`;
+            if (temperature <= 5) {
+                commandPy(socket, { command: 'Compressor Off' });
+            } else if(temperature >=7){
+                commandPy(socket, { command: 'Compressor On' });
+            }
+        });
 
-    //     fs.readFile(hot_probe_path,'utf8',function(err,data) {
-    //         var index = data.indexOf('t=');
-    //         var temp = data.substring(index+2,data.length);
-    //         var temperature = parseInt(temp)/1000
-	//     temperature = Math.round(temperature);
-    //         console.log(temperature);
-    //         hot_label.innerHTML = `${temperature}`;
-    //         if (temperature <= 5) {
-    //             commandPy(socket, { command: 'Heater Off' });
-    //         } else if(temperature >=7){
-    //             commandPy(socket, { command: 'Heater On' });
-    //         }
-    //     });
-    // }
-    // var temperature_reading = setInterval(read_temp,temperature_interval);
+        fs.readFile(hot_probe_path,'utf8',function(err,data) {
+            var index = data.indexOf('t=');
+            var temp = data.substring(index+2,data.length);
+            var temperature = parseInt(temp)/1000
+	    temperature = Math.round(temperature);
+            console.log(temperature);
+            hot_label.innerHTML = `${temperature}`;
+            if (temperature <= 5) {
+                commandPy(socket, { command: 'Heater Off' });
+            } else if(temperature >=7){
+                commandPy(socket, { command: 'Heater On' });
+            }
+        });
+    }
+    var temperature_reading = setInterval(read_temp,temperature_interval);
 
     store.onDidChange('Hot_Temp',function(newValue, oldValue) {
         hot_label.innerHTML = newValue;
@@ -209,8 +209,6 @@ function main() {
             }
         }
     });
-
-
 
 
     Swal.fire({

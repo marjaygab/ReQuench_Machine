@@ -1,5 +1,5 @@
 let $ = require("jquery");
-
+const file = require('./maintenance_data');
 $(document).ready(function() {
     var power_button = document.getElementById('power_button');
     var reboot_button = document.getElementById('reboot_button');
@@ -8,6 +8,9 @@ $(document).ready(function() {
 
     //get initial file settings in here
 
+    if (file.from_maintenance) {
+        window.location.assign('Maintenance.html');
+    }
 
     power_button.onclick = function() {
         
