@@ -10,6 +10,7 @@ var io = require('socket.io')(http);
 let { PythonShell } = require('python-shell');
 var socket_ids = [];
 var connection_counter = 0;
+const temperature_interval = 2000;
 const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
 const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
 
@@ -53,7 +54,8 @@ io.on('connection', function (socket) {
 
 });
 
-var read_temp = function () {
+
+var temperature_checker = setInterval(() => {
     fs.readFile(cold_probe_path, 'utf8', function (err, data) {
         var index = data.indexOf('t=');
         var temp = data.substring(index + 2, data.length);
@@ -83,10 +85,7 @@ var read_temp = function () {
             commandPy(io, { command: 'Heater On' });
         }
     });
-}
-
-
-
+}, temperature_interval);
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -139,5 +138,5 @@ function commandPy(io, content) {
         destination: 'Python',
         content: content
     };
-    socket.emit('socket-event', msg);
+    io.emit('socket-event', msg);
 }
