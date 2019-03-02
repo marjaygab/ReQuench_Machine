@@ -25,8 +25,6 @@ $(document).ready(main);
 function main() {
     //update user data every reloading of the page
     let Swal = require('sweetalert2');
-    var interval;
-    var toggle_state = true;
     var branding_image = document.getElementById('branding_image');
     var user_information = store.get('User_Information');
     var ml_label = document.getElementById('ml_label');
@@ -34,31 +32,34 @@ function main() {
     var purchase_history = store.get('Purchase_History');
     var transaction_history = store.get('Transaction_History');
     var logout_button = document.getElementById('logout_button');
-    var  cold_label = document.getElementById('cold_label');
-    var  hot_label = document.getElementById('hot_label');
-    var temp_array_transaction = [];
-    var temp_array_purchase = [];
-    var full_size = 0;
-    var current_size = 0;
-    var size_percentage = 0;
-    var computed_height = 0;
-    var socket = io('http://localhost:3000');
-    var options = {
-        scriptPath: path.join(__dirname, '/python_scripts')
-    }
-    var filename = 'main.py';
-    var previous_size = 0;
+    var cold_label = document.getElementById('cold_label');
+    var hot_label = document.getElementById('hot_label');
+    const socket = io('http://localhost:3000');
     // in seconds
     const idle_timeout = 3600;
     const idle_interval = 1000;
     const temperature_interval = 2000;
     const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
     const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
+    var toggle_state = true;
+    var temp_array_transaction = [];
+    var temp_array_purchase = [];
+    var full_size = 0;
+    var current_size = 0;
+    var size_percentage = 0;
+    var computed_height = 0;
+    var filename = 'main.py';
+    var previous_size = 0;
     var idle_time = 0;
     var py_ready = false;
     var js_ready = false;
     var py_object;
+    var options = {
+        scriptPath: path.join(__dirname, '/python_scripts')
+    }
 
+
+    //This function couns every second if a user is idle.
     var idle_prompt = setInterval(function () {
         idle_time = idle_time + 1;
         if (idle_time == idle_timeout) {
@@ -98,52 +99,45 @@ function main() {
 
 
     // Use this function if Python will run AFTER login
-    var read_temp = function(){
-        fs.readFile(cold_probe_path,'utf8',function(err,data) {
+    //This function read files every temperature_interval millis
+    var read_temp = function () {
+        fs.readFile(cold_probe_path, 'utf8', function (err, data) {
             var index = data.indexOf('t=');
-            var temp = data.substring(index+2,data.length);
-            var temperature = parseInt(temp)/1000
-	    temperature = Math.round(temperature);
+            var temp = data.substring(index + 2, data.length);
+            var temperature = parseInt(temp) / 1000
+            temperature = Math.round(temperature);
             console.log(temperature);
             cold_label.innerHTML = `${temperature}`;
             if (temperature <= 5) {
                 commandPy(socket, { command: 'Compressor Off' });
-            } else if(temperature >=7){
+            } else if (temperature >= 7) {
                 commandPy(socket, { command: 'Compressor On' });
             }
         });
 
-        fs.readFile(hot_probe_path,'utf8',function(err,data) {
+        fs.readFile(hot_probe_path, 'utf8', function (err, data) {
             var index = data.indexOf('t=');
-            var temp = data.substring(index+2,data.length);
-            var temperature = parseInt(temp)/1000
-	    temperature = Math.round(temperature);
+            var temp = data.substring(index + 2, data.length);
+            var temperature = parseInt(temp) / 1000
+            temperature = Math.round(temperature);
             console.log(temperature);
             hot_label.innerHTML = `${temperature}`;
             if (temperature <= 5) {
                 commandPy(socket, { command: 'Heater Off' });
-            } else if(temperature >=7){
+            } else if (temperature >= 7) {
                 commandPy(socket, { command: 'Heater On' });
             }
         });
     }
-    var temperature_reading = setInterval(read_temp,temperature_interval);
+    var temperature_reading = setInterval(read_temp, temperature_interval);
 
-    store.onDidChange('Hot_Temp',function(newValue, oldValue) {
-        hot_label.innerHTML = newValue;
-    });
-
-    store.onDidChange('Cold_Temp',function(newValue , oldValue) {
-        cold_label.innerHTML = newValue;
-    });
-
-
+    //Listens for Mouse Movement. If mouse moves, idle time = 0
     window.onmousemove = function (e) {
         idle_time = 0;
     }
 
 
-
+    //Listens for Logout button Click
     logout_button.onclick = function () {
         Swal.fire({
             title: 'Are you done?',
@@ -165,19 +159,8 @@ function main() {
         })
     }
 
-
-
-    ml_label.onclick = function () {
-        var msg = {
-            destination: 'Python',
-            content: {
-                command: 'Toggle_Manual'
-            }
-        };
-        commandPy(socket, { command: 'Toggle_Manual' });
-        console.log('Clicked');
-    }
-
+    //This block of code listens for socket-event then computes for the remaining balance
+    //This block of code also computes for the current height of the water level indicator.
     socket.on('socket-event', function (msg) {
         if (msg.destination === 'JS') {
             console.log(msg);
@@ -187,30 +170,27 @@ function main() {
                     if (current_size >= 0) {
                         var total = msg.content.Total;
                         current_size = previous_size - total;
-                        current_size = Math.round(current_size)
-                        console.log(`Current Size: ${current_size}`);
-                        console.log(`Previous Size: ${previous_size}`);
-                        console.log(`Current Balnce: ${current_size}`);
-
+                        current_size = Math.round(current_size);
                         size_percentage = (current_size / full_size);
                         computed_height = size_percentage * 250;
                         $("#water-level").animate({ height: computed_height + 'px' });
                         ml_label.innerHTML = `${current_size} mL`;
                     } else {
                         //let python know that there is nothing left
-                        commandPy(socket, {command: 'Stop_Dispense'});
+                        commandPy(socket, { command: 'Stop_Dispense' });
                         console.log('Nothing left!');
                     }
                 } catch (error) {
                     throw error;
                 }
-            }else {
+            } else {
                 enableAll();
             }
         }
     });
 
-
+    // This block of code is where the loading occurs.
+    //This loads the user profile as well as computes ng height for UI interaction
     Swal.fire({
         title: 'Please wait..',
         allowOutsideClick: false,
@@ -224,8 +204,6 @@ function main() {
             params.Acc_ID = store.get('User_Information').Acc_ID;
             httpcustomrequest.http_post('Machine_Init.php', params, function (json_object) {
                 if (json_object != false) {
-                    console.log('Testing');
-
                     store.set('Purchase_History', json_object.Purchase_History);
                     store.set('Transaction_History', json_object.Transaction_History);
                     var purchase_history = store.get('Purchase_History');
@@ -238,6 +216,7 @@ function main() {
                         temp_array_purchase.push(purchase_history[i]);
                     }
 
+                    //function used to sort DATE TIME
                     var compare_function = function (a, b) {
                         if (Date.parse(a.Date) > Date.parse(b.Date)) {
                             if (a.Time > b.Time) {
@@ -253,9 +232,8 @@ function main() {
                             }
                         }
                     }
+
                     //Logic for finding the Full and Current Size for representation
-                    console.log(temp_array_purchase);
-                    console.log(temp_array_transaction);
                     if (Date.parse(transaction_history.Date) > Date.parse(purchase_history.Date)) {
                         full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
                         current_size = parseInt(transaction_history.Remaining_Balance);
@@ -279,19 +257,22 @@ function main() {
 
                     ml_label.innerHTML = `${user_information.Balance} mL`;
                     js_ready = true;
-                    console.log(`Current Balance: ${current_size}`);
+                    
+                    //This line of code starts the python file 'main.py'
                     py_object = new PythonShell(filename, options);
+
+                    //listens for print() from main.py
                     py_object.on('message', function (message) {
-                        console.log(message);
                         if (message == 'Ready') {
                             py_ready = true;
                             Swal.close();
                         }
                     });
 
+                    //end the current print stdout
                     py_object.end(function (err, code, signal) {
-                        if (err) throw err;
-                        Swal.fire({
+                        if (err){
+                            Swal.fire({
                             title: 'An error occured. Refreshing page..',
                             type: 'error',
                             confirmButtonColor: '#3085d6',
@@ -299,10 +280,13 @@ function main() {
                             onClose: function () {
                                 location.reload();
                             }
-                        }).then((result) => {
-                            location.reload();
-                        })
+                            }).then((result) => {
+                                location.reload();
+                            });
+                        }
                     });
+
+
                 } else {
                     Swal.fire({
                         title: 'An error occured. Refreshing page..',
@@ -323,17 +307,12 @@ function main() {
         onClose: () => {
         }
     }).then((result) => {
-        if (
-            // Read more about handling dismissals
-            result.dismiss === Swal.DismissReason.timer
-        ) {
-            console.log('I was closed by the timer')
-        }
-    })
+    });
 
 
-
+    //Initializes toggle button to Automatic. Chnge bootstrapToggle to Off for Manual.
     $('#toggle_switch').bootstrapToggle('on');
+    //Button clicks listener for both Automatic and Manual Button
     $(".main-controls").click(function () {
         var current = $(this).text();
         var current_id = $(this).attr("id");
@@ -450,7 +429,7 @@ function main() {
         }
     });
 
-
+    //Toggle Event Listener for toggling between Auto and Manual
     $('#toggle_switch').change(function () {
         if ($(this).prop('checked') == false) {
             toggle_state = 'Manual';
@@ -462,17 +441,28 @@ function main() {
         }
     });
 
+    //Supposed to terminate the Python object every window reload
     window.onbeforeunload = function (e) {
         PythonShell.terminate();
     };
 
-
-
-
+    //This is just a checker function
+    // ml_label.onclick = function () {
+    //     var msg = {
+    //         destination: 'Python',
+    //         content: {
+    //             command: 'Toggle_Manual'
+    //         }
+    //     };
+    //     commandPy(socket, { command: 'Toggle_Manual' });
+    //     console.log('Clicked');
+    // }
 }
 
 
 
+
+//Function to command Python
 function commandPy(socket, content) {
     var msg = {
         destination: 'Python',
@@ -481,28 +471,7 @@ function commandPy(socket, content) {
     socket.emit('socket-event', msg);
 }
 
-function jsonWrite(directory, file) {
-    // Sample Directory :'/home/pi/Documents/ReQuench_Machine/operations.json'
-    fs.writeFile(directory, JSON.stringify(file, null, 6), function (err) {
-        if (err) return console.log(err);
-    });
-}
-
-function mouseaction() {
-    var height = $("#water-level").height();
-    height -= 10;
-    $("#water-level").animate({ height: height + 'px' });
-    startdispense(display_output);
-}
-
-function display_output() {
-    console.log('Value: ' + current_ml_dispensed);
-}
-
-function disableAllExcept(element_id) {
-
-}
-
+//Function that will enable all controls
 function enableAll() {
     $("#hot-button").text("HOT");
     $("#cold-button").text("COLD");
@@ -510,3 +479,11 @@ function enableAll() {
     $("#cold-button").prop('disabled', false);
     $('#toggle_switch').prop('disable', false);
 }
+
+//Function to write into json file
+// function jsonWrite(directory, file) {
+//     // Sample Directory :'/home/pi/Documents/ReQuench_Machine/operations.json'
+//     fs.writeFile(directory, JSON.stringify(file, null, 6), function (err) {
+//         if (err) return console.log(err);
+//     });
+// }
