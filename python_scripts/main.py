@@ -230,15 +230,17 @@ def automaticDispense(command, amount_requested):
 
 def readTemp():
     global sio     
+    global cold_probe_path
+    global hot_probe_path
     while True:
-        f = open("test.txt",'r')
+        f = open(cold_probe_path,'r')
         cold_temp = ""
         lines = f.readlines()
         f.close()
         equal_pos = lines[1].find('t=')
         if equal_pos != 1:
             cold_temp = float(lines[1][equal_pos+2:])/1000.0
-        f = open("test1.txt",'r')
+        f = open(hot_probe_path,'r')
         hot_temp = ""
         lines = f.readlines()
         f.close()
@@ -246,19 +248,19 @@ def readTemp():
         if equal_pos != 1:
             hot_temp = float(lines[1][equal_pos+2:])/1000.0
         
-        if cold_temp <=6:
-            cooling = False
-            GPIO.output(compressor,0)
-        elif cold_temp >= 11:
+        if cold_temp <= 6:
             cooling = False
             GPIO.output(compressor,1)
+        elif cold_temp >= 11:
+            cooling = False
+            GPIO.output(compressor,0)
             pass
         if hot_temp >= 50:
             heating = False
-            GPIO.output(heater,0)
+            GPIO.output(heater,1)
         elif cold_temp <= 25:
             cooling = True
-            GPIO.output(heater,1)
+            GPIO.output(heater,0)
         sio.emit('socket-event',{"destination":"JS","content":{"type":"TEMP_READING","body":{"Cold":cold_temp,"Hot":hot_temp}}})
         time.sleep(1)
 
