@@ -252,15 +252,15 @@ def readTemp():
             cooling = False
             GPIO.output(compressor,1)
         elif cold_temp >= 11:
-            cooling = False
+            cooling = True
             GPIO.output(compressor,0)
             pass
-        if hot_temp >= 50:
-            heating = False
-            GPIO.output(heater,1)
-        elif cold_temp <= 25:
-            cooling = True
+        if hot_temp <= 55:
+            heating = True
             GPIO.output(heater,0)
+        elif hot_temp >= 70:
+            cooling = False
+            GPIO.output(heater,1)
         sio.emit('socket-event',{"destination":"JS","content":{"type":"TEMP_READING","body":{"Cold":cold_temp,"Hot":hot_temp}}})
         time.sleep(1)
 
