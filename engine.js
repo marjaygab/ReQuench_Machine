@@ -133,31 +133,48 @@ function main() {
     //This block of code listens for socket-event then computes for the remaining balance
     //This block of code also computes for the current height of the water level indicator.
     socket.on('socket-event', function (msg) {
-        console.log(msg);
         if (msg.destination === 'JS') {
             console.log(msg);
-            if (msg.content != 'Stopped Dispense') {
-                console.log(msg);
-                try {
-                    if (current_size >= 0) {
-                        var total = msg.content.Total;
-                        current_size = previous_size - total;
-                        current_size = Math.round(current_size);
-                        size_percentage = (current_size / full_size);
-                        computed_height = size_percentage * 250;
-                        $("#water-level").animate({ height: computed_height + 'px' });
-                        ml_label.innerHTML = `${current_size} mL`;
-                    } else {
-                        //let python know that there is nothing left
-                        commandPy(socket, { command: 'Stop_Dispense' });
-                        console.log('Nothing left!');
+            switch (msg.content.type) {
+                case "TEMP_READING":
+                    cold_int = Math.round(parseFloat(msg.content.body.Cold));
+                    hot_int = Math.round(parseFloat(msg.content.body.Hot));
+                    cold_label.innerHTML = cold_int;
+                    hot_label.innerHTML = hot_int;
+                break;
+                case "DISPENSE_READING":
+                    try {
+                        if (current_size >= 0) {
+                            var total = msg.content.body.Total;
+                            current_size = previous_size - total;
+                            current_size = Math.round(current_size);
+                            size_percentage = (current_size / full_size);
+                            computed_height = size_percentage * 250;
+                            $("#water-level").animate({ height: computed_height + 'px' });
+                            ml_label.innerHTML = `${current_size} mL`;
+                        } else {
+                            //let python know that there is nothing left
+                            commandPy(socket, { command: 'Stop_Dispense' });
+                            console.log('Nothing left!');
+                        }
+                    } catch (error) {
+                        throw error;
                     }
-                } catch (error) {
-                    throw error;
-                }
-            } else {
-                enableAll();
+                break;
+                case "DISPENSE_CONTROL":
+                    if (msg.content.body === 'Stopped_Dispense') {
+                        enableAll();
+                    }
+                break;
+                default:
+                    break;
             }
+            // if (msg.content != 'Stopped Dispense') {
+            //     console.log(msg);
+            
+            // } else {
+                
+            // }
         }
     });
 
