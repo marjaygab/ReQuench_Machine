@@ -48,12 +48,12 @@ function main() {
     var current_size = 0;
     var size_percentage = 0;
     var computed_height = 0;
-    var filename = 'main.py';
     var previous_size = 0;
     var idle_time = 0;
     var py_ready = false;
     var js_ready = false;
     var py_object;
+    var filename = 'main.py';
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
@@ -100,36 +100,7 @@ function main() {
 
     // Use this function if Python will run AFTER login
     //This function read files every temperature_interval millis
-    var read_temp = function () {
-        fs.readFile(cold_probe_path, 'utf8', function (err, data) {
-            var index = data.indexOf('t=');
-            var temp = data.substring(index + 2, data.length);
-            var temperature = parseInt(temp) / 1000
-            temperature = Math.round(temperature);
-            console.log(temperature);
-            cold_label.innerHTML = `${temperature}`;
-            if (temperature <= 5) {
-                commandPy(socket, { command: 'Compressor Off' });
-            } else if (temperature >= 7) {
-                commandPy(socket, { command: 'Compressor On' });
-            }
-        });
 
-        fs.readFile(hot_probe_path, 'utf8', function (err, data) {
-            var index = data.indexOf('t=');
-            var temp = data.substring(index + 2, data.length);
-            var temperature = parseInt(temp) / 1000
-            temperature = Math.round(temperature);
-            console.log(temperature);
-            hot_label.innerHTML = `${temperature}`;
-            if (temperature <= 5) {
-                commandPy(socket, { command: 'Heater Off' });
-            } else if (temperature >= 7) {
-                commandPy(socket, { command: 'Heater On' });
-            }
-        });
-    }
-    var temperature_reading = setInterval(read_temp, temperature_interval);
 
     //Listens for Mouse Movement. If mouse moves, idle time = 0
     window.onmousemove = function (e) {
@@ -162,6 +133,7 @@ function main() {
     //This block of code listens for socket-event then computes for the remaining balance
     //This block of code also computes for the current height of the water level indicator.
     socket.on('socket-event', function (msg) {
+        console.log(msg);
         if (msg.destination === 'JS') {
             console.log(msg);
             if (msg.content != 'Stopped Dispense') {
@@ -259,33 +231,33 @@ function main() {
                     js_ready = true;
                     
                     //This line of code starts the python file 'main.py'
-                    py_object = new PythonShell(filename, options);
+                    // py_object = new PythonShell(filename, options);
 
-                    //listens for print() from main.py
-                    py_object.on('message', function (message) {
-                        if (message == 'Ready') {
-                            py_ready = true;
-                            Swal.close();
-                        }
-                    });
+                    // //listens for print() from main.py
+                    // py_object.on('message', function (message) {
+                    //     if (message == 'Ready') {
+                    //         py_ready = true;
+                    //         Swal.close();
+                    //     }
+                    // });
 
-                    //end the current print stdout
-                    py_object.end(function (err, code, signal) {
-                        if (err){
-                            Swal.fire({
-                            title: 'An error occured. Refreshing page..',
-                            type: 'error',
-                            confirmButtonColor: '#3085d6',
-                            confirmButtonText: 'Ok',
-                            onClose: function () {
-                                location.reload();
-                            }
-                            }).then((result) => {
-                                location.reload();
-                            });
-                        }
-                    });
-
+                    // //end the current print stdout
+                    // py_object.end(function (err, code, signal) {
+                    //     if (err){
+                    //         Swal.fire({
+                    //         title: 'An error occured. Refreshing page..',
+                    //         type: 'error',
+                    //         confirmButtonColor: '#3085d6',
+                    //         confirmButtonText: 'Ok',
+                    //         onClose: function () {
+                    //             location.reload();
+                    //         }
+                    //         }).then((result) => {
+                    //             location.reload();
+                    //         });
+                    //     }
+                    // });
+                    Swal.close();
 
                 } else {
                     Swal.fire({

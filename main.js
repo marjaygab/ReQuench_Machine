@@ -6,6 +6,7 @@ const Store = require('electron-store');
 const store = new Store();
 const python_id_index = 1;
 const js_id_index = 0;
+const path = require('path')
 var http = require('http').Server(app);
 var io = require('socket.io')(http);
 let { PythonShell } = require('python-shell');
@@ -13,6 +14,11 @@ var socket_ids = [];
 var connection_counter = 0;
 const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
 const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
+var py_object;
+var filename = 'main.py';
+var options = {
+    scriptPath: path.join(__dirname, '/python_scripts')
+}
 
 
 
@@ -33,6 +39,7 @@ io.on('connection', function (socket) {
         console.log(socket_ids);
     }
     connection_counter++;
+    
     socket.on('socket-event', function (msg) {
         console.log(msg);
         io.emit('socket-event', msg);
@@ -52,6 +59,23 @@ io.on('connection', function (socket) {
         // else the socket will automatically try to reconnect
     });
 
+});
+
+py_object = new PythonShell(filename, options);
+
+//listens for print() from main.py
+py_object.on('message', function (message) {
+    if (message == 'Ready') {
+        py_ready = true;
+        console.log('Python is running')
+    }else{
+        console.log(message);
+    }
+});
+
+//end the current print stdout
+py_object.end(function (err, code, signal) {
+    if (err) throw err;
 });
 
 var read_temp = function () {
