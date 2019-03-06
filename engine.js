@@ -54,6 +54,7 @@ function main() {
     var js_ready = false;
     var py_object;
     var filename = 'main.py';
+    var transactions_list = [];
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
@@ -122,10 +123,8 @@ function main() {
                 store.delete('User_Information');
                 store.delete('Purchase_History');
                 store.delete('Transaction_History');
-                commandPy(socket, { command: 'Terminate' });
                 console.log('Terminated, hopefully');
                 window.location.assign('login.html');
-                clearInterval(temperature_interval)
             }
         })
     }
@@ -331,6 +330,8 @@ function main() {
                         $("#cold-button").prop('disabled', false);
                         $('#toggle_switch').prop('disable', false);
                         commandPy(socket, { command: 'Stop_Dispense' });
+                        var transaction_params = {};
+                        
                     }
                     break;
 
@@ -348,6 +349,7 @@ function main() {
                         $('#toggle_switch').bootstrapToggle('enable');
                         $(this).removeClass().addClass("btn btn-primary");
                         $(this).text("COLD");
+                        previous_size = current_size;
                         $("#hot-button").prop('disabled', false);
                         $('#toggle_switch').prop('disable', false);
                         commandPy(socket, { command: 'Stop_Dispense' });
