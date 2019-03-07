@@ -216,7 +216,7 @@ def automaticDispense(command, amount_requested):
 
 
 def readTemp():
-	global sio     
+	global sio
 	global cold_probe_path
 	global hot_probe_path
 	global compressor
@@ -254,7 +254,7 @@ def readTemp():
 		time.sleep(1)
 
 def controller():
-    	global mode_manual
+	global mode_manual
 	global mode_auto
 	global temp_hot
 	global temp_cold
@@ -275,12 +275,10 @@ def controller():
 
 
 def main():
-    	print('Ready')
-    	sys.stdout.flush()
-
-    	threading.Thread(target=controller).start()
-    	threading.Thread(target=readTemp).start()
-
+	print('Ready')
+	sys.stdout.flush()
+	threading.Thread(target=controller).start()
+	threading.Thread(target=readTemp).start()
 	while True:
 		pass
 try:
