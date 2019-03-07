@@ -284,7 +284,7 @@ function main() {
                     Swal.close();
 
                     var container_promise = new Promise(function(resolve,reject) {
-                        //inform python to get baseline.
+                        commandPy(socket,{command:'Get Baseline'});
                         Swal.fire({
                         title: 'Waiting for container..',
                         allowOutsideClick: false,
@@ -294,6 +294,7 @@ function main() {
                             var timeout = 10;
                             var counter = 0;
                             var timer = setInterval(() => {
+                                commandPy(socket,{command:'Get Container'});
                                 if(counter == timeout){
                                     clearInterval(timer);
                                     reject();

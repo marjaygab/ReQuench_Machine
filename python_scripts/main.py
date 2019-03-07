@@ -5,6 +5,10 @@ import socketio
 import threading
 import sys
 import hx711
+hx = HX711(5,6)
+hx.set_reading_format("MSB","MSB")
+hx.set_reference_unit(-1)
+hx.reset()
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
 # GPIO.setwarnings(False)
@@ -32,7 +36,9 @@ temp_hot = False
 temp_cold = False
 cooling = True
 heating = True
-
+current_baseline = 0
+current_weight = 0
+current_container = 0
 auto_amount = 0
 terminate_flag = False
 # GPIO.output(pump_1,1)
@@ -55,6 +61,7 @@ def on_message(data):
     global temp_cold
     global auto_amount
     global terminate_flag
+    global current_baseline
     destination = data['destination']
     if destination == 'Python':
         command = data['content']['command']
@@ -87,6 +94,16 @@ def on_message(data):
         elif command == 'Heater Off':
             heating = False
             # GPIO.output(heater,1)
+        elif command == 'Get Baseline':
+            current_baseline = getBaseline()
+        elif command == 'Get Container':
+            current_container = getContainerWeight()
+            if current_container != False:
+                sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Present"}})
+            else:
+                sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Absent"}})
+        elif command == 'Get Current':
+            current_weight = getCurrentWeight()
         elif command == 'Terminate':
             # GPIO.cleanup()
             terminate_flag = True
@@ -104,6 +121,22 @@ def check_operation():
     else:
         return 'Automatic'
 
+def getBaseline():
+    val = hx.get_weight_A(5)
+    baseline = (val // 1000) * 1000
+    return baseline
+
+def getCurrentWeight():
+    val = hx.get_weight_A(5)
+    return val
+
+def getContainerWeight():
+    container_weight = ((getCurrentWeight() - baseline) / 200) - 4
+	if container_weight < 0:
+		container_weight = 0
+        return False
+    else:
+        return container_weight
 
 def checkCommand():
     if temp_hot and not temp_cold:
@@ -148,19 +181,6 @@ def stop_dispense():
 
 
 def manualDispense(command):
-
-        rate_cnt = 0
-        tot_cnt = 0
-        time_zero = 0.0
-        time_start = 0.0
-        time_end = 0.0
-        lmin = 0
-        total_liters = 0
-        gpio_last = 0
-        pulses = 0
-        constant = 1.79
-        time_zero = time.time()
-        gpio_cur = 0
         # if command == 'COLD':
         #         GPIO.output(pump_1,0)
         #         GPIO.output(solenoid_1,0)
@@ -169,17 +189,16 @@ def manualDispense(command):
         #         GPIO.output(solenoid_2,0)        
         time_start = time.time()
         while checkCommand() != 'Standby':
-                time_end = time.time()
-                time_duration =time_end - time_start
-                time_duration = round(time_duration,2)
-                if time_duration == 1:
-                        total_liters = total_liters + 20
-                        time_start= time.time()
-                        sio.emit('socket-event',{"destination":"JS","content":{"type":"DISPENSE_READING","body":{"Total":total_liters}}})
-                if checkCommand() == 'Standby':
+            if time_duration == 1:
+                    total_liters = getCurrentWeight() - current_container;
+                    if total_liters < 0:
                         total_liters = 0
-                        stop_dispense()
-                        break
+                    time_start= time.time()
+                    sio.emit('socket-event',{"destination":"JS","content":{"type":"DISPENSE_READING","body":{"Total":total_liters}}})
+            if checkCommand() == 'Standby':
+                    total_liters = 0
+                    stop_dispense()
+                    break
         # GPIO.output(pump_1,1)
         # GPIO.output(solenoid_1,1)
         # GPIO.output(pump_2,1)
