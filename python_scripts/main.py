@@ -228,27 +228,28 @@ def readTemp():
 		f.close()
 		equal_pos = lines[1].find('t=')
 		if equal_pos != 1:
-		cold_temp = float(lines[1][equal_pos+2:])/1000.0
+			cold_temp = float(lines[1][equal_pos+2:])/1000.0
+		
 		f = open(hot_probe_path,'r')
 		hot_temp = ""
 		lines = f.readlines()
 		f.close()
 		equal_pos = lines[1].find('t=')
 		if equal_pos != 1:
-		hot_temp = float(lines[1][equal_pos+2:])/1000.0
+			hot_temp = float(lines[1][equal_pos+2:])/1000.0
 		
 		if cold_temp <= 6:
-		cooling = False
-		# GPIO.output(compressor,1)
+			cooling = False
+			# GPIO.output(compressor,1)
 		elif cold_temp >= 11:
-		cooling = True
-		# GPIO.output(compressor,0)
+			cooling = True
+			# GPIO.output(compressor,0)
 		if hot_temp <= 55:
-		heating = True
-		# GPIO.output(heater,0)
+			heating = True
+			# GPIO.output(heater,0)
 		elif hot_temp >= 70:
-		heating = False
-		# GPIO.output(heater,1)
+			heating = False
+			# GPIO.output(heater,1)
 		sio.emit('socket-event',{"destination":"JS","content":{"type":"TEMP_READING","body":{"Cold":cold_temp,"Hot":hot_temp}}})
 		time.sleep(1)
 
@@ -262,13 +263,13 @@ def controller():
 	while True:
 		mode = check_operation()
 		if (mode == 'Manual'):
-		command = checkCommand()
-		manualMode(command)
+			command = checkCommand()
+			manualMode(command)
 		else:
-		command = checkCommand()
-		automaticMode(command)
+			command = checkCommand()
+			automaticMode(command)
 		if terminate_flag:
-		break
+			break
 		time.sleep(1)
 
 
