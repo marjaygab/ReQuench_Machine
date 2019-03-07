@@ -169,5 +169,5 @@ function commandPy(io, content) {
         destination: 'Python',
         content: content
     };
-    socket.emit('socket-event', msg);
+    io.emit('socket-event', msg);
 }

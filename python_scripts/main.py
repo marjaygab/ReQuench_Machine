@@ -1,32 +1,31 @@
-import RPi.GPIO as GPIO
+# import RPi.GPIO as GPIO
 import json
 import time
 import socketio
 import threading
 import sys
+import hx711
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
-GPIO.setwarnings(False)
-GPIO.setmode(GPIO.BOARD)
-inpt = 11
-inpt1 = 7
+# GPIO.setwarnings(False)
+# GPIO.setmode(GPIO.BOARD)
 pump_1 = 11
-solenoid_1 = 15
 pump_2 = 13
+solenoid_1 = 15
 solenoid_2 = 19
 compressor = 21 
 heater = 23 
 flowmeter = 40
 cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave'
 hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
-GPIO.setup(inpt1, GPIO.OUT)
-GPIO.setup(pump_1, GPIO.OUT)
-GPIO.setup(solenoid_1, GPIO.OUT)
-GPIO.setup(pump_2, GPIO.OUT)
-GPIO.setup(solenoid_2, GPIO.OUT)
-GPIO.setup(compressor, GPIO.OUT)
-GPIO.setup(heater, GPIO.OUT)
-GPIO.setup(flowmeter, GPIO.IN)
+# GPIO.setup(inpt1, GPIO.OUT)
+# GPIO.setup(pump_1, GPIO.OUT)
+# GPIO.setup(solenoid_1, GPIO.OUT)
+# GPIO.setup(pump_2, GPIO.OUT)
+# GPIO.setup(solenoid_2, GPIO.OUT)
+# GPIO.setup(compressor, GPIO.OUT)
+# GPIO.setup(heater, GPIO.OUT)
+# GPIO.setup(flowmeter, GPIO.IN)
 mode_manual = False
 mode_auto = False
 temp_hot = False
@@ -36,12 +35,12 @@ heating = True
 
 auto_amount = 0
 terminate_flag = False
-GPIO.output(pump_1,1)
-GPIO.output(solenoid_1,1)
-GPIO.output(pump_2,1)
-GPIO.output(solenoid_2,1)
-GPIO.output(compressor,0) 
-GPIO.output(heater,0)
+# GPIO.output(pump_1,1)
+# GPIO.output(solenoid_1,1)
+# GPIO.output(pump_2,1)
+# GPIO.output(solenoid_2,1)
+# GPIO.output(compressor,0) 
+# GPIO.output(heater,0)
 @sio.on('connect')
 def on_connect():
     print("I'm connected!")
@@ -78,18 +77,18 @@ def on_message(data):
             temp_hot = False
         elif command == 'Compressor On':
             cooling = True
-            GPIO.output(compressor,0)
+            # GPIO.output(compressor,0)
         elif command == 'Compressor Off':
             cooling = False
-            GPIO.output(compressor,1)
+            # GPIO.output(compressor,1)
         elif command == 'Heater On':
             heating = True
-            GPIO.output(heater,0)
+            # GPIO.output(heater,0)
         elif command == 'Heater Off':
             heating = False
-            GPIO.output(heater,1)
+            # GPIO.output(heater,1)
         elif command == 'Terminate':
-            GPIO.cleanup()
+            # GPIO.cleanup()
             terminate_flag = True
 
 
@@ -162,12 +161,12 @@ def manualDispense(command):
         constant = 1.79
         time_zero = time.time()
         gpio_cur = 0
-        if command == 'COLD':
-                GPIO.output(pump_1,0)
-                GPIO.output(solenoid_1,0)
-        else:
-                GPIO.output(pump_2,0)
-                GPIO.output(solenoid_2,0)        
+        # if command == 'COLD':
+        #         GPIO.output(pump_1,0)
+        #         GPIO.output(solenoid_1,0)
+        # else:
+        #         GPIO.output(pump_2,0)
+        #         GPIO.output(solenoid_2,0)        
         time_start = time.time()
         while checkCommand() != 'Standby':
                 time_end = time.time()
@@ -181,10 +180,10 @@ def manualDispense(command):
                         total_liters = 0
                         stop_dispense()
                         break
-        GPIO.output(pump_1,1)
-        GPIO.output(solenoid_1,1)
-        GPIO.output(pump_2,1)
-        GPIO.output(solenoid_2,1)
+        # GPIO.output(pump_1,1)
+        # GPIO.output(solenoid_1,1)
+        # GPIO.output(pump_2,1)
+        # GPIO.output(solenoid_2,1)
 
 
 def automaticDispense(command, amount_requested):
@@ -252,16 +251,16 @@ def readTemp():
         
         if cold_temp <= 6:
             cooling = False
-            GPIO.output(compressor,1)
+            # GPIO.output(compressor,1)
         elif cold_temp >= 11:
             cooling = True
-            GPIO.output(compressor,0)
+            # GPIO.output(compressor,0)
         if hot_temp <= 55:
             heating = True
-            GPIO.output(heater,0)
+            # GPIO.output(heater,0)
         elif hot_temp >= 70:
             heating = False
-            GPIO.output(heater,1)
+            # GPIO.output(heater,1)
         sio.emit('socket-event',{"destination":"JS","content":{"type":"TEMP_READING","body":{"Cold":cold_temp,"Hot":hot_temp}}})
         time.sleep(1)
 

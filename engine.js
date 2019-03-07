@@ -55,6 +55,7 @@ function main() {
     var py_object;
     var filename = 'main.py';
     var transactions_list = [];
+    var container_present = false;
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
@@ -165,6 +166,13 @@ function main() {
                         enableAll();
                     }
                 break;
+                case "CONTAINER_STATUS":
+                    if(msg.content.body == 'Container Present'){
+                        container_present = true;
+                    }else if(msg.content.body == 'Container Absent'){
+                        container_present = false;
+                    }
+                    break;
                 default:
                     break;
             }
@@ -275,18 +283,68 @@ function main() {
                     // });
                     Swal.close();
 
-                } else {
-                    Swal.fire({
-                        title: 'An error occured. Refreshing page..',
-                        type: 'error',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'Ok',
+                    var container_promise = new Promise(function(resolve,reject) {
+                        //inform python to get baseline.
+                        Swal.fire({
+                        title: 'Waiting for container..',
+                        allowOutsideClick: false,
                         onClose: function () {
-                            location.reload();
+                        },onBeforeOpen: function() {
+                            Swal.showLoading();
+                            var timeout = 10;
+                            var counter = 0;
+                            var timer = setInterval(() => {
+                                if(counter == timeout){
+                                    clearInterval(timer);
+                                    reject();
+                                }else{
+                                    if(container_present){
+                                        resolve();
+                                    }
+                                    counter++;
+                                }
+                            }, 1000);
                         }
-                    }).then((result) => {
-                        location.reload();
+                        });
+
+                    });
+
+                    container_promise.then(function() {
+                        Swal.close();
                     })
+                    .catch(function() {
+                       //Container not detected. Try again? 
+                       return Swal.fire({
+                        title: 'Container not detected. Try again?',
+                        type: 'error',
+                        cancelButtonText: 'Nope',
+                        showCancelButton: true,
+                        allowOutsideClick: false,
+                        });
+                    }).then((result) => {
+                        console.log(result);
+                        if(result.value){
+                            console.log('OKed');
+                            window.location.reload();
+                        }else if(result.dismiss == 'cancel'){
+                            //properly exit
+                            console.log('Cancelled');
+                            window.location.assign('login.html');
+                        }
+                    });
+
+                } else {
+                        Swal.fire({
+                            title: 'An error occured. Refreshing page..',
+                            type: 'error',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Ok',
+                            onClose: function () {
+                                location.reload();
+                            }
+                        }).then((result) => {
+                            location.reload();
+                        })
                 }
             }, function (error) {
                 console.log(`Error: ${error}`);
@@ -433,9 +491,6 @@ function main() {
     });
 
     //Supposed to terminate the Python object every window reload
-    window.onbeforeunload = function (e) {
-        PythonShell.terminate();
-    };
 
     //This is just a checker function
     // ml_label.onclick = function () {
