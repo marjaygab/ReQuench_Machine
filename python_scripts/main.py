@@ -98,10 +98,10 @@ def on_message(data):
 			current_baseline = getBaseline()
 		elif command == 'Get Container':
 			current_container = getContainerWeight()
-		if current_container != False:
-			sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Present"}})
-		else:
-			sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Absent"}})
+			if current_container != False:
+				sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Present"}})
+			else:
+				sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Absent"}})
 		elif command == 'Get Current':
 			current_weight = getCurrentWeight()
 		elif command == 'Terminate':
