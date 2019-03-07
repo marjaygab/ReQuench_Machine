@@ -166,11 +166,11 @@ def automaticMode(command):
 	amount_requested = auto_amount
 	if amount_requested != 0:
 		if(command == 'Dispense_Hot'):
-		# dispense hot here
-		automaticDispense('HOT', amount_requested)
+			# dispense hot here
+			automaticDispense('HOT', amount_requested)
 		elif(command == 'Dispense_Cold'):
-		# dispense cold here
-		automaticDispense('COLD', amount_requested)
+			# dispense cold here
+			automaticDispense('COLD', amount_requested)
 
 
 def stop_dispense():
@@ -212,7 +212,7 @@ def automaticDispense(command, amount_requested):
 		time.sleep(0.5)
 	sio.emit('socket-event', {"destination": 'JS',
 				"content": {"type":"DISPENSE_CONTROL","body":'Stopped Dispense'}})
-    stop_dispense()
+    	stop_dispense()
     # rate_cnt = 0
     # tot_cnt = 0
     # time_zero = 0.0
