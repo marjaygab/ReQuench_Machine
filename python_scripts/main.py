@@ -4,7 +4,7 @@ import time
 import socketio
 import threading
 import sys
-import hx711
+import hx711 as HX711
 hx = HX711(5,6)
 hx.set_reading_format("MSB","MSB")
 hx.set_reference_unit(-1)
