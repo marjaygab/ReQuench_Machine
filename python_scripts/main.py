@@ -210,39 +210,8 @@ def automaticDispense(command, amount_requested):
 	while counter < amount_requested:
 		counter = counter + 1
 		time.sleep(0.5)
-	sio.emit('socket-event', {"destination": 'JS',
-				"content": {"type":"DISPENSE_CONTROL","body":'Stopped Dispense'}})
-    	stop_dispense()
-    # rate_cnt = 0
-    # tot_cnt = 0
-    # time_zero = 0.0
-    # time_start = 0.0
-    # time_end = 0.0
-    # gpio_last = 0
-    # pulses = 0
-    # constant = 1.79
-    # total_liters = 0
-    # time_zero = time.time()
-    # GPIO.output(7, 1)
-    # while amount_requested <= total_liters:
-    #         rate_cnt = 0
-    #         pulses = 0
-    #         time_start= time.time()
-    #         while pulses <= 5:
-    #                 gpio_cur = GPIO.input(11)
-    #                 if gpio_cur != 0 and gpio_cur != gpio_last:
-    #                         pulses += 1
-    #                 gpio_last = gpio_cur
-    #         rate_cnt += 1
-    #         tot_cnt += 1
-    #         time_end = time.time()
-    #         lmin = round((rate_cnt * constant)/(time_end-time_start),2)
-    #         total_liters = round(tot_cnt * constant, 1)
-    #         print(json.dumps({'LMin':lmin,'Total':total_liters}))
-    #         sys.stdout.flush()
-    #         time.sleep(0.5)
-    # GPIO.output(7, 0)
-    # dispenseIsDoneAutomatic(command)
+	sio.emit('socket-event', {"destination": 'JS',"content": {"type":"DISPENSE_CONTROL","body":'Stopped Dispense'}})
+	stop_dispense()
 
 
 
