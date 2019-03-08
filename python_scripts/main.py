@@ -38,7 +38,7 @@ cooling = True
 heating = True
 current_baseline = 0
 current_weight = 0
-current_container = 0
+container_weight = 0
 auto_amount = 0
 terminate_flag = False
 # GPIO.output(pump_1,1)
@@ -94,15 +94,23 @@ def on_message(data):
 		elif command == 'Heater Off':
 			heating = False
 			# GPIO.output(heater,1)
-		elif command == 'Get Baseline':
-			current_baseline = getBaseline()
-		elif command == 'Get Container':
-			current_container = getContainerWeight()
-			if current_container != False:
+		elif command == 'Get_Baseline':
+			getBaseline()
+			#print(current_baseline)
+			#sys.stdout.flush()
+			#print(getContainerWeight())
+			#sys.stdout.flush()
+		elif command == 'Get_Container':
+			#print('Testing')
+			#sys.stdout.flush()
+			getContainerWeight()
+			#print('Container: ' + str(container_weight))
+			#sys.stdout.flush()
+			if container_weight > 0:
 				sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Present"}})
 			else:
 				sio.emit('socket-event',{"destination":"JS","content":{"type":"CONTAINER_STATUS","body":"Container Absent"}})
-		elif command == 'Get Current':
+		elif command == 'Get_Current':
 			current_weight = getCurrentWeight()
 		elif command == 'Terminate':
 			# GPIO.cleanup()
@@ -122,21 +130,34 @@ def check_operation():
 		return 'Automatic'
 
 def getBaseline():
+	global hx
+	global current_baseline
 	val = hx.get_weight_A(5)
-	baseline = (val // 1000) * 1000
-	return baseline
+	current_baseline = (val // 1000) * 1000
 
 def getCurrentWeight():
+	global hx
 	val = hx.get_weight_A(5)
 	return val
 
 def getContainerWeight():
-	container_weight = ((getCurrentWeight() - baseline) / 200) - 4
-	if container_weight < 0:
-		container_weight = 0
-		return False
-	else:
-		return container_weight
+	global hx
+	global current_baseline
+	global container_weight
+	print('Current Baseline: ' + str(current_baseline))
+	sys.stdout.flush()
+	current_weight = hx.get_weight_A(5)
+	current_weight = (current_weight // 1000) * 1000
+	print('Container Weight' + str((current_weight-current_baseline)/200))
+	sys.stdout.flush()
+	container_weight = ((current_weight - current_baseline) / 200)
+	#print('Container Weight: ' + container_weight)
+	#sys.stdout.flush()
+	#if container_weight < 0:
+	#	container_weight = 0
+	#	return False
+	#else:
+	#	return str(container_weight)
 
 def checkCommand():
 	if temp_hot and not temp_cold:
@@ -190,7 +211,7 @@ def manualDispense(command):
 	time_start = time.time()
 	while checkCommand() != 'Standby':
 		if time_duration == 1:
-			total_liters = getCurrentWeight() - current_container;
+			total_liters = getCurrentWeight() - current_container
 			if total_liters < 0:
 				total_liters = 0
 			time_start= time.time()
@@ -260,6 +281,7 @@ def controller():
 	global temp_cold
 	global auto_amount
 	global terminate_flag
+	global hx
 	while True:
 		mode = check_operation()
 		if (mode == 'Manual'):

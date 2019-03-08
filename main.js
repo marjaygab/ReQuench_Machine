@@ -41,7 +41,8 @@ io.on('connection', function (socket) {
     connection_counter++;
     
     socket.on('socket-event', function (msg) {
-        io.emit('socket-event', msg);
+       	io.emit('socket-event', msg);
+	console.log(msg)
     });
 
     socket.on('reconnect', function () {
