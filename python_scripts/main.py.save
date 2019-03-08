@@ -143,12 +143,9 @@ def getBaseline():
 def getCurrentWeight():
     global hx
     global current_weight
-    global current_baseline
     val = hx.get_weight_A(5)
-    print('Raw Weight: ' + str(val))
-    sys.stdout.flush()
     current_weight = (val // 1000) * 1000
-    current_weight = (current_weight-current_baseline) / 200
+    current_weight = current_weight / 200
 
 
 def getContainerWeight():
@@ -214,30 +211,20 @@ def stop_dispense():
 
 
 def manualDispense(command):
-    global current_weight
-    global container_weight
     # if command == 'COLD':
     #         GPIO.output(output_devices['pump_1'],0)
     #         GPIO.output(output_devices['solenoid_1'],0)
     # else:
     #         GPIO.output(output_devices['pump_2'],0)
     #         GPIO.output(output_devices['solenoid_2'],0)
-    print('In Manual')
-    sys.stdout.flush()
+
     time_duration = 0
     time_start = time.time()
     while checkCommand() != 'Standby':
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 1:
-            print('Tick')
-            sys.stdout.flush()
-            getCurrentWeight()
-            print('Current Weight: ' + str(current_weight) + 'Container Weight: ' + str(container_weight))
-            sys.stdout.flush()
-            total_liters =  current_weight - container_weight
-            print('Total: ' + str(total_liters))
-            sys.stdout.flush()
+        if time_duration == 1:
+            total_liters = getCurrentWeight() - container_weight
             if total_liters < 0:
                 total_liters = 0
             time_start = time.time()
