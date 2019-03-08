@@ -220,17 +220,19 @@ def manualDispense(command):
     time_duration = 0
     time_start = time.time()
     while checkCommand() != 'Standby':
-            if time_duration == 1:
-                total_liters = getCurrentWeight() - container_weight
-                if total_liters < 0:
-                    total_liters = 0
-                time_start = time.time()
-                sio.emit('socket-event', {"destination": "JS", "content": {
-                         "type": "DISPENSE_READING", "body": {"Total": total_liters}}})
-            if checkCommand() == 'Standby':
+        time_end = time.time()
+        time_duration = time_end - time_start
+        if time_duration == 1:
+            total_liters = getCurrentWeight() - container_weight
+            if total_liters < 0:
                 total_liters = 0
-                stop_dispense()
-                break
+            time_start = time.time()
+            sio.emit('socket-event', {"destination": "JS", "content": {
+                     "type": "DISPENSE_READING", "body": {"Total": total_liters}}})
+        if checkCommand() == 'Standby':
+            total_liters = 0
+            stop_dispense()
+            break
         # GPIO.output(output_devices['pump_1'],1)
         # GPIO.output(output_devices['solenoid_1'],1)
         # GPIO.output(output_devices['pump_2'],1)
