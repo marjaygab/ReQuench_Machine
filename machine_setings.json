@@ -1,0 +1,7 @@
+{
+    "Machine_ID":"1",
+    "Machine_Location":"Chez Rafael",
+    "Last_Maintenance_Date_Time": "2019/03/08 12:30:00", 
+    "Current_Water_Level": 2000.00,
+    "PricePerML": 0.02
+}
