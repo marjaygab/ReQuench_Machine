@@ -374,8 +374,6 @@ function main() {
                         data.command = 'hello';
                         $('#toggle_switch').bootstrapToggle('disable');
                         $(this).removeClass().addClass("btn");
-                        // interval = setInterval(mouseaction,100,current_ml_dispensed);
-                        // interval = setInterval(tester,100);
                         $(this).text("Stop");
                         $("#cold-button").prop('disabled', true);
                         $('#toggle_switch').prop('disable', true);
@@ -385,13 +383,12 @@ function main() {
                         $('#toggle_switch').bootstrapToggle('enable');
                         $(this).removeClass().addClass("btn btn-danger");
                         $(this).text("HOT");
-                        // clearInterval(interval);
-                        previous_size = current_size;
                         $("#cold-button").prop('disabled', false);
                         $('#toggle_switch').prop('disable', false);
                         commandPy(socket, { command: 'Stop_Dispense' });
                         var transaction_params = {};
-                        
+                        previous_size = current_size;
+                    
                     }
                     break;
 

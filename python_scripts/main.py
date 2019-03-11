@@ -102,16 +102,8 @@ def on_message(data):
             GPIO.output(output_devices['heater'],1)
         elif command == 'Get_Baseline':
             getBaseline()
-            #print(current_baseline)
-            # sys.stdout.flush()
-            # print(getContainerWeight())
-            # sys.stdout.flush()
         elif command == 'Get_Container':
-            # print('Testing')
-            # sys.stdout.flush()
             getContainerWeight()
-            #print('Container: ' + str(container_weight))
-            # sys.stdout.flush()
             if container_weight > 0:
                 sio.emit('socket-event', {"destination": "JS", "content": {
                          "type": "CONTAINER_STATUS", "body": "Container Present"}})
@@ -246,8 +238,6 @@ def manualDispense(command):
     else:
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
-    print('In Manual')
-    sys.stdout.flush()
     time_duration = 0
     time_start = time.time()
     while checkCommand() != 'Standby':
@@ -262,9 +252,9 @@ def manualDispense(command):
             sio.emit('socket-event', {"destination": "JS", "content": {
                      "type": "DISPENSE_READING", "body": {"Total": total_liters}}})
         if checkCommand() == 'Standby':
-            total_liters = 0
             stop_dispense()
             break
+    total_liters = 0
     GPIO.output(output_devices['pump_1'],1)
     GPIO.output(output_devices['solenoid_1'],1)
     GPIO.output(output_devices['pump_2'],1)
