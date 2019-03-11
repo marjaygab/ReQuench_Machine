@@ -284,6 +284,7 @@ function main() {
                     // sessionstorage.setItem('User_Information',json_object);
                     if (json_object.Success) {
                         store.set('User_Information', json_object.Account);
+                        store.set('Account_Type',json_object.Account_Type)
                         params = {};
                         params.Acc_ID = json_object.Account.Acc_ID;
                         //check user persmissions first

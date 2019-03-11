@@ -43,6 +43,7 @@ current_weight = 0
 container_weight = 0
 auto_amount = 0
 terminate_flag = False
+total_liters = 0
 #GPIO.setup(output_devices['pump_1'],GPIO.OUT)
 GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
@@ -65,10 +66,13 @@ def on_message(data):
     global auto_amount
     global terminate_flag
     global current_baseline
+    global total_liters
     destination = data['destination']
     if destination == 'Python':
         command = data['content']['command']
-        if command == 'Toggle_Auto':
+        if command == 'New_Transaction':
+            total_liters = 0
+        elif command == 'Toggle_Auto':
             mode_auto = True
             mode_manual = False
         elif command == 'Toggle_Manual':
@@ -236,28 +240,21 @@ def stop_dispense():
 def manualDispense(command):
     global current_weight
     global container_weight
+    global total_liters
     if command == 'COLD':
         GPIO.output(output_devices['pump_1'],0)
         GPIO.output(output_devices['solenoid_1'],0)
     else:
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
-    print('In Manual')
-    sys.stdout.flush()
     time_duration = 0
     time_start = time.time()
     while checkCommand() != 'Standby':
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 1:
-            #print('Tick')
-            #sys.stdout.flush()
+        if time_duration >= 0.5:
             getCurrentWeight()
-            #print('Current Weight: ' + str(current_weight) + 'Container Weight: ' + str(container_weight))
-            #sys.stdout.flush()
-            total_liters =  current_weight - container_weight
-            #print('Total: ' + str(total_liters))
-            sys.stdout.flush()
+            total_liters =  total_liters + (current_weight - container_weight)
             if total_liters < 0:
                 total_liters = 0
             time_start = time.time()

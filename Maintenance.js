@@ -29,6 +29,7 @@ $(document).ready(function() {
     var minute;
     var seconds;
     var current_step_selected;
+    var isConnected = false;
 
 
     Swal.fire({
@@ -39,7 +40,13 @@ $(document).ready(function() {
             console.log('Before Opened');
         },
         onOpen: () => {
+            while(!isConnected){
+                if (isConnected) {
+                    break;                    
+                }
+            }
             
+            Swal.close()
         },
         onClose: () => {
         }
@@ -51,8 +58,9 @@ $(document).ready(function() {
         }
     })
 
-
-
+    socket.on('connect',function() {
+        isConnected = true;        
+    })
 
 
     readStepsFile(function(list,size) {

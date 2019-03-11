@@ -30,6 +30,7 @@ function main() {
     var ml_label = document.getElementById('ml_label');
     var history = store.get('History');
     var purchase_history = store.get('Purchase_History');
+    var account_type = store.get('Account_Type');
     var transaction_history = store.get('Transaction_History');
     var logout_button = document.getElementById('logout_button');
     var cold_label = document.getElementById('cold_label');
