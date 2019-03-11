@@ -42,6 +42,7 @@ current_baseline = 0
 current_weight = 0
 container_weight = 0
 auto_amount = 0
+total_liters = 0
 terminate_flag = False
 #GPIO.setup(output_devices['pump_1'],GPIO.OUT)
 GPIO.output(output_devices['pump_1'],1)
@@ -68,6 +69,8 @@ def on_message(data):
     destination = data['destination']
     if destination == 'Python':
         command = data['content']['command']
+        if command == 'New_Transaction':
+            total_liters = 0
         if command == 'Toggle_Auto':
             mode_auto = True
             mode_manual = False
@@ -157,7 +160,7 @@ def getBaseline():
     global hx
     global current_baseline
     val = hx.get_weight_A(5)
-    current_baseline = round(val / float(1000),1) * 1000
+    current_baseline = round(val // float(1000),1) * 1000
 
 
 def getCurrentWeight():
@@ -167,7 +170,7 @@ def getCurrentWeight():
     val = hx.get_weight_A(5)
     print('Raw Weight: ' + str(val))
     sys.stdout.flush()
-    current_weight = round(val / float(1000),1) * 1000
+    current_weight = round(val // float(1000),1) * 1000
     current_weight = (current_weight-current_baseline) / 200
 
 
@@ -178,7 +181,7 @@ def getContainerWeight():
     print('Current Baseline: ' + str(current_baseline))
     sys.stdout.flush()
     current_weight = hx.get_weight_A(5)
-    current_weight = round(current_weight / float(1000),1) * 1000
+    current_weight = round(current_weight // float(1000),1) * 1000
     print('Container Weight' + str((current_weight-current_baseline)/200))
     sys.stdout.flush()
     container_weight = ((current_weight - current_baseline) / 200)
@@ -236,6 +239,7 @@ def stop_dispense():
 def manualDispense(command):
     global current_weight
     global container_weight
+    global total_liters
     if command == 'COLD':
         GPIO.output(output_devices['pump_1'],0)
         GPIO.output(output_devices['solenoid_1'],0)
@@ -249,15 +253,9 @@ def manualDispense(command):
     while checkCommand() != 'Standby':
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 1:
-            #print('Tick')
-            #sys.stdout.flush()
+        if time_duration >= 0.5:
             getCurrentWeight()
-            #print('Current Weight: ' + str(current_weight) + 'Container Weight: ' + str(container_weight))
-            #sys.stdout.flush()
-            total_liters =  current_weight - container_weight
-            #print('Total: ' + str(total_liters))
-            sys.stdout.flush()
+            total_liters = (current_weight - container_weight)
             if total_liters < 0:
                 total_liters = 0
             time_start = time.time()

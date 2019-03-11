@@ -59,7 +59,7 @@ function main() {
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
-
+    commandPy(socket, {command:'New_Transaction'});
 
     //This function couns every second if a user is idle.
     var idle_prompt = setInterval(function () {
@@ -134,7 +134,6 @@ function main() {
     //This block of code also computes for the current height of the water level indicator.
     socket.on('socket-event', function (msg) {
         if (msg.destination === 'JS') {
-            console.log(msg);
             switch (msg.content.type) {
                 case "TEMP_READING":
                     cold_int = Math.round(parseFloat(msg.content.body.Cold));
@@ -143,11 +142,13 @@ function main() {
                     hot_label.innerHTML = hot_int;
                 break;
                 case "DISPENSE_READING":
+                    console.log(msg);
                     try {
                         if (current_size >= 0) {
                             var total = msg.content.body.Total;
                             current_size = previous_size - total;
                             current_size = Math.round(current_size);
+                            previous_size = current_size;
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
                             $("#water-level").animate({ height: computed_height + 'px' });

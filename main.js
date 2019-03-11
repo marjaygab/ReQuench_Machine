@@ -42,7 +42,10 @@ io.on('connection', function (socket) {
     
     socket.on('socket-event', function (msg) {
        	io.emit('socket-event', msg);
-	console.log(msg)
+        if(msg.content.type != 'TEMP_READING'){
+            console.log(msg);
+        }
+        
     });
 
     socket.on('reconnect', function () {
