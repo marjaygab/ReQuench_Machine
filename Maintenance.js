@@ -39,30 +39,7 @@ $(document).ready(function() {
             console.log('Before Opened');
         },
         onOpen: () => {
-            console.log('Opened');
-            py_object = new PythonShell(py_filename, options);
-            py_object.on('message', function (message) {
-                console.log(message);
-                if (message == 'Ready') {
-                    py_ready = true;
-                    Swal.close();
-                }
-            });
-
-            py_object.end(function (err, code, signal) {
-                if (err) throw err;
-                Swal.fire({
-                    title: 'An error occured. Refreshing page..',
-                    type: 'error',
-                    confirmButtonColor: '#3085d6',
-                    confirmButtonText: 'Ok',
-                    onClose: function () {
-                        location.reload();
-                    }
-                }).then((result) => {
-                    location.reload();
-                })
-            });
+            
         },
         onClose: () => {
         }
@@ -73,6 +50,9 @@ $(document).ready(function() {
             console.log('I was closed by the timer')
         }
     })
+
+
+
 
 
     readStepsFile(function(list,size) {

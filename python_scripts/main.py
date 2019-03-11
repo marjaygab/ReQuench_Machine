@@ -1,34 +1,35 @@
-# import RPi.GPIO as GPIO
+import RPi.GPIO as GPIO
 import json
 import time
 import socketio
 import threading
 import sys
-import hx711
-hx = hx711.HX711(17, 27)
+from hx711 import HX711
+hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
 hx.set_reference_unit(-1)
 hx.reset()
 sio = socketio.Client()
 sio.connect('http://localhost:3000')
-# GPIO.setwarnings(False)
-# GPIO.setmode(GPIO.BOARD)
+#GPIO.setwarnings(False)
+#GPIO.setmode(GPIO.BOARD)
 output_devices = {
-    'pump_1': 40,
-    'pump_2': 38,
-    'solenoid_1': 36,
-    'solenoid_2': 32,
-    'compressor': 26,
-    'heater': 18,
-    'screen_backlight': 22,
-    'green_led': 8,
-    'red_led': 10,
-    'yellow_red': 12
+    'pump_1': 21,
+    'pump_2': 20,
+    'solenoid_1': 16,
+    'solenoid_2': 12,
+    'compressor': 7,
+    'heater': 24,
+    'screen_backlight': 18,
+    'green_led': 14,
+    'red_led': 15,
+    'yellow_red': 18
 }
 
 
-# for index,value in enumerate(output_devices):
-#     GPIO.setup(output_devices[value],GPIO.OUT)
+for index,value in enumerate(output_devices):
+    GPIO.setup(output_devices[value],GPIO.OUT)
+
 cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave'
 hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
 mode_manual = False
@@ -42,12 +43,13 @@ current_weight = 0
 container_weight = 0
 auto_amount = 0
 terminate_flag = False
-# GPIO.output(output_devices['pump_1'],1)
-# GPIO.output(output_devices['solenoid_1'],1)
-# GPIO.output(output_devices['pump_2'],1)
-# GPIO.output(output_devices['solenoid_2'],1)
-# GPIO.output(output_devices['compressor'],0)
-# GPIO.output(output_devices['compressor'],0)
+#GPIO.setup(output_devices['pump_1'],GPIO.OUT)
+GPIO.output(output_devices['pump_1'],1)
+GPIO.output(output_devices['solenoid_1'],1)
+GPIO.output(output_devices['pump_2'],1)
+GPIO.output(output_devices['solenoid_2'],1)
+GPIO.output(output_devices['compressor'],0)
+GPIO.output(output_devices['compressor'],0)
 @sio.on('connect')
 def on_connect():
     print("I'm connected!")
@@ -85,19 +87,19 @@ def on_message(data):
             temp_hot = False
         elif command == 'Compressor On':
             cooling = True
-            # GPIO.output(output_devices['compressor'],0)
+            GPIO.output(output_devices['compressor'],0)
         elif command == 'Compressor Off':
             cooling = False
-            # GPIO.output(output_devices['compressor'],1)
+            GPIO.output(output_devices['compressor'],1)
         elif command == 'Heater On':
             heating = True
-            # GPIO.output(output_devices['heater'],0)
+            GPIO.output(output_devices['heater'],0)
         elif command == 'Heater Off':
             heating = False
-            # GPIO.output(output_devices['heater'],1)
+            GPIO.output(output_devices['heater'],1)
         elif command == 'Get_Baseline':
             getBaseline()
-            # print(current_baseline)
+            #print(current_baseline)
             # sys.stdout.flush()
             # print(getContainerWeight())
             # sys.stdout.flush()
@@ -115,6 +117,24 @@ def on_message(data):
                          "type": "CONTAINER_STATUS", "body": "Container Absent"}})
         # elif command == 'Get_Current':
         #     current_weight = getCurrentWeight()
+        elif command == 'Start_Drain':
+            print("Started Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_1'],0)
+            GPIO.output(output_devices['pump_2'],0)
+            GPIO.output(output_devices['solenoid_1'],0)
+            GPIO.output(output_devices['solenoid_2'],0)
+        elif command == 'Stop_Drain':
+            print("Stopped Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_1'],1)
+            GPIO.output(output_devices['pump_2'],1)
+            GPIO.output(output_devices['solenoid_1'],1)
+            GPIO.output(output_devices['solenoid_2'],1)
+        elif command == 'Shutdown':
+            os.system('sudo shutdown -h now')
+        elif command == 'Reboot':
+            os.system('sudo reboot')
         elif command == 'Terminate':
             # GPIO.cleanup()
             terminate_flag = True
@@ -137,7 +157,7 @@ def getBaseline():
     global hx
     global current_baseline
     val = hx.get_weight_A(5)
-    current_baseline = (val // 1000) * 1000
+    current_baseline = round(val / float(1000),1) * 1000
 
 
 def getCurrentWeight():
@@ -147,7 +167,7 @@ def getCurrentWeight():
     val = hx.get_weight_A(5)
     print('Raw Weight: ' + str(val))
     sys.stdout.flush()
-    current_weight = (val // 1000) * 1000
+    current_weight = round(val / float(1000),1) * 1000
     current_weight = (current_weight-current_baseline) / 200
 
 
@@ -158,7 +178,7 @@ def getContainerWeight():
     print('Current Baseline: ' + str(current_baseline))
     sys.stdout.flush()
     current_weight = hx.get_weight_A(5)
-    current_weight = (current_weight // 1000) * 1000
+    current_weight = round(current_weight / float(1000),1) * 1000
     print('Container Weight' + str((current_weight-current_baseline)/200))
     sys.stdout.flush()
     container_weight = ((current_weight - current_baseline) / 200)
@@ -216,12 +236,12 @@ def stop_dispense():
 def manualDispense(command):
     global current_weight
     global container_weight
-    # if command == 'COLD':
-    #         GPIO.output(output_devices['pump_1'],0)
-    #         GPIO.output(output_devices['solenoid_1'],0)
-    # else:
-    #         GPIO.output(output_devices['pump_2'],0)
-    #         GPIO.output(output_devices['solenoid_2'],0)
+    if command == 'COLD':
+        GPIO.output(output_devices['pump_1'],0)
+        GPIO.output(output_devices['solenoid_1'],0)
+    else:
+        GPIO.output(output_devices['pump_2'],0)
+        GPIO.output(output_devices['solenoid_2'],0)
     print('In Manual')
     sys.stdout.flush()
     time_duration = 0
@@ -230,13 +250,13 @@ def manualDispense(command):
         time_end = time.time()
         time_duration = time_end - time_start
         if time_duration >= 1:
-            print('Tick')
-            sys.stdout.flush()
+            #print('Tick')
+            #sys.stdout.flush()
             getCurrentWeight()
-            print('Current Weight: ' + str(current_weight) + 'Container Weight: ' + str(container_weight))
-            sys.stdout.flush()
+            #print('Current Weight: ' + str(current_weight) + 'Container Weight: ' + str(container_weight))
+            #sys.stdout.flush()
             total_liters =  current_weight - container_weight
-            print('Total: ' + str(total_liters))
+            #print('Total: ' + str(total_liters))
             sys.stdout.flush()
             if total_liters < 0:
                 total_liters = 0
@@ -247,10 +267,10 @@ def manualDispense(command):
             total_liters = 0
             stop_dispense()
             break
-        # GPIO.output(output_devices['pump_1'],1)
-        # GPIO.output(output_devices['solenoid_1'],1)
-        # GPIO.output(output_devices['pump_2'],1)
-        # GPIO.output(output_devices['solenoid_2'],1)
+    GPIO.output(output_devices['pump_1'],1)
+    GPIO.output(output_devices['solenoid_1'],1)
+    GPIO.output(output_devices['pump_2'],1)
+    GPIO.output(output_devices['solenoid_2'],1)
 
 
 def automaticDispense(command, amount_requested):
@@ -288,16 +308,16 @@ def readTemp():
 
         if cold_temp <= 6:
             cooling = False
-            # GPIO.output(output_devices['compressor'],1)
+            GPIO.output(output_devices['compressor'],1)
         elif cold_temp >= 11:
             cooling = True
-            # GPIO.output(output_devices['compressor'],0)
+            GPIO.output(output_devices['compressor'],0)
         if hot_temp <= 55:
             heating = True
-            # GPIO.output(output_devices['heater'],0)
+            GPIO.output(output_devices['heater'],0)
         elif hot_temp >= 70:
             heating = False
-            # GPIO.output(output_devices['heater'],1)
+            GPIO.output(output_devices['heater'],1)
         sio.emit('socket-event', {"destination": "JS", "content": {
                  "type": "TEMP_READING", "body": {"Cold": cold_temp, "Hot": hot_temp}}})
         time.sleep(1)
@@ -340,6 +360,6 @@ except KeyboardInterrupt:
 except Exception as exception:
     print(exception)
 finally:
-    # GPIO.cleanup()
+    GPIO.cleanup()
     sio.disconnect()
     sys.exit()
