@@ -253,7 +253,7 @@ def manualDispense(command):
     while checkCommand() != 'Standby':
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 0.5:
+        if time_duration >= 0.1:
             getCurrentWeight()
             total_liters = (current_weight - container_weight)
             if total_liters < 0:

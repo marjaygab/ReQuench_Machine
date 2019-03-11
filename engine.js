@@ -148,7 +148,6 @@ function main() {
                             var total = msg.content.body.Total;
                             current_size = previous_size - total;
                             current_size = Math.round(current_size);
-                            previous_size = current_size;
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
                             $("#water-level").animate({ height: computed_height + 'px' });
@@ -301,6 +300,7 @@ function main() {
                                     reject();
                                 }else{
                                     if(container_present){
+                                        clearInterval(timer);
                                         resolve();
                                     }
                                     counter++;
