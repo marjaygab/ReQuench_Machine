@@ -19,7 +19,7 @@ $(document).ready(function() {
         
     }
     settings_button.onclick = function() {
-        
+        window.location.assign('Settings.html');   
     }
     maintenance_button.onclick = function() {
         window.location.assign('Maintenance.html');

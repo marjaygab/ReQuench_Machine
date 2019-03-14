@@ -1,0 +1,13 @@
+.mode_switch{
+    padding-left: 15%;
+}
+
+.row{
+    margin-bottom: 5px;
+    vertical-align: middle;
+}
+
+.toggle-handle {
+width: 20px;
+background: #fff;
+}

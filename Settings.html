@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Admin Page</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="styles/css/bootstrap-toggle.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="Settings.css" />
+    <script type="text/javascript" src="styles/js/bootstrap-toggle.min.js"></script>
+    <script src="Settings.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-light bg-dark">
+        <span class="navbar-brand mb-0 h1"><img src="res/brandwlogo.png" height="30" alt=""></span>
+    </nav>
+    <div class="container">
+        <h1 class="display-4">Settings</h1>
+        <!-- <h5>Network</h5>
+        <div class="container">
+            <div class="row">
+                <div class="col-8">Obtain and address automatically?</div>
+                <div class="mode_switch col-4">
+                    <input class="ml-auto" type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">IP Address</div>
+                <div class="col-8">
+                    <input type="text" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">Subnet Mask</div>
+                <div class="col-8">
+                    <input type="text" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-4">Default Gateway</div>
+                <div class="col-8">
+                    <input type="text" class="form-control">
+                </div>
+            </div>
+        </div> -->
+        <h5>Notifications</h5>
+        <div class="container">
+            <div class="row">
+                <div class="col-8">Notify admin for bottle refill?</div>
+                <div class="mode_switch col-4">
+                    <input id="notification_toggler" class="ml-auto" type="checkbox" checked data-toggle="toggle" data-onstyle="success" data-offstyle="danger">
+                </div>
+            </div>
+        </div>
+        <h5>Machine Details</h5>
+        <div class="container">
+            <div class="row">
+                <div class="col-6">Machine Location</div>
+                <div class="col-6">
+                    <input id="machine_location" type="text" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                    <div class="col-6">Model Number</div>
+                    <div class="col-6">
+                        <input id="model_number" type="text" class="form-control">
+                    </div>
+                </div>
+            <div class="row">
+                <div class="col-6">Date of Purchase</div>
+                <div class="col-6">
+                    <input id="date_of_purchase" type="date" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">Last Maintenance Date</div>
+                <div class="col-6">
+                    <input id="last_maintenance_date" type="date" class="form-control">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-6">Price Per mL <a href="#" id="override_link"> Override</a></div>
+                <div class="col-6">
+                    <input id="price_per_ml" type="number" class="form-control" disabled value="0.002">
+                </div>
+            </div>
+        </div>
+        <h5>API Connection</h5>
+        <div class="container">
+            <div class="row">
+                <div class="col-5">Access Token <a href="#" id="reveal_link">Reveal</a></div>
+                <div class="col-7">
+                    <div class="input-group mb-3">
+                        <input id="access_token" type="text" class="form-control" placeholder="Hidden" aria-label="Hidden" aria-describedby="basic-addon2">
+                        <div class="input-group-append">
+                            <button id="renew_access_token" class="btn btn-outline-danger" type="button">Renew</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div class="row">
+                <div class="col-2"></div>
+                <div class="col-4">
+                    <button id="save_button" type="button" class="btn btn-outline-info">Save Changes</button>
+                </div>
+                <div class="col-4">
+                    <button id="defaults_button" type="button" class="btn btn-outline-danger">Reset to Default</button>
+                </div>
+                <div class="col-2"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

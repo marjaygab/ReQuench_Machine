@@ -30,31 +30,6 @@ $(document).ready(function() {
     var seconds;
     var current_step_selected;
 
-
-    Swal.fire({
-        title: 'Please wait..',
-        allowOutsideClick: false,
-        onBeforeOpen: () => {
-            Swal.showLoading();
-            console.log('Before Opened');
-        },
-        onOpen: () => {
-            
-        },
-        onClose: () => {
-        }
-    }).then((result) => {
-        if (
-            result.dismiss === Swal.DismissReason.timer
-        ) {
-            console.log('I was closed by the timer')
-        }
-    })
-
-
-
-
-
     readStepsFile(function(list,size) {
         steps_list = list;
         steps_size = size;

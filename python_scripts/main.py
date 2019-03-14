@@ -482,13 +482,8 @@ def controller():
         else:
             command = checkCommand()
             automaticMode(command)
-            print("pass here")
-            sys.stdout.flush()
         if terminate_flag:
             break
-
-        print("Mode: " + mode + " " + "Operation: " + command)
-        sys.stdout.flush()
         time.sleep(1)
 
 
