@@ -141,6 +141,9 @@ function main() {
 
             httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                 // sessionstorage.setItem('User_Information',json_object);
+
+                store.set('Response_Object',json_object);
+                store.set('Account_Type',json_object.Account_Type);
                 store.set('User_Information', json_object.Account);
                 //check user persmissions first
                 store.set('Purchase_History', json_object.Purchase_History);
@@ -285,6 +288,8 @@ function main() {
                 httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                     // sessionstorage.setItem('User_Information',json_object);
                     if (json_object.Success) {
+                        store.set('Response_Object',json_object);
+                        store.set('Account_Type',json_object.Account_Type);
                         store.set('User_Information', json_object.Account);
                         params = {};
                         params.Acc_ID = json_object.Account.Acc_ID;

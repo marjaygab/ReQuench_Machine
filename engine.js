@@ -36,7 +36,8 @@ function main() {
     var history = store.get('History');
     var purchase_history = store.get('Purchase_History');
     var transaction_history = store.get('Transaction_History');
-    var account_type = store.get('User_Information').Account_Type;
+    var account_type = store.get('Account_Type');
+    var response_object = store.get('Response_Object');
     var machine_settings = store.get('Machine_Settings');
     const socket = io('http://localhost:3000');
     // in seconds
@@ -85,7 +86,8 @@ function main() {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
     commandPy(socket, { command: 'New_Transaction' });
-
+    console.log(response_object);
+    
     //This function couns every second if a user is idle.
     var idle_prompt = setInterval(function () {
         idle_time = idle_time + 1;
@@ -141,22 +143,30 @@ function main() {
             confirmButtonText: 'Yes, Log me out'
         }).then((result) => {
             if (result.value) {
-                store.delete('User_Information');
-                store.delete('Purchase_History');
-                store.delete('Transaction_History');
-                console.log('Terminated, hopefully');
                 //Send Transaction Here
 
                 var params = {};
                 params.API_KEY = machine_settings.api_key;
+                params.Account_Type = account_type;
+                
+                if (account_type == 'Recorded') {
+                    params.Acc_ID = store.get('User_Information').Acc_ID;
+                } else {
+                    params.UU_ID = store.get('User_Information').UU_ID;
+                }
                 params.Transaction = temp_array_transaction;
 
+                console.log(JSON.stringify(params));
+                
                 // httpcustomrequest.http_post('url',params,function(response) {
 
                 // },function(error) {
                     
                 // })
-            
+                // store.delete('User_Information');
+                // store.delete('Purchase_History');
+                // store.delete('Transaction_History');
+                // console.log('Terminated, hopefully');
                 // window.location.assign('login.html');
             }
         })
@@ -572,4 +582,6 @@ function enableAll() {
 function round(value, decimals) {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 }
+
+
   
