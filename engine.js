@@ -158,16 +158,41 @@ function main() {
 
                 console.log(JSON.stringify(params));
                 
-                // httpcustomrequest.http_post('url',params,function(response) {
-
-                // },function(error) {
-                    
-                // })
-                // store.delete('User_Information');
-                // store.delete('Purchase_History');
-                // store.delete('Transaction_History');
-                // console.log('Terminated, hopefully');
-                // window.location.assign('login.html');
+                if (temp_array_transaction.length != 0) {
+                    Swal.fire({
+                        title: 'Please wait..',
+                        allowOutsideClick: false,
+                        onBeforeOpen: () => {
+                            Swal.showLoading();
+                        },
+                        onOpen: () => {
+                            httpcustomrequest.http_post('Save_Transaction.php',params,function(response) {
+                                if (response.Success) {
+                                    store.delete('User_Information');
+                                    store.delete('Purchase_History');
+                                    store.delete('Transaction_History');
+                                    console.log('Terminated, hopefully');
+                                    Swal.close();
+                                    window.location.assign('login.html');
+                                } else {
+                                    //handle error here   
+                                }
+                            },function(error) {
+                            //handle error here 
+                            });
+                        },
+                        onClose: () => {
+                        }
+                    }).then((result) => {
+                    });                    
+                } else {
+                    store.delete('User_Information');
+                    store.delete('Purchase_History');
+                    store.delete('Transaction_History');
+                    console.log('Terminated, hopefully');
+                    Swal.close();
+                    window.location.assign('login.html');
+                }
             }
         })
     }
@@ -232,6 +257,7 @@ function main() {
                             params.Remaining_Balance = remaining_balance;
                         }
                         temp_array_transaction.push(params);
+                        jsonWrite(machine_settings);
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -485,8 +511,9 @@ function main() {
         } else {
             //do things for automatic dispensing
             var amount = 0.00;
-            Swal({
+            Swal.fire({
                 title: 'Amount',
+                allowOutsideClick: false,
                 html:
                     'Enter the amount of water to be dispensed:<br/><br/><button id="decrease" class="btn btn-info"><strong>-</strong></button>' +
                     '<input type="text" id=amount>' +
@@ -519,24 +546,25 @@ function main() {
                     }
 
                 },
-                onClose: () => {
-                    commandPy(socket, { command: 'Set_Amount', amount: amount });
-                    if (current == 'HOT') {
-                        commandPy(socket, { command: 'Toggle_Hot' });
-
-                        $(this).text("Stop");
-                        $("#hot-button").prop('disabled', true);
-                        $("#cold-button").prop('disabled', true);
-                        $('#toggle_switch').prop('disabled', true);
-                    } else {
-                        commandPy(socket, { command: 'Toggle_Cold' });
-                        $(this).text("Stop");
-                        $("#hot-button").prop('disabled', true);
-                        $("#cold-button").prop('disabled', true);
-                        $('#toggle_switch').prop('disabled', true);
-                    }
-                    amount = 0;
+                onClose: () => {    
                 }
+            }).then((result)=>{
+                commandPy(socket, { command: 'Set_Amount', amount: amount });
+                current_operation.set(current);
+                if (current == 'HOT') {
+                    commandPy(socket, { command: 'Toggle_Hot' });
+                    $(this).text("Stop");
+                    $("#hot-button").prop('disabled', true);
+                    $("#cold-button").prop('disabled', true);
+                    $('#toggle_switch').prop('disabled', true);
+                } else {
+                    commandPy(socket, { command: 'Toggle_Cold' });
+                    $(this).text("Stop");
+                    $("#hot-button").prop('disabled', true);
+                    $("#cold-button").prop('disabled', true);
+                    $('#toggle_switch').prop('disabled', true);
+                }
+                amount = 0;
             });
 
 
@@ -583,5 +611,15 @@ function round(value, decimals) {
     return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
 }
 
+function jsonWrite(file) {
+    // Use this path for windows.
+    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    
+    //Use this path for RasPi
+    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
+    fs.writeFile(file_path, JSON.stringify(file,null,6), function (err) {
+      if (err) return console.log(err);
+    });
+}
 
   
