@@ -1,0 +1,8 @@
+{
+    "location":"Chez Rafael",
+    "date_of_purchase":"03/09/2019",
+    "last_maintenance_date":"ABC123",
+    "price_per_ml":0.002,
+    "current_water_level":20000,
+    "api_key":"f18803ab198a431ff4ca72f1e5023c7b"
+}

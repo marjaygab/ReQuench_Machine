@@ -1,9 +1,11 @@
 let $ = require("jquery");
 let { PythonShell } = require('python-shell');
 let fs = require('fs');
+let moment = require('moment');
 let path = require('path');
 let file = require('./operations');
 let httpcustomrequest = require('./loginBackend.js');
+let os = require('os');
 const Store = require('electron-store');
 const store = new Store();
 const io = require('socket.io-client');
@@ -26,14 +28,16 @@ function main() {
     //update user data every reloading of the page
     let Swal = require('sweetalert2');
     var branding_image = document.getElementById('branding_image');
-    var user_information = store.get('User_Information');
     var ml_label = document.getElementById('ml_label');
-    var history = store.get('History');
-    var purchase_history = store.get('Purchase_History');
-    var transaction_history = store.get('Transaction_History');
     var logout_button = document.getElementById('logout_button');
     var cold_label = document.getElementById('cold_label');
     var hot_label = document.getElementById('hot_label');
+    var user_information = store.get('User_Information');
+    var history = store.get('History');
+    var purchase_history = store.get('Purchase_History');
+    var transaction_history = store.get('Transaction_History');
+    var account_type = store.get('User_Information').Account_Type;
+    var machine_settings = store.get('Machine_Settings');
     const socket = io('http://localhost:3000');
     // in seconds
     const idle_timeout = 3600;
@@ -56,10 +60,31 @@ function main() {
     var filename = 'main.py';
     var transactions_list = [];
     var container_present = false;
+    var current_operation = {
+        operation: 'STANDBY',
+        get : function() {
+            return this.operation;
+        },
+        set : function(params) {
+            switch (params) {
+                case 'HOT':
+                    this.operation = 'HOT'
+                    break;
+                case 'COLD':
+                    this.operation = 'COLD'
+                    break;
+                case 'STANDBY':
+                    this.operation = 'STANDBY'
+                    break;
+                default:
+                    break;
+            }
+        } 
+    };
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
-    commandPy(socket, {command:'New_Transaction'});
+    commandPy(socket, { command: 'New_Transaction' });
 
     //This function couns every second if a user is idle.
     var idle_prompt = setInterval(function () {
@@ -99,11 +124,6 @@ function main() {
         }
     }, idle_interval);
 
-
-    // Use this function if Python will run AFTER login
-    //This function read files every temperature_interval millis
-
-
     //Listens for Mouse Movement. If mouse moves, idle time = 0
     window.onmousemove = function (e) {
         idle_time = 0;
@@ -125,7 +145,19 @@ function main() {
                 store.delete('Purchase_History');
                 store.delete('Transaction_History');
                 console.log('Terminated, hopefully');
-                window.location.assign('login.html');
+                //Send Transaction Here
+
+                var params = {};
+                params.API_KEY = machine_settings.api_key;
+                params.Transaction = temp_array_transaction;
+
+                // httpcustomrequest.http_post('url',params,function(response) {
+
+                // },function(error) {
+                    
+                // })
+            
+                // window.location.assign('login.html');
             }
         })
     }
@@ -140,9 +172,11 @@ function main() {
                     hot_int = Math.round(parseFloat(msg.content.body.Hot));
                     cold_label.innerHTML = cold_int;
                     hot_label.innerHTML = hot_int;
-                break;
+                    break;
                 case "DISPENSE_READING":
-                    console.log(msg);
+                    // console.log(msg);
+                    console.log(current_operation.get());
+
                     try {
                         if (current_size >= 0) {
                             var total = msg.content.body.Total;
@@ -160,16 +194,42 @@ function main() {
                     } catch (error) {
                         throw error;
                     }
-                break;
+                    break;
                 case "DISPENSE_CONTROL":
                     if (msg.content.body === 'Stopped_Dispense') {
                         enableAll();
+                        var amount_dispensed = previous_size - current_size;
+                        var price_computed = amount_dispensed * machine_settings.price_per_ml;
+                        price_computed = round(price_computed,2);
+                        var water_level_before = machine_settings.current_water_level
+                        machine_settings.current_water_level = machine_settings.current_water_level - amount_dispensed;
+                        var water_level_after = machine_settings.current_water_level
+                        var remaining_balance = current_size;
+
+                        var params = {};
+                        
+                        if (current_operation.get() != 'STANDBY') {
+                            //Should I get time here or sa server na?
+                            var date_now = moment().format('YYYY-MM-DD');
+                            var time_now = moment().format('hh:mm:ss');
+                            params.Time =time_now;
+                            params.Date = date_now;
+                            params.Temperature = current_operation.get();
+                            params.Amount = amount_dispensed;
+                            params.Price_Computed = price_computed;
+                            params.Water_Level_Before = water_level_before;
+                            params.Water_Level_After = water_level_after;
+                            params.Remaining_Balance = remaining_balance;
+                        }
+                        temp_array_transaction.push(params);
+                        previous_size = current_size;
+                        current_operation.set('STANDBY');
                     }
-                break;
+                    break;
                 case "CONTAINER_STATUS":
-                    if(msg.content.body == 'Container Present'){
+                    if (msg.content.body == 'Container Present') {
                         container_present = true;
-                    }else if(msg.content.body == 'Container Absent'){
+                    } else if (msg.content.body == 'Container Absent') {
                         container_present = false;
                     }
                     break;
@@ -178,9 +238,9 @@ function main() {
             }
             // if (msg.content != 'Stopped Dispense') {
             //     console.log(msg);
-            
+
             // } else {
-                
+
             // }
         }
     });
@@ -205,13 +265,6 @@ function main() {
                     var purchase_history = store.get('Purchase_History');
                     var transaction_history = store.get('Transaction_History');
 
-                    for (var i = 0; i < transaction_history.length; i++) {
-                        temp_array_transaction.push(transaction_history[i]);
-                    }
-                    for (var i = 0; i < purchase_history.length; i++) {
-                        temp_array_purchase.push(purchase_history[i]);
-                    }
-
                     //function used to sort DATE TIME
                     var compare_function = function (a, b) {
                         if (Date.parse(a.Date) > Date.parse(b.Date)) {
@@ -229,23 +282,46 @@ function main() {
                         }
                     }
 
-                    //Logic for finding the Full and Current Size for representation
-                    if (Date.parse(transaction_history.Date) > Date.parse(purchase_history.Date)) {
-                        full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
-                        current_size = parseInt(transaction_history.Remaining_Balance);
-                    } else if (Date.parse(transaction_history.Date) < Date.parse(purchase_history.Date)) {
-                        full_size = parseInt(user_information.Balance);
-                        current_size = full_size;
-                    } else {
-                        if (transaction_history.Time > purchase_history.Time) {
-                            full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
-                            current_size = parseInt(transaction_history.Remaining_Balance);
-                        } else if (transaction_history.Time < purchase_history.Time) {
-
-                            full_size = parseInt(user_information.Balance);
-                            current_size = full_size;
+                    if (transaction_history != null) {
+                        for (var i = 0; i < transaction_history.length; i++) {
+                            temp_array_transaction.push(transaction_history[i]);
                         }
                     }
+                    if (purchase_history != null) {
+                        for (var i = 0; i < purchase_history.length; i++) {
+                            temp_array_purchase.push(purchase_history[i]);
+                        }
+                    }
+
+
+                    if (transaction_history == null && purchase_history == null) {
+                        full_size = 0;
+                        current_size = 0;
+                    } else if (transaction_history == null && purchase_history != null) {
+                        full_size = parseInt(user_information.Balance);
+                        current_size = full_size;
+                    } else if (transaction_history != null && purchase_history == null) {
+                        full_size = parseInt(transaction_history.Remaining_Balance);
+                        current_size = full_size;
+                    } else {
+                        if (Date.parse(transaction_history.Date) > Date.parse(purchase_history.Date)) {
+                            full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
+                            current_size = parseInt(transaction_history.Remaining_Balance);
+                        } else if (Date.parse(transaction_history.Date) < Date.parse(purchase_history.Date)) {
+                            full_size = parseInt(user_information.Balance);
+                            current_size = full_size;
+                        } else {
+                            if (transaction_history.Time > purchase_history.Time) {
+                                full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
+                                current_size = parseInt(transaction_history.Remaining_Balance);
+                            } else if (transaction_history.Time < purchase_history.Time) {
+
+                                full_size = parseInt(user_information.Balance);
+                                current_size = full_size;
+                            }
+                        }
+                    }
+                    //Logic for finding the Full and Current Size for representation
                     previous_size = current_size;
                     size_percentage = (current_size / full_size);
                     computed_height = size_percentage * 250;
@@ -253,100 +329,78 @@ function main() {
 
                     ml_label.innerHTML = `${user_information.Balance} mL`;
                     js_ready = true;
-                    
-                    //This line of code starts the python file 'main.py'
-                    // py_object = new PythonShell(filename, options);
 
-                    // //listens for print() from main.py
-                    // py_object.on('message', function (message) {
-                    //     if (message == 'Ready') {
-                    //         py_ready = true;
-                    //         Swal.close();
-                    //     }
-                    // });
 
-                    // //end the current print stdout
-                    // py_object.end(function (err, code, signal) {
-                    //     if (err){
-                    //         Swal.fire({
-                    //         title: 'An error occured. Refreshing page..',
-                    //         type: 'error',
-                    //         confirmButtonColor: '#3085d6',
-                    //         confirmButtonText: 'Ok',
-                    //         onClose: function () {
-                    //             location.reload();
-                    //         }
-                    //         }).then((result) => {
-                    //             location.reload();
-                    //         });
-                    //     }
-                    // });
                     Swal.close();
 
-                    var container_promise = new Promise(function(resolve,reject) {
-                        commandPy(socket,{command:'Get_Baseline'});
+                    var container_promise = new Promise(function (resolve, reject) {
+                        commandPy(socket, { command: 'Get_Baseline' });
                         Swal.fire({
-                        title: 'Waiting for container..',
-                        allowOutsideClick: false,
-                        onClose: function () {
-                        },onBeforeOpen: function() {
-                            Swal.showLoading();
-                            var timeout = 10;
-                            var counter = 0;
-                            var timer = setInterval(() => {
-                                commandPy(socket,{command:'Get_Container'});
-                                if(counter == timeout){
-                                    clearInterval(timer);
-                                    reject();
-                                }else{
-                                    if(container_present){
+                            title: 'Waiting for container..',
+                            allowOutsideClick: false,
+                            onClose: function () {
+                            }, onBeforeOpen: function () {
+                                Swal.showLoading();
+                                var timeout = 10;
+                                var counter = 0;
+                                var timer = setInterval(() => {
+                                    commandPy(socket, { command: 'Get_Container' });
+                                    if (counter == timeout) {
                                         clearInterval(timer);
-                                        resolve();
+                                        resolve(false)
+                                    } else {
+                                        if (container_present) {
+                                            clearInterval(timer);
+                                            resolve(true);
+                                        }
+                                        counter++;
                                     }
-                                    counter++;
-                                }
-                            }, 1000);
-                        }
+                                }, 1000);
+                            }
                         });
 
                     });
 
-                    container_promise.then(function() {
-                        Swal.close();
-                    })
-                    .catch(function() {
-                       //Container not detected. Try again? 
-                       return Swal.fire({
-                        title: 'Container not detected. Try again?',
-                        type: 'error',
-                        cancelButtonText: 'Nope',
-                        showCancelButton: true,
-                        allowOutsideClick: false,
-                        });
+                    container_promise.then(function (response) {
+                        if (response) {
+                            Swal.close();
+                        } else {
+                            return Swal.fire({
+                                title: 'Container not detected. Try again?',
+                                type: 'error',
+                                cancelButtonText: 'Nope',
+                                showCancelButton: true,
+                                allowOutsideClick: false,
+                            });
+                        }
                     }).then((result) => {
                         console.log(result);
-                        if(result.value){
+                        if (result.value) {
                             console.log('OKed');
                             window.location.reload();
-                        }else if(result.dismiss == 'cancel'){
+                        } else if (result.dismiss == 'cancel') {
                             //properly exit
                             console.log('Cancelled');
                             window.location.assign('login.html');
                         }
-                    });
+                    })
+                        .catch(function () {
+                            //Container not detected. Try again? 
+
+                        });
 
                 } else {
-                        Swal.fire({
-                            title: 'An error occured. Refreshing page..',
-                            type: 'error',
-                            confirmButtonColor: '#3085d6',
-                            confirmButtonText: 'Ok',
-                            onClose: function () {
-                                location.reload();
-                            }
-                        }).then((result) => {
+                    Swal.fire({
+                        title: 'An error occured. Refreshing page..',
+                        type: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Ok',
+                        onClose: function () {
                             location.reload();
-                        })
+                        }
+                    }).then((result) => {
+                        location.reload();
+                    })
                 }
             }, function (error) {
                 console.log(`Error: ${error}`);
@@ -378,6 +432,8 @@ function main() {
                         $("#cold-button").prop('disabled', true);
                         $('#toggle_switch').prop('disable', true);
                         commandPy(socket, { command: 'Toggle_Hot' });
+                        current_operation.set('HOT');
+                        
                     } else {
                         data.command = 'stop';
                         $('#toggle_switch').bootstrapToggle('enable');
@@ -387,8 +443,8 @@ function main() {
                         $('#toggle_switch').prop('disable', false);
                         commandPy(socket, { command: 'Stop_Dispense' });
                         var transaction_params = {};
-                        previous_size = current_size;
-                    
+                        // previous_size = current_size;
+
                     }
                     break;
 
@@ -401,12 +457,12 @@ function main() {
                         $("#hot-button").prop('disabled', true);
                         $('#toggle_switch').prop('disable', true);
                         commandPy(socket, { command: 'Toggle_Cold' });
+                        current_operation.set('COLD');
                     } else {
                         data.command = 'stop';
                         $('#toggle_switch').bootstrapToggle('enable');
                         $(this).removeClass().addClass("btn btn-primary");
                         $(this).text("COLD");
-                        previous_size = current_size;
                         $("#hot-button").prop('disabled', false);
                         $('#toggle_switch').prop('disable', false);
                         commandPy(socket, { command: 'Stop_Dispense' });
@@ -489,19 +545,7 @@ function main() {
         }
     });
 
-    //Supposed to terminate the Python object every window reload
 
-    //This is just a checker function
-    // ml_label.onclick = function () {
-    //     var msg = {
-    //         destination: 'Python',
-    //         content: {
-    //             command: 'Toggle_Manual'
-    //         }
-    //     };
-    //     commandPy(socket, { command: 'Toggle_Manual' });
-    //     console.log('Clicked');
-    // }
 }
 
 
@@ -525,10 +569,7 @@ function enableAll() {
     $('#toggle_switch').prop('disable', false);
 }
 
-//Function to write into json file
-// function jsonWrite(directory, file) {
-//     // Sample Directory :'/home/pi/Documents/ReQuench_Machine/operations.json'
-//     fs.writeFile(directory, JSON.stringify(file, null, 6), function (err) {
-//         if (err) return console.log(err);
-//     });
-// }
+function round(value, decimals) {
+    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+}
+  

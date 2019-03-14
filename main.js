@@ -81,40 +81,6 @@ py_object.end(function (err, code, signal) {
     if (err) throw err;
 });
 
-var read_temp = function () {
-    fs.readFile(cold_probe_path, 'utf8', function (err, data) {
-        var index = data.indexOf('t=');
-        var temp = data.substring(index + 2, data.length);
-        var temperature = parseInt(temp) / 1000
-        temperature = Math.round(temperature);
-        console.log(temperature);
-        cold_label.innerHTML = `${temperature}`;
-        store.set('Cold_Temp',temperature);
-        if (temperature <= 5) {
-            commandPy(io, { command: 'Compressor Off' });
-        } else if (temperature >= 7) {
-            commandPy(io, { command: 'Compressor On' });
-        }
-    });
-
-    fs.readFile(hot_probe_path, 'utf8', function (err, data) {
-        var index = data.indexOf('t=');
-        var temp = data.substring(index + 2, data.length);
-        var temperature = parseInt(temp) / 1000
-        temperature = Math.round(temperature);
-        console.log(temperature);
-        store.set('Hot_Temp',temperature);
-        hot_label.innerHTML = `${temperature}`;
-        if (temperature <= 5) {
-            commandPy(io, { command: 'Heater Off' });
-        } else if (temperature >= 7) {
-            commandPy(io, { command: 'Heater On' });
-        }
-    });
-}
-
-
-
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
