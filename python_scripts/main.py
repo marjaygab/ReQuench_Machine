@@ -57,8 +57,8 @@ GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
-GPIO.output(output_devices['compressor'],1)
-GPIO.output(output_devices['heater'],1)
+GPIO.output(output_devices['compressor'],0)
+GPIO.output(output_devices['heater'],0)
 @sio.on("connect")
 def on_connect():
     print("I'm connected!")
@@ -299,7 +299,7 @@ def manualDispense(command):
     while checkCommand() != "Standby":
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 0.1:
+        if time_duration >= 0.5:
             # Use This Code for Actual Testing
             getCurrentWeight()
             total_liters = (current_weight - container_weight)
@@ -487,7 +487,7 @@ def main():
     print("Ready")
     sys.stdout.flush()
     threading.Thread(target=controller).start()
-    #threading.Thread(target=readTemp).start()
+    threading.Thread(target=readTemp).start()
     while True:
         pass
 
