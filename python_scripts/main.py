@@ -119,7 +119,6 @@ def on_message(data):
         elif command == "Get_Container":
             getContainerWeight()
             if container_weight > 0:
-                hx.tare()
                 sio.emit(
                     "socket-event",
                     {
@@ -226,7 +225,6 @@ def getContainerWeight():
     # print('Container Weight' + str((current_weight-current_baseline)/200))
     # sys.stdout.flush()
     container_weight = ((current_weight - current_baseline) / 200)
-    hx.tare()
     # print('Container Weight: ' + container_weight)
     # sys.stdout.flush()
     # if container_weight < 0:
@@ -304,7 +302,7 @@ def manualDispense(command):
         if time_duration >= 0.5:
             # Use This Code for Actual Testing
             getCurrentWeight()
-            total_liters = current_weight
+            total_liters = (current_weight - container_weight)
             if total_liters < 0:
                 total_liters = 0
 
@@ -367,7 +365,7 @@ def automaticDispense(command, amount_requested):
             if time_duration >= 0.1:
                 # Use This Code for Actual Testing
                 getCurrentWeight()
-                total_liters = current_weight
+                total_liters = (current_weight - container_weight)
                 if total_liters < 0:
                     total_liters = 0
 
