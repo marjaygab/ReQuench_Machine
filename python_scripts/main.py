@@ -220,11 +220,16 @@ def getContainerWeight():
 
     # print('Current Baseline: ' + str(current_baseline))
     # sys.stdout.flush()
-    current_weight = hx.get_weight_A(5)
-    current_weight = round(current_weight // float(1000),1) * 1000
+    try:
+        current_weight = hx.get_weight_A(5)
+        current_weight = round(current_weight // float(1000),1) * 1000
+        container_weight = ((current_weight - current_baseline) / 200)
+        hx.tare()
+    except Exception as exception:
+        print(exception)
+        sys.stdout.flush()
     # print('Container Weight' + str((current_weight-current_baseline)/200))
     # sys.stdout.flush()
-    container_weight = ((current_weight - current_baseline) / 200)
     # print('Container Weight: ' + container_weight)
     # sys.stdout.flush()
     # if container_weight < 0:
