@@ -53,12 +53,12 @@ total_liters = 0
 base_weight = 0
 terminate_flag = False
 # GPIO.setup(output_devices['pump_1'],GPIO.OUT)
-# GPIO.output(output_devices['pump_1'],1)
-# GPIO.output(output_devices['solenoid_1'],1)
-# GPIO.output(output_devices['pump_2'],1)
-# GPIO.output(output_devices['solenoid_2'],1)
-# GPIO.output(output_devices['compressor'],0)
-# GPIO.output(output_devices['compressor'],0)
+GPIO.output(output_devices['pump_1'],1)
+GPIO.output(output_devices['solenoid_1'],1)
+GPIO.output(output_devices['pump_2'],1)
+GPIO.output(output_devices['solenoid_2'],1)
+GPIO.output(output_devices['compressor'],1)
+GPIO.output(output_devices['heater'],1)
 @sio.on("connect")
 def on_connect():
     print("I'm connected!")
@@ -117,7 +117,6 @@ def on_message(data):
         elif command == "Get_Baseline":
             getBaseline()
         elif command == "Get_Container":
-            time.sleep(1)
             getContainerWeight()
             if container_weight > 0:
                 sio.emit(
@@ -351,8 +350,8 @@ def automaticDispense(command, amount_requested):
         if command == "COLD":
             # print("Opened COLD Valve, Opened COLD Pump")
             # sys.stdout.flush()
-            # GPIO.output(output_devices['pump_1'],0)
-            # GPIO.output(output_devices['solenoid_1'],0)
+            GPIO.output(output_devices['pump_1'],0)
+            GPIO.output(output_devices['solenoid_1'],0)
         else:
             # print("Opened HOT Valve, Opened HOoooT Pump")
             # sys.stdout.flush()
@@ -488,7 +487,7 @@ def main():
     print("Ready")
     sys.stdout.flush()
     threading.Thread(target=controller).start()
-    threading.Thread(target=readTemp).start()
+    #threading.Thread(target=readTemp).start()
     while True:
         pass
 
