@@ -59,6 +59,7 @@ GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
 GPIO.output(output_devices['compressor'],0)
 GPIO.output(output_devices['heater'],0)
+
 @sio.on("connect")
 def on_connect():
     print("I'm connected!")
@@ -67,6 +68,7 @@ def on_connect():
 
 @sio.on("socket-event")
 def on_message(data):
+    global hx
     global mode_manual
     global mode_auto
     global temp_hot
@@ -193,8 +195,7 @@ def getBaseline():
     sys.stdout.flush()
     val = hx.get_weight_A(5)
     current_baseline = round(val // float(1000),1) * 1000
-    hx.power_down()
-    hx.power_up()
+    hx.reset()
     print("Baseline: " + current_baseline)
     sys.stdout.flush()
 
@@ -210,8 +211,7 @@ def getCurrentWeight():
     # sys.stdout.flush()
     current_weight = round(val // float(1000),1) * 1000
     current_weight = (current_weight-current_baseline) / 200
-    hx.power_down()
-    hx.power_up()
+    hx.reset()
 
 def getContainerWeight():
     global hx
@@ -229,8 +229,7 @@ def getContainerWeight():
         current_weight = hx.get_weight_A(5)
         current_weight = round(current_weight // float(1000),1) * 1000
         container_weight = ((current_weight - current_baseline) / 200)
-        hx.power_down()
-        hx.power_up()
+        hx.reset()
     except Exception as exception:
         print(exception)
         sys.stdout.flush()

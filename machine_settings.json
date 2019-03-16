@@ -6,5 +6,6 @@
       "price_per_ml": "0.002",
       "current_water_level": 19780,
       "api_key": "f18803ab198a431ff4ca72f1e5023c7b",
-      "notify_admin": false
+      "notify_admin": false,
+      "critical_level": 20
 }

@@ -79,6 +79,22 @@ function main() {
     }
 
 
+    if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: 'Water is at critical level. Please call maintenance for Refill.',
+            confirmButtonText:"I am an Admin",
+            allowOutsideClick:false,
+          }).then((result)=>{
+                if (result.value) {
+                    Swal.close();
+                }
+          });
+    }
+
+
+
     enter_button.onclick = function () {
         if (otp_string.length == 6) {
             //handle enter button here
@@ -87,7 +103,6 @@ function main() {
             $('#enterotpbutton').prop('disabled', false);
             $("input:text").prop('disabled', true);
             hideKeyboard();
-
         } else {
             Swal.fire({
                 type: 'error',
@@ -106,7 +121,6 @@ function main() {
     }
 
     input_text_field.oninput = function () {
-
         if (this.value.length % 10 == 0 && this.value.length > 10) {
             present_value = this.value;
             this.value = '';
