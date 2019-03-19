@@ -55,6 +55,9 @@ function main() {
     var computed_height = 0;
     var previous_size = 0;
     var idle_time = 0;
+    var water_level_before = 0;
+    var water_level_after = 0;
+    var temp_water_level = 0;
     var py_ready = false;
     var js_ready = false;
     var py_object;
@@ -63,10 +66,10 @@ function main() {
     var container_present = false;
     var current_operation = {
         operation: 'STANDBY',
-        get : function() {
+        get: function () {
             return this.operation;
         },
-        set : function(params) {
+        set: function (params) {
             switch (params) {
                 case 'HOT':
                     this.operation = 'HOT'
@@ -80,14 +83,18 @@ function main() {
                 default:
                     break;
             }
-        } 
+        }
     };
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
     commandPy(socket, { command: 'New_Transaction' });
     console.log(response_object);
-    
+
+
+
+
+
     //This function couns every second if a user is idle.
     var idle_prompt = setInterval(function () {
         idle_time = idle_time + 1;
@@ -144,11 +151,10 @@ function main() {
         }).then((result) => {
             if (result.value) {
                 //Send Transaction Here
-
                 var params = {};
                 params.API_KEY = machine_settings.api_key;
                 params.Account_Type = account_type;
-                
+
                 if (account_type == 'Recorded') {
                     params.Acc_ID = store.get('User_Information').Acc_ID;
                 } else {
@@ -156,8 +162,6 @@ function main() {
                 }
                 params.Transaction = temp_array_transaction;
 
-                console.log(JSON.stringify(params));
-                
                 if (temp_array_transaction.length != 0) {
                     Swal.fire({
                         title: 'Please wait..',
@@ -166,7 +170,7 @@ function main() {
                             Swal.showLoading();
                         },
                         onOpen: () => {
-                            httpcustomrequest.http_post('Save_Transaction.php',params,function(response) {
+                            httpcustomrequest.http_post('Save_Transaction.php', params, function (response) {
                                 if (response.Success) {
                                     store.delete('User_Information');
                                     store.delete('Purchase_History');
@@ -177,14 +181,14 @@ function main() {
                                 } else {
                                     //handle error here   
                                 }
-                            },function(error) {
-                            //handle error here 
+                            }, function (error) {
+                                //handle error here 
                             });
                         },
                         onClose: () => {
                         }
                     }).then((result) => {
-                    });                    
+                    });
                 } else {
                     store.delete('User_Information');
                     store.delete('Purchase_History');
@@ -214,13 +218,86 @@ function main() {
 
                     try {
                         if (current_size >= 0) {
+                            //Get volume reading from python
                             var total = msg.content.body.Total;
+
+                            //Subtract total reading from water level
+                            temp_water_level = machine_settings.current_water_level - total;
+
+                            //Get current size for GUI presentation
                             current_size = previous_size - total;
                             current_size = Math.round(current_size);
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
                             $("#water-level").animate({ height: computed_height + 'px' });
+
+                            //Show current mL label
                             ml_label.innerHTML = `${current_size} mL`;
+
+                            if (getPercentage(temp_water_level, 20000) <= machine_settings.critical_level) {
+                                Swal.fire({
+                                    type: 'error',
+                                    title: 'Oops...',
+                                    text: 'Water is at critical level. Ending transaction.',
+                                    confirmButtonText: "Ok",
+                                    allowOutsideClick: false,
+                                    onBeforeOpen: () => {
+                                        commandPy(socket, { command: 'Stop_Dispense' });
+                                    },
+                                }).then((result) => {
+                                    if (result.value) {
+                                        //send last transaction here
+                                        var params = {};
+                                        params.API_KEY = machine_settings.api_key;
+                                        params.Account_Type = account_type;
+
+                                        if (account_type == 'Recorded') {
+                                            params.Acc_ID = store.get('User_Information').Acc_ID;
+                                        } else {
+                                            params.UU_ID = store.get('User_Information').UU_ID;
+                                        }
+                                        params.Transaction = temp_array_transaction;
+
+                                        if (temp_array_transaction.length != 0) {
+                                            Swal.fire({
+                                                title: 'Please wait..',
+                                                allowOutsideClick: false,
+                                                onBeforeOpen: () => {
+                                                    Swal.showLoading();
+                                                },
+                                                onOpen: () => {
+                                                    httpcustomrequest.http_post('Save_Transaction.php', params, function (response) {
+                                                        if (response.Success) {
+                                                            store.delete('User_Information');
+                                                            store.delete('Purchase_History');
+                                                            store.delete('Transaction_History');
+                                                            console.log('Terminated, hopefully');
+                                                            Swal.close();
+                                                            window.location.assign('login.html');
+                                                        } else {
+                                                            //handle error here   
+                                                        }
+                                                    }, function (error) {
+                                                        //handle error here 
+                                                    });
+                                                },
+                                                onClose: () => {
+                                                }
+                                            }).then((result) => {
+                                            });
+                                        } else {
+                                            store.delete('User_Information');
+                                            store.delete('Purchase_History');
+                                            store.delete('Transaction_History');
+                                            console.log('Terminated, hopefully');
+                                            Swal.close();
+                                            window.location.assign('login.html');
+                                        }
+                                        Swal.close();
+                                        window.location.assign('login.html');
+                                    }
+                                });
+                            }
                         } else {
                             //let python know that there is nothing left
                             commandPy(socket, { command: 'Stop_Dispense' });
@@ -235,19 +312,16 @@ function main() {
                         enableAll();
                         var amount_dispensed = previous_size - current_size;
                         var price_computed = amount_dispensed * machine_settings.price_per_ml;
-                        price_computed = round(price_computed,2);
-                        var water_level_before = machine_settings.current_water_level
-                        machine_settings.current_water_level = machine_settings.current_water_level - amount_dispensed;
-                        var water_level_after = machine_settings.current_water_level
+                        price_computed = round(price_computed, 2);
                         var remaining_balance = current_size;
-
+                        water_level_before = machine_settings.current_water_level;
+                        water_level_after = temp_water_level;
                         var params = {};
-                        
+
                         if (current_operation.get() != 'STANDBY') {
-                            //Should I get time here or sa server na?
                             var date_now = moment().format('YYYY-MM-DD');
                             var time_now = moment().format('hh:mm:ss');
-                            params.Time =time_now;
+                            params.Time = time_now;
                             params.Date = date_now;
                             params.Temperature = current_operation.get();
                             params.Amount = amount_dispensed;
@@ -292,155 +366,174 @@ function main() {
         },
         onOpen: () => {
             console.log('Opened');
-            var params = {};
-            params.Acc_ID = store.get('User_Information').Acc_ID;
-            httpcustomrequest.http_post('Machine_Init.php', params, function (json_object) {
-                if (json_object != false) {
-                    store.set('Purchase_History', json_object.Purchase_History);
-                    store.set('Transaction_History', json_object.Transaction_History);
-                    var purchase_history = store.get('Purchase_History');
-                    var transaction_history = store.get('Transaction_History');
+            if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    timer: 2000,
+                    text: 'Water is at critical level. Closing transaction..',
+                    confirmButtonText: "Ok",
+                    allowOutsideClick: false,
+                    onBeforeOpen: () => {
+                        Swal.showLoading();
+                    }
+                }).then((result) => {
+                    if (result.dismiss === Swal.DismissReason.timer) {
+                        Swal.close();
+                        window.location.assign('login.html');
+                    }
+                });
+            } else {
+                var params = {};
+                params.Acc_ID = store.get('User_Information').Acc_ID;
+                httpcustomrequest.http_post('Machine_Init.php', params, function (json_object) {
+                    if (json_object != false) {
+                        store.set('Purchase_History', json_object.Purchase_History);
+                        store.set('Transaction_History', json_object.Transaction_History);
+                        var purchase_history = store.get('Purchase_History');
+                        var transaction_history = store.get('Transaction_History');
 
-                    //function used to sort DATE TIME
-                    var compare_function = function (a, b) {
-                        if (Date.parse(a.Date) > Date.parse(b.Date)) {
-                            if (a.Time > b.Time) {
-                                return -1;
+                        //function used to sort DATE TIME
+                        var compare_function = function (a, b) {
+                            if (Date.parse(a.Date) > Date.parse(b.Date)) {
+                                if (a.Time > b.Time) {
+                                    return -1;
+                                } else {
+                                    return 1;
+                                }
                             } else {
-                                return 1;
-                            }
-                        } else {
-                            if (a.Time > b.Time) {
-                                return -1;
-                            } else {
-                                return 1;
+                                if (a.Time > b.Time) {
+                                    return -1;
+                                } else {
+                                    return 1;
+                                }
                             }
                         }
-                    }
 
-                    if (transaction_history != null) {
-                        for (var i = 0; i < transaction_history.length; i++) {
-                            temp_array_transaction.push(transaction_history[i]);
+                        if (transaction_history != null) {
+                            for (var i = 0; i < transaction_history.length; i++) {
+                                temp_array_transaction.push(transaction_history[i]);
+                            }
                         }
-                    }
-                    if (purchase_history != null) {
-                        for (var i = 0; i < purchase_history.length; i++) {
-                            temp_array_purchase.push(purchase_history[i]);
+                        if (purchase_history != null) {
+                            for (var i = 0; i < purchase_history.length; i++) {
+                                temp_array_purchase.push(purchase_history[i]);
+                            }
                         }
-                    }
 
 
-                    if (transaction_history == null && purchase_history == null) {
-                        full_size = 0;
-                        current_size = 0;
-                    } else if (transaction_history == null && purchase_history != null) {
-                        full_size = parseInt(user_information.Balance);
-                        current_size = full_size;
-                    } else if (transaction_history != null && purchase_history == null) {
-                        full_size = parseInt(transaction_history.Remaining_Balance);
-                        current_size = full_size;
-                    } else {
-                        if (Date.parse(transaction_history.Date) > Date.parse(purchase_history.Date)) {
-                            full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
-                            current_size = parseInt(transaction_history.Remaining_Balance);
-                        } else if (Date.parse(transaction_history.Date) < Date.parse(purchase_history.Date)) {
+                        if (transaction_history == null && purchase_history == null) {
+                            full_size = 0;
+                            current_size = 0;
+                        } else if (transaction_history == null && purchase_history != null) {
                             full_size = parseInt(user_information.Balance);
                             current_size = full_size;
+                        } else if (transaction_history != null && purchase_history == null) {
+                            full_size = parseInt(transaction_history.Remaining_Balance);
+                            current_size = full_size;
                         } else {
-                            if (transaction_history.Time > purchase_history.Time) {
+                            if (Date.parse(transaction_history.Date) > Date.parse(purchase_history.Date)) {
                                 full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
                                 current_size = parseInt(transaction_history.Remaining_Balance);
-                            } else if (transaction_history.Time < purchase_history.Time) {
-
+                            } else if (Date.parse(transaction_history.Date) < Date.parse(purchase_history.Date)) {
                                 full_size = parseInt(user_information.Balance);
                                 current_size = full_size;
+                            } else {
+                                if (transaction_history.Time > purchase_history.Time) {
+                                    full_size = parseInt(transaction_history.Amount) + parseInt(transaction_history.Remaining_Balance);
+                                    current_size = parseInt(transaction_history.Remaining_Balance);
+                                } else if (transaction_history.Time < purchase_history.Time) {
+
+                                    full_size = parseInt(user_information.Balance);
+                                    current_size = full_size;
+                                }
                             }
                         }
-                    }
-                    //Logic for finding the Full and Current Size for representation
-                    previous_size = current_size;
-                    size_percentage = (current_size / full_size);
-                    computed_height = size_percentage * 250;
-                    $("#water-level").animate({ height: computed_height + 'px' });
+                        //Logic for finding the Full and Current Size for representation
+                        previous_size = current_size;
+                        size_percentage = (current_size / full_size);
+                        computed_height = size_percentage * 250;
+                        $("#water-level").animate({ height: computed_height + 'px' });
 
-                    ml_label.innerHTML = `${user_information.Balance} mL`;
-                    js_ready = true;
+                        ml_label.innerHTML = `${user_information.Balance} mL`;
+                        js_ready = true;
 
+                        Swal.close();
 
-                    Swal.close();
-
-                    var container_promise = new Promise(function (resolve, reject) {
-                        commandPy(socket, { command: 'Get_Baseline' });
-                        Swal.fire({
-                            title: 'Waiting for container..',
-                            allowOutsideClick: false,
-                            onClose: function () {
-                            }, onBeforeOpen: function () {
-                                Swal.showLoading();
-                                var timeout = 10;
-                                var counter = 0;
-                                var timer = setInterval(() => {
-                                    commandPy(socket, { command: 'Get_Container' });
-                                    if (counter == timeout) {
-                                        clearInterval(timer);
-                                        resolve(false)
-                                    } else {
-                                        if (container_present) {
-                                            clearInterval(timer);
-                                            resolve(true);
-                                        }
-                                        counter++;
-                                    }
-                                }, 1000);
-                            }
-                        });
-
-                    });
-
-                    container_promise.then(function (response) {
-                        if (response) {
-                            Swal.close();
-                        } else {
-                            return Swal.fire({
-                                title: 'Container not detected. Try again?',
-                                type: 'error',
-                                cancelButtonText: 'Nope',
-                                showCancelButton: true,
+                        var container_promise = new Promise(function (resolve, reject) {
+                            commandPy(socket, { command: 'Get_Baseline' });
+                            Swal.fire({
+                                title: 'Waiting for container..',
                                 allowOutsideClick: false,
+                                onClose: function () {
+                                }, onBeforeOpen: function () {
+                                    Swal.showLoading();
+                                    var timeout = 10;
+                                    var counter = 0;
+                                    var timer = setInterval(() => {
+                                        commandPy(socket, { command: 'Get_Container' });
+                                        if (counter == timeout) {
+                                            clearInterval(timer);
+                                            resolve(false)
+                                        } else {
+                                            if (container_present) {
+                                                clearInterval(timer);
+                                                resolve(true);
+                                            }
+                                            counter++;
+                                        }
+                                    }, 1000);
+                                }
                             });
-                        }
-                    }).then((result) => {
-                        console.log(result);
-                        if (result.value) {
-                            console.log('OKed');
-                            window.location.reload();
-                        } else if (result.dismiss == 'cancel') {
-                            //properly exit
-                            console.log('Cancelled');
-                            window.location.assign('login.html');
-                        }
-                    })
-                        .catch(function () {
-                            //Container not detected. Try again? 
 
                         });
 
-                } else {
-                    Swal.fire({
-                        title: 'An error occured. Refreshing page..',
-                        type: 'error',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'Ok',
-                        onClose: function () {
+                        container_promise.then(function (response) {
+                            if (response) {
+                                Swal.close();
+                            } else {
+                                return Swal.fire({
+                                    title: 'Container not detected. Try again?',
+                                    type: 'error',
+                                    cancelButtonText: 'Nope',
+                                    showCancelButton: true,
+                                    allowOutsideClick: false,
+                                });
+                            }
+                        }).then((result) => {
+                            console.log(result);
+                            if (result.value) {
+                                console.log('OKed');
+                                window.location.reload();
+                            } else if (result.dismiss == 'cancel') {
+                                //properly exit
+                                console.log('Cancelled');
+                                window.location.assign('login.html');
+                            }
+                        })
+                            .catch(function () {
+                                //Container not detected. Try again? 
+
+                            });
+
+                    } else {
+                        Swal.fire({
+                            title: 'An error occured. Refreshing page..',
+                            type: 'error',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Ok',
+                            onClose: function () {
+                                location.reload();
+                            }
+                        }).then((result) => {
                             location.reload();
-                        }
-                    }).then((result) => {
-                        location.reload();
-                    })
-                }
-            }, function (error) {
-                console.log(`Error: ${error}`);
-            });
+                        })
+                    }
+                }, function (error) {
+                    console.log(`Error: ${error}`);
+                });
+            }
+
         },
         onClose: () => {
         }
@@ -469,7 +562,7 @@ function main() {
                         $('#toggle_switch').prop('disable', true);
                         commandPy(socket, { command: 'Toggle_Hot' });
                         current_operation.set('HOT');
-                        
+
                     } else {
                         data.command = 'stop';
                         $('#toggle_switch').bootstrapToggle('enable');
@@ -546,9 +639,9 @@ function main() {
                     }
 
                 },
-                onClose: () => {    
+                onClose: () => {
                 }
-            }).then((result)=>{
+            }).then((result) => {
                 commandPy(socket, { command: 'Set_Amount', amount: amount });
                 current_operation.set(current);
                 if (current == 'HOT') {
@@ -608,18 +701,28 @@ function enableAll() {
 }
 
 function round(value, decimals) {
-    return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+    return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
 function jsonWrite(file) {
     // Use this path for windows.
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
-    
+
     //Use this path for RasPi
     var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
-    fs.writeFile(file_path, JSON.stringify(file,null,6), function (err) {
-      if (err) return console.log(err);
+    fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
+        if (err) return console.log(err);
     });
 }
 
-  
+function getPercentage(value, overall) {
+    var percentage_value = (value / overall) * 100
+    return percentage_value;
+}  
+
+function sendNotification(title,body,fn_response,fn_error) {
+    var params = {};
+    params.title = title;
+    params.body = body;
+    httpcustomrequest.http_post('Notify.php',params,fn_response(response),fn_error(error));
+}

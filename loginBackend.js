@@ -73,6 +73,7 @@ exports.tester = function (a) {
 
 function tryParse(jsonString) {
     try {
+        console.log(jsonString);
         var o = JSON.parse(jsonString);
         if (o && typeof o === "object") {
             return o;

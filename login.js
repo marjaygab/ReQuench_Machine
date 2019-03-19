@@ -27,7 +27,7 @@ function main() {
     var letters = document.getElementsByClassName('letter');
     var key = document.getElementsByClassName('key');
     var legends = document.getElementsByClassName('fas');
-    store.set('Machine_Settings',machine_settings);
+    store.set('Machine_Settings', machine_settings);
     var scanned = false;
     var scaninterval;
     var count = 0;
@@ -84,13 +84,16 @@ function main() {
             type: 'error',
             title: 'Oops...',
             text: 'Water is at critical level. Please call maintenance for Refill.',
-            confirmButtonText:"I am an Admin",
-            allowOutsideClick:false,
-          }).then((result)=>{
-                if (result.value) {
-                    Swal.close();
-                }
-          });
+            confirmButtonText: "I am an Admin",
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.value) {
+                Swal.close();
+            }
+        });
+        if (machine_settings.notify_admin) {
+            sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) { }, function (error) { });
+        }
     }
 
 
@@ -108,13 +111,13 @@ function main() {
                 type: 'error',
                 title: 'Oops...',
                 text: 'OTP is too short!',
-                confirmButtonText:"Try again",
-                onClose:() => {
+                confirmButtonText: "Try again",
+                onClose: () => {
                     otp_string = '';
                     $("#otp_field").val('');
                     $('#enterotpbutton').text("Enter OTP");
                 }
-              })
+            })
             char_array = [];
             otp_string = '';
         }
@@ -156,8 +159,8 @@ function main() {
             httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                 // sessionstorage.setItem('User_Information',json_object);
 
-                store.set('Response_Object',json_object);
-                store.set('Account_Type',json_object.Account_Type);
+                store.set('Response_Object', json_object);
+                store.set('Account_Type', json_object.Account_Type);
                 store.set('User_Information', json_object.Account);
                 //check user persmissions first
                 store.set('Purchase_History', json_object.Purchase_History);
@@ -302,8 +305,8 @@ function main() {
                 httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                     // sessionstorage.setItem('User_Information',json_object);
                     if (json_object.Success) {
-                        store.set('Response_Object',json_object);
-                        store.set('Account_Type',json_object.Account_Type);
+                        store.set('Response_Object', json_object);
+                        store.set('Account_Type', json_object.Account_Type);
                         store.set('User_Information', json_object.Account);
                         params = {};
                         params.Acc_ID = json_object.Account.Acc_ID;
@@ -313,27 +316,27 @@ function main() {
                         store.set('Login_Method', 'OTP');
                         var user_info_object = store.get('User_Information');
                         console.log(json_object);
-    
-    
+
+
                         if (user_info_object.Access_Level == 'USER') {
                             window.location.assign("HomePage.html");
                         } else if (user_info_object.Access_Level == 'ADMIN') {
                             window.location.assign("admin.html");
                         } else {
-                            
+
                         }
                     } else {
                         Swal.fire({
                             type: 'error',
                             title: 'Oops...',
                             text: 'User not found!',
-                            confirmButtonText:"Try again",
-                            onClose:() => {
+                            confirmButtonText: "Try again",
+                            onClose: () => {
                                 otp_string = '';
                                 $("#otp_field").val('');
                                 $('#enterotpbutton').text("Enter OTP");
                             }
-                          })
+                        })
                     }
                 }, function (error) {
                     console.log(`Error 1: ${error}`);
@@ -487,4 +490,15 @@ function showKeyboard() {
     var keyboard = document.getElementById('keyboard');
     keyboard.style.visibility = "visible";
     $("#keyboard").animate({ 'opacity': '1' });
+}
+
+function sendNotification(title, body, fn_response, fn_error) {
+    var params = {};
+    params.title = title;
+    params.body = body;
+    httpcustomrequest.http_post('Notify.php', params, function (response) {
+        fn_response(response);
+    }, function (error) {
+        fn_error(error);
+    });
 }
