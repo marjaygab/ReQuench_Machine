@@ -1,15 +1,10 @@
 let $ = require('jquery');
 let fs = require('fs');
-let { PythonShell } = require('python-shell');
-const maintenance_data_file = require('./maintenance_data');
-const py_filename = 'maintenance.py';
 const io = require('socket.io-client');
 var socket = io('http://localhost:3000');
 const path = require('path');
 let Swal = require('sweetalert2');
-var options = {
-    scriptPath: path.join(__dirname, '/python_scripts')
-}
+
 const draining_time = 5;
 $(document).ready(function() {
     var main_container_div = document.getElementById('main_container_div');

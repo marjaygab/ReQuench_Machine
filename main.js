@@ -2,6 +2,7 @@
 const { app, BrowserWindow } = require('electron')
 const fs = require('fs');
 let file = require('./maintenance_data');
+let settings = require('./machine_settings');
 const Store = require('electron-store');
 const store = new Store();
 const python_id_index = 1;
@@ -16,12 +17,38 @@ const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
 const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
 var py_object;
 var filename = 'main.py';
+
+settings.status = "online";
+jsonWrite(settings,()=>console.log("Initialized"));
+
 var options = {
     scriptPath: path.join(__dirname, '/python_scripts')
 }
 
+const admin = require('firebase-admin');
+const serviceAccount = require('./requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json');
+admin.initializeApp({
+    credential:admin.credential.cert(serviceAccount)
+});
 
-
+const db = admin.firestore();
+fs.watchFile('./machine_settings.json',(curr,prev)=>{
+    fs.readFile('./machine_settings.json', (err, data) => {  
+        if (err) throw err;
+        let settings = JSON.parse(data);
+        var mu_id = settings.mu_id;
+        console.log(mu_id);
+        db.collection('Machines').doc(`${mu_id}`).set(settings)
+        .then(()=>{
+            console.log("Data inserted");
+            if (settings.status == 'offline') {
+                commandPy(io,{command:"Shutdown"});
+            }else if(settings.status == 'rebooting'){
+                commandPy(io,{command:"Reboot"});
+            }
+        });    
+    });
+});
 
 http.listen(3000, function () {
     console.log('listening on *:3000');
@@ -120,7 +147,20 @@ app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
-        app.quit()
+        settings.status = "offline";
+        jsonWrite(settings,()=>{
+            fs.readFile('./machine_settings.json', (err, data) => {  
+                if (err) throw err;
+                let settings = JSON.parse(data);
+                var mu_id = settings.mu_id;
+                console.log(mu_id);
+                db.collection('Machines').doc(`${mu_id}`).set(settings)
+                .then(()=>{
+                    console.log("Data inserted");
+                    app.quit();
+                });    
+            });
+        });
     }
 })
 
@@ -140,4 +180,14 @@ function commandPy(io, content) {
         content: content
     };
     io.emit('socket-event', msg);
+}
+function jsonWrite(file,callback) {
+    // Use this path for windows.
+    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    //Use this path for RasPi
+    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
+        if (err) return console.log(err);
+        callback();
+    });
 }
