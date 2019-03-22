@@ -26,7 +26,7 @@ var options = {
 }
 
 const firebase = require('firebase/firestore');
-var app = firebase.initializeApp({
+var firebase_app = firebase.initializeApp({
     apiKey: "AIzaSyC4zvxWTcj8gk7FmX0UMLqMP-2RrNSvzos",
     authDomain: "requenchweb2019.firebaseapp.com",
     databaseURL: "https://requenchweb2019.firebaseio.com",
