@@ -316,6 +316,7 @@ function main() {
                         var remaining_balance = current_size;
                         water_level_before = machine_settings.current_water_level;
                         water_level_after = temp_water_level;
+                        machine_settings.current_water_level = temp_water_level;
                         var params = {};
 
                         if (current_operation.get() != 'STANDBY') {
