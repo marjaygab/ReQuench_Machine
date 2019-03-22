@@ -15,23 +15,23 @@ hx.reset()
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
-cred = credentials.Certificate('python_scripts/requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json')
+cred = credentials.Certificate('requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json')
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 doc_ref = db.collection(u'Machines').document(u'1')
 doc_ref.set({
-      "location": "Mabini Building",
-      "date_of_purchase": "2018-08-13",
-      "last_maintenance_date": "2018-12-01",
-      "Model_Number": "ABC123",
-      "price_per_ml": "0.002",
-      "current_water_level": 18000,
-      "api_key": "566ee18ea4eebbc485074e045381ae98",
-      "notify_admin": false,
-      "critical_level": "20",
-      "status": "online",
-      "mu_id": 1
+      u'location': "Mabini Building",
+      u'date_of_purchase': "2018-08-13",
+      u'last_maintenance_date': "2018-12-01",
+      u'Model_Number': "ABC123",
+      u'price_per_ml': "0.002",
+      u'current_water_level': 18000,
+      u'api_key': "566ee18ea4eebbc485074e045381ae98",
+      u'notify_admin': false,
+      u'critical_level': "20",
+      u'status': "online",
+      u'mu_id': 1
 })
 
 # GPIO.setwarnings(False)
