@@ -25,30 +25,30 @@ var options = {
     scriptPath: path.join(__dirname, '/python_scripts')
 }
 
-const admin = require('firebase-admin');
-const serviceAccount = require('./requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json');
-admin.initializeApp({
-    credential:admin.credential.cert(serviceAccount)
-});
+// const admin = require('firebase-admin');
+// const serviceAccount = require('./requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json');
+// admin.initializeApp({
+//     credential:admin.credential.cert(serviceAccount)
+// });
 
-const db = admin.firestore();
-fs.watchFile('./machine_settings.json',(curr,prev)=>{
-    fs.readFile('./machine_settings.json', (err, data) => {  
-        if (err) throw err;
-        let settings = JSON.parse(data);
-        var mu_id = settings.mu_id;
-        console.log(mu_id);
-        db.collection('Machines').doc(`${mu_id}`).set(settings)
-        .then(()=>{
-            console.log("Data inserted");
-            if (settings.status == 'offline') {
-                commandPy(io,{command:"Shutdown"});
-            }else if(settings.status == 'rebooting'){
-                commandPy(io,{command:"Reboot"});
-            }
-        });    
-    });
-});
+// const db = admin.firestore();
+// fs.watchFile('./machine_settings.json',(curr,prev)=>{
+//     fs.readFile('./machine_settings.json', (err, data) => {  
+//         if (err) throw err;
+//         let settings = JSON.parse(data);
+//         var mu_id = settings.mu_id;
+//         console.log(mu_id);
+//         db.collection('Machines').doc(`${mu_id}`).set(settings)
+//         .then(()=>{
+//             console.log("Data inserted");
+//             if (settings.status == 'offline') {
+//                 commandPy(io,{command:"Shutdown"});
+//             }else if(settings.status == 'rebooting'){
+//                 commandPy(io,{command:"Reboot"});
+//             }
+//         });    
+//     });
+// });
 
 
 
