@@ -364,9 +364,9 @@ def automaticDispense(command, amount_requested):
         global total_liters
         global base_weight
         global auto_amount
-        if command == "COLD":
-            # print("Opened COLD Valve, Opened COLD Pump")
-            # sys.stdout.flush()
+        print("Amount to dispense: " + auto_amount)
+        sys.stdout.flush()
+        if command == "COLD":   
             GPIO.output(output_devices['pump_1'],0)
             GPIO.output(output_devices['solenoid_1'],0)
         else:
