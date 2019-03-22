@@ -25,7 +25,17 @@ var options = {
     scriptPath: path.join(__dirname, '/python_scripts')
 }
 
-// const admin = require('firebase-admin');
+const firebase = require('firebase/firestore');
+var app = firebase.initializeApp({
+    apiKey: "AIzaSyC4zvxWTcj8gk7FmX0UMLqMP-2RrNSvzos",
+    authDomain: "requenchweb2019.firebaseapp.com",
+    databaseURL: "https://requenchweb2019.firebaseio.com",
+    projectId: "requenchweb2019",
+    storageBucket: "requenchweb2019.appspot.com",
+    messagingSenderId: "824630117884"
+  });
+
+
 // const serviceAccount = require('./requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json');
 // admin.initializeApp({
 //     credential:admin.credential.cert(serviceAccount)
