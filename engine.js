@@ -710,7 +710,7 @@ function jsonWrite(file) {
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
-    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
         if (err) return console.log(err);
     });
