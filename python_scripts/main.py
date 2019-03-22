@@ -15,7 +15,7 @@ hx.reset()
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
-cred = credentials.Certificate('requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json')
+cred = credentials.Certificate('./requenchweb2019-firebase-adminsdk-ix063-80de0e0edb.json')
 firebase_admin.initialize_app(cred)
 
 db = firestore.client()
