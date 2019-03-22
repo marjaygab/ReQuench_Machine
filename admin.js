@@ -1,4 +1,5 @@
 let $ = require("jquery");
+let fs = require('fs');
 let settings = require('./machine_settings');
 const file = require('./maintenance_data');
 let Swal = require('sweetalert2');
@@ -39,9 +40,9 @@ $(document).ready(function() {
     }
     function jsonWrite(file,callback) {
         // Use this path for windows.
-        var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
         //Use this path for RasPi
-        // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+        var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
         fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
             if (err) return console.log(err);
             callback();
