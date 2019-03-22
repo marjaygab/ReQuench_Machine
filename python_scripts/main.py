@@ -305,8 +305,8 @@ def manualDispense(command):
     else:
         # print("Opened HOT Valve, Opened HOT Pump")
         # sys.stdout.flush()
-        # GPIO.output(output_devices['pump_2'],0)
-        # GPIO.output(output_devices['solenoid_2'],0)
+        GPIO.output(output_devices['pump_2'],0)
+        GPIO.output(output_devices['solenoid_2'],0)
     time_duration = 0
     time_start = time.time()
     while checkCommand() != "Standby":
