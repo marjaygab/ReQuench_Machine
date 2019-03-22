@@ -364,7 +364,7 @@ def automaticDispense(command, amount_requested):
         global total_liters
         global base_weight
         global auto_amount
-        print("Amount to dispense: " + auto_amount)
+        print("Amount to dispense: " + str(auto_amount))
         sys.stdout.flush()
         if command == "COLD":   
             GPIO.output(output_devices['pump_1'],0)
