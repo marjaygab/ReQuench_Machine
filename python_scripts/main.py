@@ -4,9 +4,6 @@ import time
 import socketio
 import threading
 import sys
-import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
 from hx711 import HX711
 hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
@@ -14,25 +11,6 @@ hx.set_reference_unit(-1)
 hx.reset()
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
-
-cred = credentials.Certificate('./requenchweb2019-firebase-adminsdk-ix063-80de0e0edb.json')
-firebase_admin.initialize_app(cred)
-
-db = firestore.client()
-doc_ref = db.collection(u'Machines').document(u'1')
-doc_ref.set({
-      u'location': "Mabini Building",
-      u'date_of_purchase': "2018-08-13",
-      u'last_maintenance_date': "2018-12-01",
-      u'Model_Number': "ABC123",
-      u'price_per_ml': "0.002",
-      u'current_water_level': 18000,
-      u'api_key': "566ee18ea4eebbc485074e045381ae98",
-      u'notify_admin': false,
-      u'critical_level': "20",
-      u'status': "online",
-      u'mu_id': 1
-})
 
 # GPIO.setwarnings(False)
 # GPIO.setmode(GPIO.BOARD)
