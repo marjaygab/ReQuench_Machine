@@ -9,7 +9,7 @@
   "author": "Marjay Tapay",
   "license": "ISC",
   "dependencies": {
-    "electron": "^4.0.0",
+    "electron": "^3.1.7",
     "electron-store": "^2.0.0",
     "express": "^4.15.2",
     "firebase": "^5.9.1",

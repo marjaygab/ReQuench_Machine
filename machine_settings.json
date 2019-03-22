@@ -8,6 +8,6 @@
       "api_key": "566ee18ea4eebbc485074e045381ae98",
       "notify_admin": false,
       "critical_level": "20",
-      "status": "offline",
+      "status": "online",
       "mu_id": 1
 }
