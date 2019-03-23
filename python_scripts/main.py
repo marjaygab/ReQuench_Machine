@@ -462,12 +462,12 @@ def readTemp():
             # print("Compressor On")
             # sys.stdout.flush()
             GPIO.output(output_devices['compressor'],0)
-        if hot_temp <= 55:
+        if hot_temp <= 65:
             # print("Heater On")
             # sys.stdout.flush()
             heating = True
             GPIO.output(output_devices['heater'],0)
-        elif hot_temp >= 70:
+        elif hot_temp >= 80:
             # print("Heater Off")
             # sys.stdout.flush()
             heating = False
@@ -510,7 +510,7 @@ def main():
     print("Ready")
     sys.stdout.flush()
     threading.Thread(target=controller).start()
-    # threading.Thread(target=readTemp).start()
+    threading.Thread(target=readTemp).start()
     while True:
         pass
 

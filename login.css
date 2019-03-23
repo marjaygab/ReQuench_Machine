@@ -14,7 +14,15 @@ body{
 #headerinstruction{
   color: #fff;
 }
+#temp_view{
+  text-align:right; 
+  margin-bottom: 0;
+}
 
+.temp_icons{
+  height: 15px;
+  width: 15px;
+}
 .input{
   text-align: center;
 }

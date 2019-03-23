@@ -27,6 +27,8 @@ function main() {
     var letters = document.getElementsByClassName('letter');
     var key = document.getElementsByClassName('key');
     var legends = document.getElementsByClassName('fas');
+    var cold_label = document.getElementById('cold_label');
+    var hot_label = document.getElementById('hot_label');
     store.set('Machine_Settings', machine_settings);
     var scanned = false;
     var scaninterval;
@@ -36,6 +38,24 @@ function main() {
     var otp_string = '';
     var current_value = '000000000';
     var present_value = '000000000';
+    const io = require('socket.io-client');
+    const socket = io('http://localhost:3000');
+
+
+    socket.on('socket-event',function(msg) {
+        if (msg.destination === 'JS') {
+            switch (msg.content.type) {
+                case "TEMP_READING":
+                    cold_int = Math.round(parseFloat(msg.content.body.Cold));
+                    hot_int = Math.round(parseFloat(msg.content.body.Hot));
+                    cold_label.innerHTML = cold_int;
+                    hot_label.innerHTML = hot_int;
+                    break;
+            }
+        }
+    });
+
+
     var key_pressed = {
         lshift: false,
         rshift: false,
