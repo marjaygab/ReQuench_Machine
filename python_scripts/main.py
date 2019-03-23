@@ -100,6 +100,7 @@ def on_message(data):
             temp_hot = False
         elif command == "Set_Amount":
             auto_amount = data["content"]["amount"]
+            time.sleep(1000);
             # print('Amount set to: ' + auto_amount)
             # sys.stdout.flush()
         elif command == "Stop_Dispense":
