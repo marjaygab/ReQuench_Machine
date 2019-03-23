@@ -198,7 +198,7 @@ def getBaseline():
     val = hx.get_weight_A(5)
     current_baseline = round(val // float(1000),1) * 1000
     hx.reset()
-    print("Baseline: " + current_baseline)
+    print("Baseline: " + str(current_baseline))
     sys.stdout.flush()
 
 
@@ -231,6 +231,8 @@ def getContainerWeight():
         current_weight = hx.get_weight_A(5)
         current_weight = round(current_weight // float(1000),1) * 1000
         container_weight = ((current_weight - current_baseline) / 200)
+        print("Container Weight: " + str(container_weight))
+        sys.stdout.flush()
         if container_weight < 0:
     	    container_weight = 0
         hx.reset()
@@ -383,7 +385,7 @@ def automaticDispense(command, amount_requested):
             if time_duration >= 0.1:
                 # Use This Code for Actual Testing
                 getCurrentWeight()
-                total_liters = current_weight
+                total_liters = current_weight-container_weight;
                 if total_liters < 0:
                     total_liters = 0
 
