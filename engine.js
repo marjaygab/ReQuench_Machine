@@ -332,7 +332,13 @@ function main() {
                             params.Remaining_Balance = remaining_balance;
                         }
                         temp_array_transaction.push(params);
-                        jsonWrite(machine_settings);
+                        
+                        jsonRead(function(data) {
+                            if (data != false) {
+                                jsonWrite(data);
+                            }
+                        });
+
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -713,6 +719,23 @@ function jsonWrite(file) {
     var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
         if (err) return console.log(err);
+    });
+}
+
+
+function jsonRead(callback) {
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    fs.readFile('./machine_settings.json', (err, data) => {  
+        try {
+            if (err) throw err;
+            var parsed = JSON.parse(data);
+            callback(parsed);
+        } catch (e) {
+            callback(false);
+        }
     });
 }
 
