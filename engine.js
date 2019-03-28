@@ -538,6 +538,18 @@ function main() {
                     }
                 }, function (error) {
                     console.log(`Error: ${error}`);
+                },function() {
+                    Swal.fire({
+                        title: 'Network Timeout. Please try again later.',
+                        type: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Ok',
+                        onClose: function () {
+                            window.location.assign('login.html');
+                        }
+                    }).then((result) => {
+                        window.location.assign('login.html');                        
+                    })
                 });
             }
 
@@ -713,10 +725,10 @@ function round(value, decimals) {
 
 function jsonWrite(file) {
     // Use this path for windows.
-    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
-    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
         if (err) return console.log(err);
     });
@@ -725,9 +737,9 @@ function jsonWrite(file) {
 
 function jsonRead(callback) {
     // Use this path for windows.
-    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
-    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.readFile('./machine_settings.json', (err, data) => {  
         try {
             if (err) throw err;

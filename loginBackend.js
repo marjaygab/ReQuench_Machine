@@ -11,9 +11,9 @@ exports.httpRequest = function (method, url, parameters, fn) {
 }
 
 
-exports.http_post = function (url, parameters, fn_response, fn_error) {
+exports.http_post = function (url, parameters, fn_response, fn_error, timeout_cb) {
     console.log('Called');
-
+    var timeout_callback = timeout_cb || function(){};
     const https = require('https');
     const data = JSON.stringify(parameters);
     const options = {
@@ -24,7 +24,8 @@ exports.http_post = function (url, parameters, fn_response, fn_error) {
         headers: {
             'Content-Type': 'application/json',
             'Content-Length': data.length
-        }
+        },
+        timeout:15000
     }
 
     const req = https.request(options, (res) => {
@@ -42,6 +43,17 @@ exports.http_post = function (url, parameters, fn_response, fn_error) {
     req.on('error', (error) => {
         fn_error(error);
     });
+
+    // request.setTimeout(() => {
+    //     request.abort();
+    //     timeout_callback();
+    // }, 15000);
+
+    req.on('timeout', (error) => {
+        request.abort();
+        timeout_callback();
+    });
+    
 
     req.write(data);
     req.end();
