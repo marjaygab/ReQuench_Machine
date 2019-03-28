@@ -332,14 +332,13 @@ function main() {
                             params.Remaining_Balance = remaining_balance;
                         }
                         temp_array_transaction.push(params);
-                        jsonWrite(machine_settings);
                         
-                        //jsonRead(function(data){
-                        //    if(data != false){
-                        //        jsonWrite(data);
-                        //    }
-                        //});
-                        
+                        jsonRead(function(data) {
+                            if (data != false) {
+                                jsonWrite(data);
+                            }
+                        });
+
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -634,7 +633,7 @@ function main() {
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
                         if (amount > 0) {
-                            amount= amount - 10;
+                            amount--;
                             content.querySelector("#amount").value = amount;
                         }
                     }
@@ -642,7 +641,7 @@ function main() {
                         const content = Swal.getContent();
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
-                        amount= amount + 10;
+                        amount++;
                         content.querySelector("#amount").value = amount;
                     }
 
@@ -723,25 +722,21 @@ function jsonWrite(file) {
     });
 }
 
-function jsonRead(callback){
+
+function jsonRead(callback) {
     // Use this path for windows.
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
-    //Use this path for RasPi
     var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
-    
-    fs.readFile(file_path, (err, data) => {  
-        if (err){ 
+    fs.readFile('./machine_settings.json', (err, data) => {  
+        try {
+            if (err) throw err;
+            var parsed = JSON.parse(data);
+            callback(parsed);
+        } catch (e) {
             callback(false);
-        }else{
-            try{
-                let settings = JSON.parse(data);
-                callback(settings);
-            }catch(e){
-                callback(false);
-            }
         }
-     });
+    });
 }
 
 function getPercentage(value, overall) {
