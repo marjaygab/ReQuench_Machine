@@ -187,7 +187,7 @@ function main() {
                 store.set('Transaction_History', json_object.Transaction_History);
                 store.set('Login_Method', 'RFID');
                 var user_info_object = store.get('User_Information');
-
+                console.log(user_info_object.Balance);
                 if (json_object.Account_Type == 'Recorded') {
                     if (user_info_object.Access_Level == 'USER') {
                         window.location.assign("HomePage.html");

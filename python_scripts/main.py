@@ -58,8 +58,6 @@ GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
-GPIO.output(output_devices['compressor'],1)
-GPIO.output(output_devices['heater'],1)
 
 @sio.on("connect")
 def on_connect():
@@ -225,12 +223,13 @@ def getContainerWeight():
     # print("Getting Container Weight")
     # sys.stdout.flush()
 
-    # print('Current Baseline: ' + str(current_baseline))
-    # sys.stdout.flush()
+    
     try:
         current_weight = hx.get_weight_A(5)
         current_weight = round(current_weight // float(1000),1) * 1000
         container_weight = ((current_weight - current_baseline) / 200)
+        print('Current Baseline: ' + str(current_baseline))
+        sys.stdout.flush()
         print("Container Weight: " + str(container_weight))
         sys.stdout.flush()
         if container_weight < 0:
@@ -300,6 +299,11 @@ def manualDispense(command):
     global container_weight
     global total_liters
     global base_weight
+
+    time_duration = 0
+    time_start = time.time()
+    test_time = time.time()
+    
     if command == "COLD":
         # print("Opened COLD Valve, Opened COLD Pump")
         # sys.stdout.flush()
@@ -310,31 +314,45 @@ def manualDispense(command):
         # sys.stdout.flush()
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
-    time_duration = 0
-    time_start = time.time()
+    getCurrentWeight()
+    total_liters = (current_weight - container_weight)
+    starting_liters = total_liters
+    if total_liters < 0:
+        total_liters = 0
+    # Use this code if not actual testing
+    sio.emit(
+        "socket-event",
+        {
+            "destination": "JS",
+            "content": {
+                "type": "DISPENSE_READING",
+                "body": {"Total": total_liters},
+            },
+        },
+    )
+
     while checkCommand() != "Standby":
         time_end = time.time()
         time_duration = time_end - time_start
-        if time_duration >= 0.1:
-            # Use This Code for Actual Testing
-            getCurrentWeight()
-            total_liters = (current_weight)
-            if total_liters < 0:
-                total_liters = 0
-
-            # Use this code if not actual testing
-            total_liters = total_liters + 1
-            time_start = time.time()
-            sio.emit(
-                "socket-event",
-                {
-                    "destination": "JS",
-                    "content": {
-                        "type": "DISPENSE_READING",
-                        "body": {"Total": total_liters},
-                    },
+        # if time_duration >= 0.5:
+        # Use This Code for Actual Testing    
+        getCurrentWeight()
+        total_liters = (current_weight - container_weight)
+        if total_liters < 0:
+            total_liters = 0
+        # Use this code if not actual testing
+        # total_liters = total_liters + 1
+        time_start = time.time()
+        sio.emit(
+            "socket-event",
+            {
+                "destination": "JS",
+                "content": {
+                    "type": "DISPENSE_READING",
+                    "body": {"Total": total_liters},
                 },
-            )
+            },
+        )
         if checkCommand() == "Standby":
             stop_dispense()
             break
@@ -344,6 +362,24 @@ def manualDispense(command):
     GPIO.output(output_devices['solenoid_1'],1)
     GPIO.output(output_devices['pump_2'],1)
     GPIO.output(output_devices['solenoid_2'],1)
+    test_time_duration = time.time() - test_time;
+    getCurrentWeight()
+    total_liters = (current_weight)
+    ending_liters = total_liters - starting_liters
+    weight_volume = ending_liters-container_weight
+    
+    print("Time Duration: " + str(test_time_duration))
+    sys.stdout.flush()
+
+    sample_constant = 0.044
+    sample_volume = test_time_duration / sample_constant
+
+    print("Time Volume: " + str(sample_volume))
+    sys.stdout.flush()
+    print("Weight Volume: " + str(weight_volume))
+    sys.stdout.flush()
+
+    
     sio.emit(
         "socket-event",
         {
@@ -354,7 +390,7 @@ def manualDispense(command):
     # hx.reset()
     # hx.tare()
     getContainerWeight()
-    
+    # container_weight = total_liters
     # print("Closed ALL Valve, Closed ALL Pump")
     # sys.stdout.flush()
     
@@ -369,6 +405,9 @@ def automaticDispense(command, amount_requested):
         global auto_amount
         print("Amount to dispense: " + str(auto_amount))
         sys.stdout.flush()
+        time_duration = 0
+        time_start = time.time()
+        
         if command == "COLD":   
             GPIO.output(output_devices['pump_1'],0)
             GPIO.output(output_devices['solenoid_1'],0)
@@ -377,12 +416,27 @@ def automaticDispense(command, amount_requested):
             # sys.stdout.flush()
             GPIO.output(output_devices['pump_2'],0)
             GPIO.output(output_devices['solenoid_2'],0)
-        time_duration = 0
-        time_start = time.time()
+            getCurrentWeight()
+            total_liters = current_weight-container_weight;
+            if total_liters < 0:
+                total_liters = 0
+            # Use this code if not actual testing
+            # total_liters = total_liters + 1
+            sio.emit(
+                "socket-event",
+                {
+                    "destination": "JS",
+                    "content": {
+                        "type": "DISPENSE_READING",
+                        "body": {"Total": total_liters},
+                    },
+                },
+            )
+        
         while total_liters < int(auto_amount):
             time_end = time.time()
             time_duration = time_end - time_start
-            if time_duration >= 0.1:
+            if time_duration >= 0.5:
                 # Use This Code for Actual Testing
                 getCurrentWeight()
                 total_liters = current_weight-container_weight;

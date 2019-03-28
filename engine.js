@@ -333,6 +333,13 @@ function main() {
                         }
                         temp_array_transaction.push(params);
                         jsonWrite(machine_settings);
+                        
+                        //jsonRead(function(data){
+                        //    if(data != false){
+                        //        jsonWrite(data);
+                        //    }
+                        //});
+                        
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -627,7 +634,7 @@ function main() {
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
                         if (amount > 0) {
-                            amount--;
+                            amount= amount - 10;
                             content.querySelector("#amount").value = amount;
                         }
                     }
@@ -635,7 +642,7 @@ function main() {
                         const content = Swal.getContent();
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
-                        amount++;
+                        amount= amount + 10;
                         content.querySelector("#amount").value = amount;
                     }
 
@@ -714,6 +721,27 @@ function jsonWrite(file) {
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
         if (err) return console.log(err);
     });
+}
+
+function jsonRead(callback){
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+
+    //Use this path for RasPi
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    
+    fs.readFile(file_path, (err, data) => {  
+        if (err){ 
+            callback(false);
+        }else{
+            try{
+                let settings = JSON.parse(data);
+                callback(settings);
+            }catch(e){
+                callback(false);
+            }
+        }
+     });
 }
 
 function getPercentage(value, overall) {

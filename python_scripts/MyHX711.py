@@ -15,27 +15,19 @@ print "Calculated Base line: " +  str(baseline)
 def main():
 	print "Please put your container"
 	time.sleep(5)
-        raw_weight = hx.get_weight_A(5)
-        computed_weight = (raw_weight // float(1000)) * 1000
-	container_weight = (computed_weight - baseline) / 2
-	if container_weight < 0:
-		container_weight = 0
-        
-	print "Container Weight: " + str(container_weight)
+	hx.tare()
 
 	while True:
 		raw_weight = hx.get_weight_A(5)
-                computed_weight = (raw_weight // float(1000)) * 1000
-                current_val = (computed_weight - baseline) / 2
-                
-		if container_weight < 0:
-			container_weight = 0
-		current_mL = current_val - container_weight
+                # computed_weight = (raw_weight // float(1000)) * 1000
+                computed_weight = raw_weight
+                current_val = (computed_weight) / 200
+		current_mL = current_val
 		#current_mL = current_val
                 if current_mL < 0:
 			current_mL = 0
 		print "Current mL: " + str(current_mL)
-		time.sleep(0.5)
+		time.sleep(0.1)
 try:
 	main()
 except KeyboardInterrupt:
