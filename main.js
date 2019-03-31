@@ -4,6 +4,7 @@ const fs = require('fs');
 let file = require('./maintenance_data');
 let settings = require('./machine_settings');
 const Store = require('electron-store');
+const https = require('https');
 const store = new Store();
 const python_id_index = 1;
 const js_id_index = 0;
@@ -16,10 +17,18 @@ var connection_counter = 0;
 const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
 const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
 var py_object;
-var filename = 'main.py';
+var machine_settings = settings;
+//Use this for actual
+// var filename = 'main.py';
 
-settings.status = "online";
-jsonWrite(settings,()=>console.log("Initialized"));
+//User this for Windows testing
+var filename = 'main_windows.py';
+
+
+
+
+machine_settings.status = "online";
+jsonWrite(machine_settings,()=>console.log("Initialized"));
 
 var options = {
     scriptPath: path.join(__dirname, '/python_scripts')
@@ -42,26 +51,48 @@ admin.initializeApp({
  });
 
 const db = admin.firestore();
+
+
+
+
+
+
 fs.watchFile('./machine_settings.json',(curr,prev)=>{
      fs.readFile('./machine_settings.json', (err, data) => {  
          if (err) throw err;
-         let settings = JSON.parse(data);
-         var mu_id = settings.mu_id;
-         console.log(mu_id);
-         db.collection('Machines').doc(`${mu_id}`).set(settings)
+         machine_settings = JSON.parse(data);
+         var mu_id = machine_settings.mu_id;
+         
+         var params = machine_settings;
+        http_post('Update_Machine_State.php',params,function(response) {
+          if (!response.Success) {
+              console.error('Inserting Values Error');
+          }else{
+              console.log(response);
+          }  
+        },function(error) {
+            console.error('HTTP Post Error ' + error);
+        },function() {
+            console.error('Network Timeout');
+        });
+
+        console.log('Im Here');
+
+
+         db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
          .then(()=>{
              console.log("Data inserted");
-             if (settings.status == 'offline') {
+             if (machine_settings.status == 'offline') {
                  commandPy(io,{command:"Shutdown"});
-             }else if(settings.status == 'rebooting'){
+             }else if(machine_settings.status == 'rebooting'){
                  commandPy(io,{command:"Reboot"});
              }
-         });    
+         })
+         .catch(()=>{
+             console.error('Firebase Error');
+         });
      });
  });
-
-
-
 
 
 
@@ -162,18 +193,37 @@ app.on('window-all-closed', function () {
     // On macOS it is common for applications and their menu bar
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
-        settings.status = "offline";
-        jsonWrite(settings,()=>{
+        machine_settings.status = "offline";
+        jsonWrite(machine_settings,()=>{
             fs.readFile('./machine_settings.json', (err, data) => {  
                 if (err) throw err;
-                let settings = JSON.parse(data);
-                var mu_id = settings.mu_id;
+                machine_settings = JSON.parse(data);
+                var mu_id = machine_settings.mu_id;
                 console.log(mu_id);
-                db.collection('Machines').doc(`${mu_id}`).set(settings)
-                .then(()=>{
-                    console.log("Data inserted");
-                    app.quit();
-                });    
+                try {
+
+                    var params = machine_settings;
+                    http_post('Update_Machine_State.php',params,function(response) {
+                        if (!response.Success) {
+                            console.error('Inserting Values Error');
+                        }else{
+                            db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
+                            .then(()=>{
+                                console.log("Data inserted");
+                                app.quit();
+                            });        
+                        }  
+                    },function(error) {
+                        console.error(error);
+                    },function() {
+                        console.error('Network Timeout');
+                    });
+      
+                } catch (error) {
+                    console.log('Firebase Error: ' + error);
+                }
+
+                
             });
         });
     }
@@ -205,4 +255,67 @@ function jsonWrite(file,callback) {
         if (err) return console.log(err);
         callback();
     });
+}
+
+function http_post(url, parameters, fn_response, fn_error, timeout_cb) {
+    console.log('Called');
+    var timeout_callback = timeout_cb || function(){};
+    const data = JSON.stringify(parameters);
+    const options = {
+        hostname: 'requench-rest.herokuapp.com',
+        port: 443,
+        path: `/${url}`,
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+        },
+        timeout:15000
+    }
+
+    const req = https.request(options, (res) => {
+        res.on('data', (d) => {
+            var data_string = d.toString('utf8');
+            var new_data_string = `${data_string}`;
+            var json_object = tryParse(new_data_string);
+            if (json_object != false) {
+                console.log(json_object);
+                fn_response(json_object);
+            } else {
+                fn_response(false);
+            }
+        });
+    });
+    req.on('error', (error) => {
+        fn_error(error);
+    });
+
+    // request.setTimeout(() => {
+    //     request.abort();
+    //     timeout_callback();
+    // }, 15000);
+
+    req.on('timeout', (error) => {
+        request.abort();
+        timeout_callback();
+    });
+
+    req.write(data);
+    req.end();
+
+}
+
+function tryParse(jsonString) {
+    try {
+        console.log(jsonString);
+        var o = JSON.parse(jsonString);
+        if (o && typeof o === "object") {
+            return o;
+        }
+    } catch (error) {
+        console.log(error)
+        console.log(jsonString);
+
+    }
+    return false
 }

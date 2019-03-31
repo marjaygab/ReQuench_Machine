@@ -64,6 +64,7 @@ function main() {
     var filename = 'main.py';
     var transactions_list = [];
     var container_present = false;
+    var remaining_balance = store.get('User_Information').Balance;
     var current_operation = {
         operation: 'STANDBY',
         get: function () {
@@ -85,14 +86,17 @@ function main() {
             }
         }
     };
+
     var options = {
         scriptPath: path.join(__dirname, '/python_scripts')
     }
+
+    if (remaining_balance <= 0) {
+        $(".main-controls").prop('disabled',true);
+    }
+
     commandPy(socket, { command: 'New_Transaction' });
     console.log(response_object);
-
-
-
 
 
     //This function couns every second if a user is idle.
@@ -301,7 +305,12 @@ function main() {
                         } else {
                             //let python know that there is nothing left
                             commandPy(socket, { command: 'Stop_Dispense' });
-                            console.log('Nothing left!');
+                            current_size = 0;
+                            $("#water-level").animate({ height: 0 + 'px' });
+                            //Show current mL label
+                            ml_label.innerHTML = `0 mL`;
+                            $(".main-controls").prop('disabled',true);
+                            //show alert here
                         }
                     } catch (error) {
                         throw error;
@@ -313,7 +322,7 @@ function main() {
                         var amount_dispensed = previous_size - current_size;
                         var price_computed = amount_dispensed * machine_settings.price_per_ml;
                         price_computed = round(price_computed, 2);
-                        var remaining_balance = current_size;
+                        remaining_balance = current_size;
                         water_level_before = machine_settings.current_water_level;
                         water_level_after = temp_water_level;
                         machine_settings.current_water_level = temp_water_level;
@@ -332,12 +341,20 @@ function main() {
                             params.Remaining_Balance = remaining_balance;
                         }
                         temp_array_transaction.push(params);
-                        
-                        jsonRead(function(data) {
+
+                        jsonWrite(machine_settings);
+
+                        jsonRead(data => {
                             if (data != false) {
-                                jsonWrite(data);
+                                machine_settings = data;
                             }
                         });
+
+                        // jsonRead(function (data) {
+                        //     if (data != false) {
+                        //         jsonWrite(data);
+                        //     }
+                        // });
 
                         previous_size = current_size;
                         current_operation.set('STANDBY');
@@ -538,7 +555,7 @@ function main() {
                     }
                 }, function (error) {
                     console.log(`Error: ${error}`);
-                },function() {
+                }, function () {
                     Swal.fire({
                         title: 'Network Timeout. Please try again later.',
                         type: 'error',
@@ -548,7 +565,7 @@ function main() {
                             window.location.assign('login.html');
                         }
                     }).then((result) => {
-                        window.location.assign('login.html');                        
+                        window.location.assign('login.html');
                     })
                 });
             }
@@ -629,7 +646,12 @@ function main() {
                 html:
                     'Enter the amount of water to be dispensed:<br/><br/><button id="decrease" class="btn btn-info"><strong>-</strong></button>' +
                     '<input type="text" id=amount>' +
-                    '<button id="increase" class="btn btn-danger"><strong>+</strong></button>',
+                    '<button id="increase" class="btn btn-danger"><strong>+</strong></button><br>' + 
+                    '<button id="preset_100" class="presets btn btn-info btn-sm"><strong>100 mL</strong></button>' + 
+                    '<button id="preset_200" class="presets btn btn-info btn-sm"><strong>200 mL</strong></button>' +
+                    '<button id="preset_300" class="presets btn btn-info btn-sm"><strong>300 mL</strong></button>' +
+                    '<button id="preset_400" class="presets btn btn-info btn-sm"><strong>400 mL</strong></button>' +
+                    '<button id="preset_500" class="presets btn btn-info btn-sm"><strong>500 mL</strong></button>',
                 confirmButtonText: 'Dispense',
                 onBeforeOpen: () => {
                     const content = Swal.getContent();
@@ -638,6 +660,12 @@ function main() {
                     const input = $('#amount');
                     const stop = $('#stop');
                     const increase = $('#increase');
+                    const preset_100 = $('#preset_100');
+                    const preset_200 = $('#preset_200');
+                    const preset_300 = $('#preset_300');
+                    const preset_400 = $('#preset_400');
+                    const preset_500 = $('#preset_500');
+
                     content.querySelector("#amount").value = amount;
 
                     decrease.onclick = function () {
@@ -645,7 +673,7 @@ function main() {
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
                         if (amount > 0) {
-                            amount--;
+                            amount = amount - 100;
                             content.querySelector("#amount").value = amount;
                         }
                     }
@@ -653,30 +681,67 @@ function main() {
                         const content = Swal.getContent();
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
-                        amount++;
+                        amount = amount + 100;
                         content.querySelector("#amount").value = amount;
                     }
+
+                    preset_100.onclick = function() {
+                        amount = 100;
+                        content.querySelector("#amount").value = amount;
+                    }
+                    preset_200.onclick = function() {
+                        amount = 200;
+                        content.querySelector("#amount").value = amount;
+                    }
+                    preset_300.onclick = function() {
+                        amount = 300;
+                        content.querySelector("#amount").value = amount;
+                    }
+                    preset_400.onclick = function() {
+                        amount = 400;
+                        content.querySelector("#amount").value = amount;
+                    }
+                    preset_500.onclick = function() {
+                        amount = 500;
+                        content.querySelector("#amount").value = amount;
+                    }
+
 
                 },
                 onClose: () => {
                 }
             }).then((result) => {
-                commandPy(socket, { command: 'Set_Amount', amount: amount });
-                current_operation.set(current);
-                if (current == 'HOT') {
-                    commandPy(socket, { command: 'Toggle_Hot' });
-                    $(this).text("Stop");
-                    $("#hot-button").prop('disabled', true);
-                    $("#cold-button").prop('disabled', true);
-                    $('#toggle_switch').prop('disabled', true);
+
+                //Check Remaining Balance Here. Block transaction if input mL is greater than remaining balance.
+                if (amount <= remaining_balance) {
+                    commandPy(socket, { command: 'Set_Amount', amount: amount });
+                    current_operation.set(current);
+                    if (current == 'HOT') {
+                        commandPy(socket, { command: 'Toggle_Hot' });
+                        $(this).text("Stop");
+                        $("#hot-button").prop('disabled', true);
+                        $("#cold-button").prop('disabled', true);
+                        $('#toggle_switch').prop('disabled', true);
+                    } else {
+                        commandPy(socket, { command: 'Toggle_Cold' });
+                        $(this).text("Stop");
+                        $("#hot-button").prop('disabled', true);
+                        $("#cold-button").prop('disabled', true);
+                        $('#toggle_switch').prop('disabled', true);
+                    }
+                    amount = 0;
                 } else {
-                    commandPy(socket, { command: 'Toggle_Cold' });
-                    $(this).text("Stop");
-                    $("#hot-button").prop('disabled', true);
-                    $("#cold-button").prop('disabled', true);
-                    $('#toggle_switch').prop('disabled', true);
+                    amount = 0;
+                    Swal.fire({
+                        title: "You don't have enough balance.",
+                        type: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Ok.Sorry',
+                        onClose: function () {
+                        }
+                    });
                 }
-                amount = 0;
+                
             });
 
 
@@ -740,7 +805,7 @@ function jsonRead(callback) {
     var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
-    fs.readFile('./machine_settings.json', (err, data) => {  
+    fs.readFile('./machine_settings.json', (err, data) => {
         try {
             if (err) throw err;
             var parsed = JSON.parse(data);
@@ -754,11 +819,11 @@ function jsonRead(callback) {
 function getPercentage(value, overall) {
     var percentage_value = (value / overall) * 100
     return percentage_value;
-}  
+}
 
-function sendNotification(title,body,fn_response,fn_error) {
+function sendNotification(title, body, fn_response, fn_error) {
     var params = {};
     params.title = title;
     params.body = body;
-    httpcustomrequest.http_post('Notify.php',params,fn_response(response),fn_error(error));
+    httpcustomrequest.http_post('Notify.php', params, fn_response(response), fn_error(error));
 }

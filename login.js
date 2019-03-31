@@ -2,6 +2,7 @@ let $ = require("jquery");
 const http = require('http');
 var request = require('request');
 const Store = require('electron-store');
+const moment = require('moment');
 let Swal = require('sweetalert2');
 const store = new Store();
 let httpcustomrequest = require('./loginBackend.js');
@@ -116,6 +117,29 @@ function main() {
         }
     }
 
+    //Add Last Maintenance Data notification here
+    var last_maintenance_moment = moment(machine_settings.last_maintenance_date);
+    var today_moment = moment().format("YYYY-MM-DD");
+
+    var after_6_months_moment = last_maintenance_moment.add(6,"months").format("YYYY-MM-DD");
+
+    if (after_6_months_moment <= today_moment) {
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: 'This machine needs maintainance. Please call maintenance personnel for assistance.',
+            confirmButtonText: "I am an Admin",
+            allowOutsideClick: false,
+        }).then((result) => {
+            if (result.value) {
+                Swal.close();
+            }
+        });
+        if (machine_settings.notify_admin) {
+            sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response) { }, function (error) { });
+        }
+    }
+    
 
 
     enter_button.onclick = function () {

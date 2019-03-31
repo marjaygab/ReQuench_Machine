@@ -2,7 +2,7 @@ let $ = require('jquery');
 let fs = require('fs');
 let moment = require('moment');
 let httpcustomrequest = require('./loginBackend.js');
-const machine_settings = require('./machine_settings');
+const settings = require('./machine_settings');
 const path = require('path');
 let Swal = require('sweetalert2');
 
@@ -21,6 +21,7 @@ $(document).ready(function () {
     var reveal_link = document.getElementById('reveal_link');
     var renew_access_token = document.getElementById('renew_access_token');
     var override_link = document.getElementById('override_link');
+    var machine_settings = settings;
     var current_api_key = machine_settings.api_key;
     var notification_toggler_state = machine_settings.notify_admin;
     var current_secret;
@@ -194,6 +195,12 @@ $(document).ready(function () {
                 machine_settings.critical_level = critical_level.value;
                 //get current api key here to save
                 jsonWrite(machine_settings);
+                jsonRead(data=>{
+                    if (data != false) {
+                        machine_settings = data;
+                    }
+                });
+
                 window.location.assign('admin.html');
             }
         })
@@ -209,14 +216,31 @@ $(document).ready(function () {
 
     function jsonWrite(file) {
         // Use this path for windows.
-        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+        var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
         //Use this path for RasPi
-        var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
+        // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
         fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
             if (err) return console.log(err);
         });
     }
+
+    function jsonRead(callback) {
+        // Use this path for windows.
+        var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    
+        // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+        fs.readFile(file_path, (err, data) => {
+            try {
+                if (err) throw err;
+                var parsed = JSON.parse(data);
+                callback(parsed);
+            } catch (e) {
+                callback(false);
+            }
+        });
+    }
+
 });
 
 
