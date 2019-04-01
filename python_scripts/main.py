@@ -134,6 +134,8 @@ def on_message(data):
                         },
                     },
                 )
+
+                hx.tare()
             else:
                 sio.emit(
                     "socket-event",
@@ -196,7 +198,6 @@ def getBaseline():
     global current_baseline
     val = hx.get_weight_A(5)
     current_baseline = val
-    hx.reset()
 
 
 def getCurrentWeight():
@@ -205,8 +206,7 @@ def getCurrentWeight():
     global current_baseline
     val = hx.get_weight_A(5)
     current_weight = val
-    current_weight = (current_weight-current_baseline) / 195
-    hx.reset()
+    current_weight = (current_weight) / 195
 
 def getContainerWeight():
     global hx
@@ -222,10 +222,10 @@ def getContainerWeight():
     try:
         current_weight = hx.get_weight_A(5)
         # current_weight = round(current_weight // float(1000),1) * 1000
-        container_weight = ((current_weight - current_baseline) / 195)
+        container_weight = ((current_weight) / 195)
         if container_weight < 0:
     	    container_weight = 0
-        hx.reset()
+        
     except Exception as exception:
         print(exception)
         sys.stdout.flush()
@@ -306,7 +306,7 @@ def manualDispense(command):
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
     getCurrentWeight()
-    total_liters = (current_weight - container_weight)
+    total_liters = (current_weight)
     starting_liters = total_liters
     if total_liters < 0:
         total_liters = 0
@@ -328,7 +328,7 @@ def manualDispense(command):
         # if time_duration >= 0.5:
         # Use This Code for Actual Testing    
         getCurrentWeight()
-        total_liters = (current_weight - container_weight)
+        total_liters = (current_weight)
         if total_liters < 0:
             total_liters = 0
         # Use this code if not actual testing
@@ -371,8 +371,8 @@ def manualDispense(command):
         },
     )
     # hx.reset()
-    # hx.tare()
     getContainerWeight()
+    hx.tare()
     # container_weight = total_liters
     # print("Closed ALL Valve, Closed ALL Pump")
     # sys.stdout.flush()
