@@ -147,7 +147,7 @@ $(document).ready(function() {
                         commandPy(socket, { command: 'Stop_Drain' });
                         clearInterval(drain_interval);
                     }
-                }, 1000);
+                }, 60000);
             }
 
             
