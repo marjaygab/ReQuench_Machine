@@ -191,25 +191,17 @@ def check_operation():
 def getBaseline():
     global hx
     global current_baseline
-    print("Getting Baseline")
-    sys.stdout.flush()
     val = hx.get_weight_A(5)
-    current_baseline = round(val // float(1000),1) * 1000
+    current_baseline = val
     hx.reset()
-    print("Baseline: " + str(current_baseline))
-    sys.stdout.flush()
 
 
 def getCurrentWeight():
     global hx
     global current_weight
     global current_baseline
-    print("Getting Current Weight")
-    sys.stdout.flush()
     val = hx.get_weight_A(5)
-    print('Raw Weight: ' + str(val))
-    sys.stdout.flush()
-    current_weight = round(val // float(1000),1) * 1000
+    current_weight = val
     current_weight = (current_weight-current_baseline) / 200
     hx.reset()
 
@@ -226,12 +218,8 @@ def getContainerWeight():
     
     try:
         current_weight = hx.get_weight_A(5)
-        current_weight = round(current_weight // float(1000),1) * 1000
+        # current_weight = round(current_weight // float(1000),1) * 1000
         container_weight = ((current_weight - current_baseline) / 200)
-        print('Current Baseline: ' + str(current_baseline))
-        sys.stdout.flush()
-        print("Container Weight: " + str(container_weight))
-        sys.stdout.flush()
         if container_weight < 0:
     	    container_weight = 0
         hx.reset()
@@ -362,24 +350,16 @@ def manualDispense(command):
     GPIO.output(output_devices['solenoid_1'],1)
     GPIO.output(output_devices['pump_2'],1)
     GPIO.output(output_devices['solenoid_2'],1)
-    test_time_duration = time.time() - test_time;
-    getCurrentWeight()
-    total_liters = (current_weight)
-    ending_liters = total_liters - starting_liters
-    weight_volume = ending_liters-container_weight
+    # test_time_duration = time.time() - test_time;
+    # getCurrentWeight()
+    # total_liters = (current_weight)
+    # ending_liters = total_liters - starting_liters
+    # weight_volume = ending_liters-container_weight
     
-    print("Time Duration: " + str(test_time_duration))
-    sys.stdout.flush()
+    # sample_constant = 0.044
+    # sample_volume = test_time_duration / sample_constant
 
-    sample_constant = 0.044
-    sample_volume = test_time_duration / sample_constant
 
-    print("Time Volume: " + str(sample_volume))
-    sys.stdout.flush()
-    print("Weight Volume: " + str(weight_volume))
-    sys.stdout.flush()
-
-    
     sio.emit(
         "socket-event",
         {
@@ -403,8 +383,6 @@ def automaticDispense(command, amount_requested):
         global total_liters
         global base_weight
         global auto_amount
-        print("Amount to dispense: " + str(auto_amount))
-        sys.stdout.flush()
         time_duration = 0
         time_start = time.time()
         
@@ -462,6 +440,7 @@ def automaticDispense(command, amount_requested):
         # base_weight = total_liters
         total_liters = 0
         auto_amount = 0
+        time.sleep(0.1)
         GPIO.output(output_devices['pump_1'],1)
         GPIO.output(output_devices['solenoid_1'],1)
         GPIO.output(output_devices['pump_2'],1)

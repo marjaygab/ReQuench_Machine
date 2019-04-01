@@ -790,10 +790,10 @@ function round(value, decimals) {
 
 function jsonWrite(file) {
     // Use this path for windows.
-    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
-    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
         if (err) return console.log(err);
     });
@@ -802,10 +802,10 @@ function jsonWrite(file) {
 
 function jsonRead(callback) {
     // Use this path for windows.
-    var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
-    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
-    fs.readFile('./machine_settings.json', (err, data) => {
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    fs.readFile(file_path, (err, data) => {
         try {
             if (err) throw err;
             var parsed = JSON.parse(data);

@@ -19,10 +19,10 @@ const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
 var py_object;
 var machine_settings = settings;
 //Use this for actual
-// var filename = 'main.py';
+var filename = 'main.py';
 
 //User this for Windows testing
-var filename = 'main_windows.py';
+// var filename = 'main_windows.py';
 
 
 
