@@ -87,6 +87,10 @@ def on_message(data):
             container_weight = 0
             current_weight = 0
             current_baseline = 0
+            hx = HX711(17, 27)
+            hx.set_reading_format("MSB", "MSB")
+            hx.set_reference_unit(-1)
+            hx.reset()
         elif command == "Toggle_Auto":
             mode_auto = True
             mode_manual = False
