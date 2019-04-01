@@ -58,6 +58,9 @@ GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
+GPIO.output(output_devices['heater'],1)
+GPIO.output(output_devices['compressor'],1)
+
 
 @sio.on("connect")
 def on_connect():
@@ -202,7 +205,7 @@ def getCurrentWeight():
     global current_baseline
     val = hx.get_weight_A(5)
     current_weight = val
-    current_weight = (current_weight-current_baseline) / 200
+    current_weight = (current_weight-current_baseline) / 195
     hx.reset()
 
 def getContainerWeight():
@@ -219,7 +222,7 @@ def getContainerWeight():
     try:
         current_weight = hx.get_weight_A(5)
         # current_weight = round(current_weight // float(1000),1) * 1000
-        container_weight = ((current_weight - current_baseline) / 200)
+        container_weight = ((current_weight - current_baseline) / 195)
         if container_weight < 0:
     	    container_weight = 0
         hx.reset()
@@ -414,7 +417,7 @@ def automaticDispense(command, amount_requested):
         while total_liters < int(auto_amount):
             time_end = time.time()
             time_duration = time_end - time_start
-            if time_duration >= 0.5:
+            if time_duration >= 0.1:
                 # Use This Code for Actual Testing
                 getCurrentWeight()
                 total_liters = current_weight-container_weight;
@@ -440,7 +443,6 @@ def automaticDispense(command, amount_requested):
         # base_weight = total_liters
         total_liters = 0
         auto_amount = 0
-        time.sleep(0.1)
         GPIO.output(output_devices['pump_1'],1)
         GPIO.output(output_devices['solenoid_1'],1)
         GPIO.output(output_devices['pump_2'],1)
@@ -543,7 +545,7 @@ def main():
     print("Ready")
     sys.stdout.flush()
     threading.Thread(target=controller).start()
-    threading.Thread(target=readTemp).start()
+    # threading.Thread(target=readTemp).start()
     while True:
         pass
 
