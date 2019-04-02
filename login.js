@@ -113,7 +113,11 @@ function main() {
             }
         });
         if (machine_settings.notify_admin) {
-            sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) { }, function (error) { });
+            sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) {
+                    console.log(response);
+                }, function (error) {
+                console.error(error);
+                });
         }
     }
 

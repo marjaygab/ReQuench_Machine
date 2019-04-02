@@ -9,6 +9,7 @@ hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
 hx.set_reference_unit(-1)
 hx.reset()
+#hx.tare()
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
@@ -53,7 +54,7 @@ total_liters = 0
 base_weight = 0
 terminate_flag = False
 # GPIO.setup(output_devices['pump_1'],GPIO.OUT)
-calibration_constant = 50
+calibration_constant = 0
 
 
 GPIO.output(output_devices['pump_1'],1)

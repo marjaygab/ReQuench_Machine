@@ -98,12 +98,12 @@ function main() {
 
 
     if (user_information.Access_Level == 'ADMIN') {
-        mode_toggle.prop("disabled",false);
+        mode_toggle.disabled = false;
         mode_toggle.onclick = function() {
             window.location.assign('admin.html');
         }
     }else{
-        mode_toggle.prop("disabled",true);
+        mode_toggle.disabled = true;
     }
 
     
