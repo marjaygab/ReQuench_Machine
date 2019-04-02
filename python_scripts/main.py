@@ -53,13 +53,15 @@ total_liters = 0
 base_weight = 0
 terminate_flag = False
 # GPIO.setup(output_devices['pump_1'],GPIO.OUT)
+calibration_constant = 50
+
 
 GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
-GPIO.output(output_devices['heater'],1)
-GPIO.output(output_devices['compressor'],1)
+# GPIO.output(output_devices['heater'],1)
+# GPIO.output(output_devices['compressor'],1)
 
 
 @sio.on("connect")
@@ -407,20 +409,22 @@ def automaticDispense(command, amount_requested):
         global total_liters
         global base_weight
         global auto_amount
+        global calibration_constant
         time_duration = 0
         time_start = time.time()
 
         hx.reset()
+        time.sleep(1)
         hx.tare()
         
-        if command == "COLD":   
-            GPIO.output(output_devices['pump_1'],0)
-            GPIO.output(output_devices['solenoid_1'],0)
+        if command == "HOT":   
+            GPIO.output(output_devices['pump_2'],0)
+            GPIO.output(output_devices['solenoid_2'],0)
         else:
             # print("Opened HOT Valve, Opened HOoooT Pump")
             # sys.stdout.flush()
-            GPIO.output(output_devices['pump_2'],0)
-            GPIO.output(output_devices['solenoid_2'],0)
+            GPIO.output(output_devices['pump_1'],0)
+            GPIO.output(output_devices['solenoid_1'],0)
             getCurrentWeight()
             total_liters = current_weight;
             if total_liters < 0:
@@ -438,7 +442,7 @@ def automaticDispense(command, amount_requested):
                 },
             )
         
-        while (total_liters + 15) < int(auto_amount):
+        while (total_liters + calibration_constant) < int(auto_amount):
             time_end = time.time()
             time_duration = time_end - time_start
             if time_duration >= 0.1:
@@ -461,7 +465,7 @@ def automaticDispense(command, amount_requested):
                         },
                     },
                 )
-            if (total_liters + 15) >= auto_amount:
+            if (total_liters + calibration_constant) >= auto_amount:
                 stop_dispense()
                 break
         # base_weight = total_liters
@@ -471,7 +475,7 @@ def automaticDispense(command, amount_requested):
                         "destination": "JS",
                         "content": {
                             "type": "DISPENSE_READING",
-                            "body": {"Total": total_liters + 15},
+                            "body": {"Total": auto_amount},
                         },
                     },
                 )
@@ -577,7 +581,7 @@ def main():
     print("Ready")
     sys.stdout.flush()
     threading.Thread(target=controller).start()
-    # threading.Thread(target=readTemp).start()
+    threading.Thread(target=readTemp).start()
     while True:
         pass
 

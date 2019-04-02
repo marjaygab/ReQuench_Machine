@@ -20,7 +20,7 @@ def main():
 		raw_weight = hx.get_weight_A(5)
                 # computed_weight = (raw_weight // float(1000)) * 1000
                 computed_weight = raw_weight
-                current_val = (computed_weight) / 193
+                current_val = (computed_weight) / 183
 		current_mL = current_val
 		#current_mL = current_val
                 if current_mL < 0:
