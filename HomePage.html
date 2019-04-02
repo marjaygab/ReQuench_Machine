@@ -10,6 +10,9 @@
     <script type="text/javascript" src="styles/js/bootstrap-toggle.min.js"></script>
     <script type="text/javascript" src="engine.js"></script>
     <style media="screen">
+        #id_banner{
+            left:20%;
+        }
         #hot-button {
             width: 100%;
             height: 100px;
@@ -143,8 +146,9 @@
 
 <body>
     <nav class="navbar navbar-light bg-dark">
-        <span class="navbar-brand mb-0 h1"><img id="banner" src="" height="30" alt=""></span>
+        <span id="id_banner" class="navbar-brand mb-0 h1"><img id="banner" src="" height="30" alt=""></span>
         <li class="nav-item ml-auto">
+            <button class="btn btn-outline-success" type="button" id="mode_toggle" disabled>Customer</button>
             <button class="btn btn-outline-info" type="button" id="logout_button">Logout</button>
         </li>
     </nav>

@@ -32,6 +32,7 @@ function main() {
     var logout_button = document.getElementById('logout_button');
     var cold_label = document.getElementById('cold_label');
     var hot_label = document.getElementById('hot_label');
+    var mode_toggle = document.getElementById('mode_toggle');
     var user_information = store.get('User_Information');
     var history = store.get('History');
     var purchase_history = store.get('Purchase_History');
@@ -95,6 +96,17 @@ function main() {
         $(".main-controls").prop('disabled',true);
     }
 
+
+    if (user_information.Access_Level == 'ADMIN') {
+        mode_toggle.prop("disabled",false);
+        mode_toggle.onclick = function() {
+            window.location.assign('admin.html');
+        }
+    }else{
+        mode_toggle.prop("disabled",true);
+    }
+
+    
     commandPy(socket, { command: 'New_Transaction' });
     console.log(response_object);
 

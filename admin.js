@@ -10,6 +10,9 @@ $(document).ready(function() {
     var settings_button = document.getElementById('settings_button');
     var maintenance_button = document.getElementById('maintenance_button');
     var refill_button = document.getElementById('refill_button');
+    var requench_button = document.getElementById('requench_button');
+    var mode_toggle = document.getElementById('mode_toggle');
+    var logout_button = document.getElementById('logout_button');
 
     const io = require('socket.io-client');
     var socket = io('http://localhost:3000');
@@ -58,7 +61,7 @@ $(document).ready(function() {
                     var refill_timeout = setTimeout(()=>{
                         Swal.fire({
                             type: "question",
-                            text: "Are you done?",
+                            title: "Are you done?",
                             allowOutsideClicks: false,
                             showConfirmButton: true,
                             showCancelButton: false
@@ -77,6 +80,18 @@ $(document).ready(function() {
             }
         });
     }   
+
+    requench_button.onclick = function() {
+        window.location.assign('HomePage.html');
+    }
+
+    logout_button.onclick = function() {
+        window.location.assign('login.js');
+    }
+
+    mode_toggle.onclick = function() {
+        window.location.assign('HomePage.html');
+    }
 
 
     function commandPy(socket, content) {

@@ -9,7 +9,11 @@
     text-align: center;
 }
 
-button{
+.navbar-brand{
+    margin-right: 0px;
+}
+
+.control{
     width: 150px;
     height: 150px;
 }

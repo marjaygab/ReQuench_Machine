@@ -16,33 +16,44 @@
 <body>
     <nav class="navbar navbar-light bg-dark">
         <span class="navbar-brand mb-0 h1"><img src="res/brandwlogo.png" height="30" alt=""></span>
+        <li class="nav-item">
+            <button class="btn btn-outline-danger" type="button" id="mode_toggle">Admin</button>
+            <button class="btn btn-outline-info" type="button" id="logout_button">Logout</button>
+        </li>
     </nav>
     <div class="container">
 
         <div class="row">
+            <div class="col-12">
+                <button id="requench_button" class="btn btn-outline-info btn-block">ReQuench</button>
+            </div>
+        </div>
+
+        <div class="row">
             <div class="col-sm-6 d-inline-block">
-                <button id="power_button" class="btn btn-danger">Power Off</button>
+                <button id="power_button" class="control btn btn-danger">Power Off</button>
             </div>
             <div class="col-sm-6 d-inline-block">
-                <button id="reboot_button" class="btn btn-warning">Reboot</button>
+                <button id="reboot_button" class="control btn btn-warning">Reboot</button>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-6 d-inline-block">
-                <button id="settings_button" class="btn btn-primary">Settings</button>
+                <button id="settings_button" class="control btn btn-primary">Settings</button>
             </div>
             <div class="col-sm-6 d-inline-block">
-                <button id="maintenance_button" class="btn btn-success">Maintenance</button>
+                <button id="maintenance_button" class="control btn btn-success">Maintenance</button>
             </div>
         </div>
 
         <div class="row">
             <div class="col-12">
-                <button id="refill_button" class="btn btn-outline-info">Reffil</button>
+                <button id="refill_button" class="btn btn-outline-info btn-block">Refill</button>
             </div>
         </div>
 
     </div>
 </body>
+
 
 </html>
