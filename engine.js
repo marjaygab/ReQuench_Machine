@@ -342,13 +342,17 @@ function main() {
                         }
                         temp_array_transaction.push(params);
 
-                        jsonWrite(machine_settings);
-
-                        jsonRead(data => {
-                            if (data != false) {
-                                machine_settings = data;
+                        jsonWrite(machine_settings,response => {
+                            if (response) {
+                                jsonRead(data => {
+                                    if (data != false) {
+                                        machine_settings = data;
+                                    }
+                                });        
                             }
                         });
+
+                        
 
                         // jsonRead(function (data) {
                         //     if (data != false) {
@@ -788,14 +792,18 @@ function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
-function jsonWrite(file) {
+function jsonWrite(file,callback) {
     // Use this path for windows.
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
     var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
-        if (err) return console.log(err);
+        if (err){
+            callback(false);
+        }else{
+            callback(true);
+        }
     });
 }
 

@@ -150,7 +150,15 @@ $(document).ready(function () {
                                     }else{
                                         access_token.value = 'Hidden';
                                     }
-                                    jsonWrite(machine_settings);
+                                    jsonWrite(machine_settings,response=>{
+                                        if (response) {
+                                            jsonRead((data)=>{
+                                                if (data != false) {
+                                                    machine_settings = data;                                                    
+                                                }
+                                            });
+                                        }
+                                    });
                                     this.disabled = true;
                                     Swal.close();
                                 } else {
@@ -194,10 +202,13 @@ $(document).ready(function () {
                 machine_settings.price_per_ml = price_per_ml.value;
                 machine_settings.critical_level = critical_level.value;
                 //get current api key here to save
-                jsonWrite(machine_settings);
-                jsonRead(data=>{
-                    if (data != false) {
-                        machine_settings = data;
+                jsonWrite(machine_settings,response=>{
+                    if (response) {
+                        jsonRead((data)=>{
+                            if (data != false) {
+                                machine_settings = data;
+                            }
+                        });
                     }
                 });
 
@@ -214,20 +225,24 @@ $(document).ready(function () {
         }
     });
 
-    function jsonWrite(file) {
+    function jsonWrite(file,callback) {
         // Use this path for windows.
-        var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
         //Use this path for RasPi
-        // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
+        var file_path = '/home/pi/Documents/ReQuench_Machine/machine_operations.json';
         fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
-            if (err) return console.log(err);
+            if (err){
+                callback(false);
+            }else{
+                callback(true);
+            }
         });
     }
 
     function jsonRead(callback) {
         // Use this path for windows.
-        var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
     
         // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
         fs.readFile(file_path, (err, data) => {
