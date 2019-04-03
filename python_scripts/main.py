@@ -10,7 +10,6 @@ hx.set_reading_format("MSB", "MSB")
 hx.set_reference_unit(-193)
 hx.reset()
 
-
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
@@ -91,9 +90,6 @@ def on_message(data):
             container_weight = 0
             current_weight = 0
             current_baseline = 0
-            hx = HX711(17, 27)
-            hx.set_reading_format("MSB", "MSB")
-            hx.set_reference_unit(-1)
             hx.reset()
         elif command == "Toggle_Auto":
             mode_auto = True
@@ -128,19 +124,13 @@ def on_message(data):
             heating = False
             GPIO.output(output_devices['heater'],1)
         elif command == "Get_Baseline":
-            # getBaseline()
-            pass
-        elif command == "Get_Container":
-            hx.reset()
             hx.tare()
-            
-            for x in range(3):
-                getContainerWeight()
-                time.sleep(0.5)
-                if x == 2:
-                    break
-
+        elif command == "Get_Container":
             getContainerWeight()
+            # container_weight = hx.get_weight_A(5)
+            # container_weight = container_weight + 1
+            print("Current Container Weight: " + str(container_weight))
+            sys.stdout.flush()
 
             if container_weight > 0:
                 # getContainerWeight()
@@ -169,9 +159,34 @@ def on_message(data):
                     },
                 )
 
-            # base_weight = container_weight
-        # elif command == 'Get_Current':
-        #     current_weight = getCurrentWeight()
+            
+        elif command == "Finalize_Container":
+            if container_weight > 0:
+                # getContainerWeight()
+                # time.sleep(3)
+                sio.emit(
+                    "socket-event",
+                    {
+                        "destination": "JS",
+                        "content": {
+                            "type": "CONTAINER_STATUS",
+                            "body": "Container Present",
+                        },
+                    },
+                )
+                hx.reset()
+                hx.tare()                
+            else:
+                sio.emit(
+                    "socket-event",
+                    {
+                        "destination": "JS",
+                        "content": {
+                            "type": "CONTAINER_STATUS",
+                            "body": "Container Absent",
+                        },
+                    },
+                )
         elif command == "Start_Drain":
             print("Started Draining")
             sys.stdout.flush()
@@ -241,8 +256,6 @@ def getContainerWeight():
     # container_weight = 10
     # print("Getting Container Weight")
     # sys.stdout.flush()
-
-    
     try:
         current_weight = hx.get_weight_A(5)
         # current_weight = round(current_weight // float(1000),1) * 1000
@@ -316,11 +329,10 @@ def manualDispense(command):
     global total_liters
     global base_weight
 
+    # hx.set_reference_unit(-193)
     hx.reset()
+    time.sleep(1)
     hx.tare()
-    time_duration = 0
-    time_start = time.time()
-    test_time = time.time()
     
     if command == "COLD":
         # print("Opened COLD Valve, Opened COLD Pump")
@@ -350,8 +362,6 @@ def manualDispense(command):
     )
 
     while checkCommand() != "Standby":
-        time_end = time.time()
-        time_duration = time_end - time_start
         # if time_duration >= 0.5:
         # Use This Code for Actual Testing    
         getCurrentWeight()
@@ -360,7 +370,6 @@ def manualDispense(command):
         #    total_liters = 0
         # Use this code if not actual testing
         # total_liters = total_liters + 1
-        time_start = time.time()
         sio.emit(
             "socket-event",
             {
@@ -374,7 +383,6 @@ def manualDispense(command):
         if checkCommand() == "Standby":
             stop_dispense()
             break
-    # base_weight = total_liters
     
     sio.emit(
             "socket-event",
@@ -391,15 +399,6 @@ def manualDispense(command):
     GPIO.output(output_devices['solenoid_1'],1)
     GPIO.output(output_devices['pump_2'],1)
     GPIO.output(output_devices['solenoid_2'],1)
-    # test_time_duration = time.time() - test_time;
-    # getCurrentWeight()
-    # total_liters = (current_weight)
-    # ending_liters = total_liters - starting_liters
-    # weight_volume = ending_liters-container_weight
-    
-    # sample_constant = 0.044
-    # sample_volume = test_time_duration / sample_constant
-
 
     sio.emit(
         "socket-event",
