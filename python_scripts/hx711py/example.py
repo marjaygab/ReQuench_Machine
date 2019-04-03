@@ -58,6 +58,7 @@ while True:
         
         # Prints the weight. Comment if you're debbuging the MSB and LSB issue.
         val = hx.get_weight(5)
+        # val = hx.read_average(5)
 	# val = hx.read_long()
         print val
 
