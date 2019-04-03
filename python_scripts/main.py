@@ -7,9 +7,10 @@ import sys
 from hx711 import HX711
 hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
-hx.set_reference_unit(-1)
+hx.set_reference_unit(-193)
 hx.reset()
-#hx.tare()
+
+
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
@@ -127,9 +128,20 @@ def on_message(data):
             heating = False
             GPIO.output(output_devices['heater'],1)
         elif command == "Get_Baseline":
-            getBaseline()
+            # getBaseline()
+            pass
         elif command == "Get_Container":
+            hx.reset()
+            hx.tare()
+            
+            for x in range(3):
+                getContainerWeight()
+                time.sleep(0.5)
+                if x == 2:
+                    break
+
             getContainerWeight()
+
             if container_weight > 0:
                 # getContainerWeight()
                 # time.sleep(3)
@@ -205,10 +217,11 @@ def check_operation():
 def getBaseline():
     global hx
     global current_baseline
-    val = hx.get_weight_A(5)
-    current_baseline = round(val // float(1000),1) * 1000
-    print('Baseline: ' + str(current_baseline))
-    sys.stdout.flush()    
+    # val = hx.get_weight_A(5)
+    # current_baseline = round(val // float(1000),1) * 1000
+    # print('Baseline: ' + str(current_baseline))
+    # sys.stdout.flush()    
+    pass
     
     
 def getCurrentWeight():
@@ -217,7 +230,7 @@ def getCurrentWeight():
     global current_baseline
     val = hx.get_weight_A(5)
     current_weight = val
-    current_weight = (current_weight) / 183
+    # current_weight = (current_weight) / 183
 
 def getContainerWeight():
     global hx
@@ -232,8 +245,9 @@ def getContainerWeight():
     
     try:
         current_weight = hx.get_weight_A(5)
-        current_weight = round(current_weight // float(1000),1) * 1000
-        container_weight = ((current_weight-current_baseline) / 183)
+        # current_weight = round(current_weight // float(1000),1) * 1000
+        # container_weight = ((current_weight-current_baseline) / 183)
+        container_weight = current_weight
         if container_weight < 0:
     	    container_weight = 0
         print('Container Weight: ' + str(container_weight))
@@ -368,7 +382,7 @@ def manualDispense(command):
                 "destination": "JS",
                 "content": {
                     "type": "DISPENSE_READING",
-                    "body": {"Total": total_liters + 15},
+                    "body": {"Total": total_liters},
                 },
             },
         )
