@@ -26,6 +26,11 @@
     text-align: center;
 }
 
+#drain_controls{
+    visibility: hidden;
+    text-align: center;
+}
+
 .progress_circle{
     border-radius: 50%;
     opacity: 0.5; 

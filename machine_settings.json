@@ -1,13 +1,13 @@
 {
       "location": "Mabini Building",
       "date_of_purchase": "2018-08-13",
-      "last_maintenance_date": "2018-10-01",
+      "last_maintenance_date": "2019-04-05",
       "Model_Number": "ABC123",
       "price_per_ml": "0.002",
-      "current_water_level": 12802.119170984455,
+      "current_water_level": 6000,
       "api_key": "566ee18ea4eebbc485074e045381ae98",
       "notify_admin": true,
-      "critical_level": "10",
+      "critical_level": "8",
       "status": "offline",
       "mu_id": 1
 }

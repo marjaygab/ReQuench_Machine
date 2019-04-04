@@ -8,7 +8,7 @@
         },
         {
             "step_header":"Step 2: Drain",
-            "step_content":"Please wait as I drain any remaining water in the system.",
+            "step_content":"Please drain any remaining water in the system.",
             "timer_control":false,
             "initial_time":0
         },
@@ -32,7 +32,7 @@
         },
         {
             "step_header":"Step 6 : Draining Again",
-            "step_content":"Please wait as I drain all the water remaining. ",
+            "step_content":"Please drain all the water remaining. ",
             "timer_control":false,
             "initial_time":0
         },
@@ -44,7 +44,7 @@
         },
         {
             "step_header":"Step 8: Draining. AGAIN.",
-            "step_content":"Please wait as I drain.",
+            "step_content":"Please drain water again.",
             "timer_control":false,
             "initial_time":0
         },
