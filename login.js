@@ -106,6 +106,7 @@ function main() {
             let machine_settings = require('./machine_settings');
             store.set('Machine_Settings', machine_settings);
             if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+                
                 Swal.fire({
                     type: 'error',
                     title: 'Oops...',

@@ -54,15 +54,15 @@ try {
     if (fs.existsSync('./machine_settings.json')) {
         let settings = require('./machine_settings');
 
-        var params = {};
-        params.MU_ID = settings.mu_id;
-        http_post('Fetch_Machine.php',params,function(response) {
-            
-        },function(error) {
-            console.error(error);
-        },function() {
-            console.error('Network Timeout');
-        });
+        //var params = {};
+        //params.MU_ID = settings.mu_id;
+        //http_post('Fetch_Machine.php',params,function(response) {
+        //    
+        //},function(error) {
+        //    console.error(error);
+        //},function() {
+        //    console.error('Network Timeout');
+        //});
 
         var machine_settings = settings;
         machine_settings.status = "online";
@@ -72,7 +72,7 @@ try {
                 if (err) throw err;
                 machine_settings = JSON.parse(data);
                 var mu_id = machine_settings.mu_id;
-                
+                var current_water_level = machine_settings.current_water_level;
                 var params = machine_settings;
                http_post('Update_Machine_State.php',params,function(response) {
                  if (!response.Success) {
@@ -87,7 +87,14 @@ try {
                });
        
                console.log('Im Here');
-       
+               
+                var rounded_percentage = Math.round(rounded_percentage);
+                if(rounded_percentage <= machine_settings.critical_level){
+                    commandPy(io,{command:"Disable_Temp"});
+                }else{
+                    commandPy(io,{command:"Enable_Temp"});
+                }
+                
        
                 db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
                 .then(()=>{
@@ -342,4 +349,9 @@ function tryParse(jsonString) {
 
     }
     return false
+}
+
+function getPercentage(value,overall){
+    var percentage_value = (value / overal) *100;
+    return percentage_value;
 }

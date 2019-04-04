@@ -31,6 +31,9 @@ $(document).ready(function() {
     var maintenance_data_file = maintenance_data;
     var settings = machine_settings;
 
+
+    commandPy(socket, { command: 'Disable_Temp' });
+
     start_drain.onclick = function() {
         this.disabled = true;
         stop_drain.disabled = false;
@@ -123,9 +126,12 @@ $(document).ready(function() {
                         //command pi to shutdown
                         maintenance_data_file.from_maintenance = true;
                         maintenance_data_file.current_step = 5;
-
+                        settings.status = 'offline';
                         fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
                             if (err) return console.log(err);
+                            fs.writeFile('./machine_settings.json', JSON.stringify(settings,null,6), function (err) {
+                                if (err) return console.log(err);
+                            });
                         });
                     }
                     if (current_step_selected == steps_size-1) {
@@ -204,6 +210,9 @@ $(document).ready(function() {
                         settings.current_water_level = 20000;                        
                     }
                   })
+            }else if(current_step_selected == '13'){
+                document.getElementById('drain_controls').style.visibility = 'hidden';
+                commandPy(socket, { command: 'Enable_Temp' });
             }else{
                 document.getElementById('drain_controls').style.visibility = 'hidden';
             }

@@ -41,6 +41,7 @@ hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
 # cold_probe_path = "test.txt"
 # hot_probe_path = "test1.txt"
 
+enable_temp = True
 mode_manual = False
 mode_auto = True
 temp_hot = False
@@ -83,6 +84,7 @@ def on_message(data):
     global terminate_flag
     global current_baseline
     global container_weight
+    global enable_temp
     destination = data["destination"]
     if destination == "Python":
         command = data["content"]["command"]
@@ -104,6 +106,10 @@ def on_message(data):
         elif command == "Toggle_Cold":
             temp_cold = True
             temp_hot = False
+        elif command == "Enable_Temp":
+            enable_temp = True
+        elif command == "Disable_Temp":
+            enable_temp = False
         elif command == "Set_Amount":
             auto_amount = data["content"]["amount"]
             time.sleep(1);
@@ -519,53 +525,59 @@ def readTemp():
     global hot_probe_path
     global compressor
     global heater
+    global enable_temp
     while True:
-        f = open(cold_probe_path, "r")
-        cold_temp = ""
-        lines = f.readlines()
-        f.close()
-        equal_pos = lines[1].find("t=")
-        if equal_pos != 1:
-            cold_temp = float(lines[1][equal_pos + 2 :]) / 1000.0
+        if(enable_temp):
+            f = open(cold_probe_path, "r")
+            cold_temp = ""
+            lines = f.readlines()
+            f.close()
+            equal_pos = lines[1].find("t=")
+            if equal_pos != 1:
+                cold_temp = float(lines[1][equal_pos + 2 :]) / 1000.0
 
-        f = open(hot_probe_path, "r")
-        hot_temp = ""
-        lines = f.readlines()
-        f.close()
-        equal_pos = lines[1].find("t=")
-        if equal_pos != 1:
-            hot_temp = float(lines[1][equal_pos + 2 :]) / 1000.0
+            f = open(hot_probe_path, "r")
+            hot_temp = ""
+            lines = f.readlines()
+            f.close()
+            equal_pos = lines[1].find("t=")
+            if equal_pos != 1:
+                hot_temp = float(lines[1][equal_pos + 2 :]) / 1000.0
 
-        if cold_temp <= 6:
-            cooling = False
-            # print("Compressor Off")
-            # sys.stdout.flush()
-            GPIO.output(output_devices['compressor'],1)
-        elif cold_temp >= 11:
-            cooling = True
-            # print("Compressor On")
-            # sys.stdout.flush()
-            GPIO.output(output_devices['compressor'],0)
-        if hot_temp <= 65:
-            # print("Heater On")
-            # sys.stdout.flush()
-            heating = True
-            GPIO.output(output_devices['heater'],0)
-        elif hot_temp >= 80:
-            # print("Heater Off")
-            # sys.stdout.flush()
-            heating = False
-            GPIO.output(output_devices['heater'],1)
-        sio.emit(
-            "socket-event",
-            {
-                "destination": "JS",
-                "content": {
-                    "type": "TEMP_READING",
-                    "body": {"Cold": cold_temp, "Hot": hot_temp},
+            if cold_temp <= 6:
+                cooling = False
+                # print("Compressor Off")
+                # sys.stdout.flush()
+                GPIO.output(output_devices['compressor'],1)
+            elif cold_temp >= 11:
+                cooling = True
+                # print("Compressor On")
+                # sys.stdout.flush()
+                GPIO.output(output_devices['compressor'],0)
+            if hot_temp <= 65:
+                # print("Heater On")
+                # sys.stdout.flush()
+                heating = True
+                GPIO.output(output_devices['heater'],0)
+            elif hot_temp >= 80:
+                # print("Heater Off")
+                # sys.stdout.flush()
+                heating = False
+                GPIO.output(output_devices['heater'],1)
+            sio.emit(
+                "socket-event",
+                {
+                    "destination": "JS",
+                    "content": {
+                        "type": "TEMP_READING",
+                        "body": {"Cold": cold_temp, "Hot": hot_temp},
+                    },
                 },
-            },
-        )
+            )
+        else:
+            GPIO.output(output_devices['compressor'],1)
+            GPIO.output(output_devices['heater'],1)
+
         time.sleep(0.5)
 
 
