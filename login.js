@@ -1,12 +1,14 @@
 let $ = require("jquery");
 const http = require('http');
 var request = require('request');
+var fs = require('fs');
 const Store = require('electron-store');
+const remote = require('electron').remote;
 const moment = require('moment');
 let Swal = require('sweetalert2');
 const store = new Store();
 let httpcustomrequest = require('./loginBackend.js');
-let machine_settings = require('./machine_settings');
+
 'use strict';
 $(document).ready(main);
 
@@ -30,7 +32,7 @@ function main() {
     var legends = document.getElementsByClassName('fas');
     var cold_label = document.getElementById('cold_label');
     var hot_label = document.getElementById('hot_label');
-    store.set('Machine_Settings', machine_settings);
+
     var scanned = false;
     var scaninterval;
     var count = 0;
@@ -43,7 +45,7 @@ function main() {
     const socket = io('http://localhost:3000');
 
 
-    socket.on('socket-event',function(msg) {
+    socket.on('socket-event', function (msg) {
         if (msg.destination === 'JS') {
             switch (msg.content.type) {
                 case "TEMP_READING":
@@ -99,55 +101,122 @@ function main() {
         }
     }
 
-
-    if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
-        Swal.fire({
-            type: 'error',
-            title: 'Oops...',
-            text: 'Water is at critical level. Please call maintenance for Refill.',
-            confirmButtonText: "I am an Admin",
-            allowOutsideClick: false,
-        }).then((result) => {
-            if (result.value) {
-                Swal.close();
-            }
-        });
-        if (machine_settings.notify_admin) {
-            sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) {
-                    console.log(response);
-                }, function (error) {
-                console.error(error);
+    try {
+        if (fs.existsSync('./machine_settings.json')) {
+            let machine_settings = require('./machine_settings');
+            store.set('Machine_Settings', machine_settings);
+            if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    text: 'Water is at critical level. Please call maintenance for Refill.',
+                    confirmButtonText: "I am an Admin",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.value) {
+                        Swal.close();
+                    }
                 });
+                if (machine_settings.notify_admin) {
+                    sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) {
+                        console.log(response);
+                    }, function (error) {
+                        console.error(error);
+                    });
+                }
+            }
+
+            //Add Last Maintenance Data notification here
+            var last_maintenance_moment = moment(machine_settings.last_maintenance_date);
+            var today_moment = moment().format("YYYY-MM-DD");
+
+            var after_6_months_moment = last_maintenance_moment.add(6, "months").format("YYYY-MM-DD");
+
+            if (after_6_months_moment <= today_moment) {
+                Swal.fire({
+                    type: 'error',
+                    title: 'Oops...',
+                    text: 'This machine needs maintainance. Please call maintenance personnel for assistance.',
+                    confirmButtonText: "I am an Admin",
+                    allowOutsideClick: false,
+                }).then((result) => {
+                    if (result.value) {
+                        Swal.close();
+                    }
+                });
+                if (machine_settings.notify_admin) {
+                    sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response) { }, function (error) { });
+                }
+            }
+        } else {
+            var secret_entered = false;
+        
+                swal_initialize(function(result) {
+                    if (result.value) {
+                        swal_secret(function(result) {
+                           if(result.dismiss == 'cancel'){
+                                window.location.reload();
+                           }else{
+                               var params = {};
+                               params.Secret_Key = result.value;
+                              
+                                httpcustomrequest.http_post("New_Machine.php",params,function(response) {
+                                    if (response.Success) {
+                                        var params = {};
+                                        var machine_object = response.Machine;
+                                        params.location = machine_object.Machine_Location;
+                                        params.date_of_purchase = machine_object.Date_of_Purchase;
+                                        params.last_maintenance_date = machine_object.Last_Maintenance_Date;
+                                        params.Model_Number = machine_object.Model_Number;
+                                        params.price_per_ml = machine_object.Price_Per_ML;
+                                        params.current_water_level = machine_object.Current_Water_Level;
+                                        params.api_key = machine_object.API_KEY;
+                                        params.notify_admin = machine_object.Notify_Admin;
+                                        params.critical_level = machine_object.Critical_Level;
+                                        params.status = machine_object.STATUS;
+                                        params.mu_id = machine_object.MU_ID;
+                                        
+                                        jsonWrite(params,function() {
+                                            //restart whole program here
+                                            remote.app.relaunch();
+                                            remote.app.exit(0);
+                                        });
+                                    }
+                                },function(error) {
+                                    Swal.fire({
+                                        title: 'An error occured. Please try again later.',
+                                        type: 'error',
+                                        confirmButtonColor: '#3085d6',
+                                        confirmButtonText: 'Ok',
+                                        onClose: function () {
+                                            window.location.assign('login.html');
+                                        }
+                                    }).then((result) => {
+                                        window.location.assign('login.html');
+                                    });
+                                },function() {
+                                    Swal.fire({
+                                        title: 'Network Timeout. Please try again later.',
+                                        type: 'error',
+                                        confirmButtonColor: '#3085d6',
+                                        confirmButtonText: 'Ok',
+                                        onClose: function () {
+                                            window.location.assign('login.html');
+                                        }
+                                    }).then((result) => {
+                                        window.location.assign('login.html');
+                                    });
+                                });
+                           }
+                        });
+                    }
+                });    
         }
+    } catch (error) {
+        console.log(error);
     }
 
-    //Add Last Maintenance Data notification here
-    var last_maintenance_moment = moment(machine_settings.last_maintenance_date);
-    var today_moment = moment().format("YYYY-MM-DD");
 
-    var after_6_months_moment = last_maintenance_moment.add(6,"months").format("YYYY-MM-DD");
-
-    if (after_6_months_moment <= today_moment) {
-        Swal.fire({
-            type: 'error',
-            title: 'Oops...',
-            text: 'This machine needs maintainance. Please call maintenance personnel for assistance.',
-            confirmButtonText: "I am an Admin",
-            allowOutsideClick: false,
-        }).then((result) => {
-            if (result.value) {
-                Swal.close();
-            }
-        });
-        if (machine_settings.notify_admin) {
-            sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response){ 
-                    console.log(response);
-                }, function (error) { 
-                console.log(error);
-                });
-        }
-    }
-    
 
 
     enter_button.onclick = function () {
@@ -553,4 +622,56 @@ function sendNotification(title, body, fn_response, fn_error) {
     }, function (error) {
         fn_error(error);
     });
+}
+
+
+function jsonWrite(file,callback) {
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+
+    //Use this path for RasPi
+    // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    fs.writeFile('./machine_settings.json', JSON.stringify(file, null, 6), function (err) {
+        if (err){
+            callback(false);
+        }else{
+            callback(true);
+        }
+    });
+}
+
+async function swal_secret(callback) {
+    let promise = Swal.fire({
+        title: 'Please enter secret code',
+        input: 'text',
+        inputAttributes: {
+          autocapitalize: 'off'
+        },
+        showCancelButton: true,
+        confirmButtonText: 'Submit',
+        showLoaderOnConfirm: true,
+        allowOutsideClick: false,
+      });
+
+      let result = await promise;
+      callback(result);
+}
+
+async function swal_initialize(callback) {
+    let promise = new Promise((resolve,reject)=>{
+        Swal.fire({
+            type: 'error',
+            title: 'Oops...',
+            text: 'This machine needs initialization. Please call maintenance personnel for assistance.',
+            confirmButtonText: "I am an Admin",
+            allowOutsideClick: false,
+        }).then((result)=>{
+            resolve(result);
+        })
+        .catch((err)=>{
+            reject(err)
+        });
+    });
+    let result = await promise;
+    callback(result);
 }
