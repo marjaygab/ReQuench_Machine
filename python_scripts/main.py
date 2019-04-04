@@ -4,6 +4,7 @@ import time
 import socketio
 import threading
 import sys
+import os
 from hx711 import HX711
 hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
@@ -202,13 +203,9 @@ def on_message(data):
             GPIO.output(output_devices['solenoid_1'],1)
             GPIO.output(output_devices['solenoid_2'],1)
         elif command == "Shutdown":
-            print("Shutting Down")
-            sys.stdout.flush()
             # Uncomment this for actual tests
-            os.system('sudo shutdown -h now')
+            os.system('sudo shutdown now')
         elif command == "Reboot":
-            print("Reboot")
-            sys.stdout.flush()
             # Uncomment this for actual tests
             os.system('sudo reboot')
         elif command == "Terminate":
@@ -243,7 +240,7 @@ def getCurrentWeight():
     global hx
     global current_weight
     global current_baseline
-    val = hx.get_weight_A(5)
+    val = hx.get_weight(5)
     current_weight = val
     # current_weight = (current_weight) / 183
 
@@ -257,7 +254,7 @@ def getContainerWeight():
     # print("Getting Container Weight")
     # sys.stdout.flush()
     try:
-        current_weight = hx.get_weight_A(5)
+        current_weight = hx.get_weight(5)
         # current_weight = round(current_weight // float(1000),1) * 1000
         # container_weight = ((current_weight-current_baseline) / 183)
         container_weight = current_weight
@@ -442,7 +439,9 @@ def automaticDispense(command, amount_requested):
             getCurrentWeight()
             total_liters = current_weight;
             if total_liters < 0:
+                calibration_constant = total_liters
                 total_liters = 0
+                
             # Use this code if not actual testing
             # total_liters = total_liters + 1
             sio.emit(

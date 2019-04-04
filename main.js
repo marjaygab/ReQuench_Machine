@@ -82,11 +82,14 @@ fs.watchFile('./machine_settings.json',(curr,prev)=>{
          db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
          .then(()=>{
              console.log("Data inserted");
-             if (machine_settings.status == 'offline') {
+             setTimeout(()=>{
+                if (machine_settings.status == 'offline') {
                  commandPy(io,{command:"Shutdown"});
-             }else if(machine_settings.status == 'rebooting'){
-                 commandPy(io,{command:"Reboot"});
-             }
+                 }else if(machine_settings.status == 'rebooting'){
+                     commandPy(io,{command:"Reboot"});
+                 }
+            },5000);
+             
          })
          .catch(()=>{
              console.error('Firebase Error');

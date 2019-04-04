@@ -140,7 +140,11 @@ function main() {
             }
         });
         if (machine_settings.notify_admin) {
-            sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response) { }, function (error) { });
+            sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response){ 
+                    console.log(response);
+                }, function (error) { 
+                console.log(error);
+                });
         }
     }
     
