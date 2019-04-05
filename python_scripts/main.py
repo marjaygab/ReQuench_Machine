@@ -9,6 +9,7 @@ from hx711 import HX711
 hx = HX711(17, 27)
 hx.set_reading_format("MSB", "MSB")
 hx.set_reference_unit(-193)
+hx.reset()
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
@@ -120,11 +121,13 @@ def on_message(data):
             heating = False
             GPIO.output(output_devices['heater'],1)
         elif command == "Get_Baseline":
-            hx.reset()
             hx.tare()
         elif command == "Get_Container":
             container_weight = hx.get_weight(5)
             container_weight = round(container_weight)
+            hx.power_down()
+            hx.power_up()
+            time.sleep(0.01)
             print("Current Container Weight: " + str(container_weight))
             sys.stdout.flush()
 
@@ -215,35 +218,6 @@ def check_operation():
         return "Automatic"
 
 
-def getBaseline():
-    global hx
-    global current_baseline
-    pass
-    
-    
-def getCurrentWeight():
-    global hx
-    global current_weight
-    global current_baseline
-    val = hx.get_weight(5)
-    current_weight = val
-
-def getContainerWeight():
-    global hx
-    global current_baseline
-    global container_weight
-    try:
-        current_weight = hx.get_weight(5)
-        container_weight = current_weight
-        if container_weight < 0:
-    	    container_weight = 0
-        print('Container Weight: ' + str(container_weight))
-        sys.stdout.flush()
-    except Exception as exception:
-        print('Error here: ' + exception)
-        sys.stdout.flush()
-
-
 def checkCommand():
     global temp_cold
     global temp_hot
@@ -296,14 +270,11 @@ def manualDispense(command):
     time.sleep(1)
     hx.tare()
 
-    total_liters = hx.get_weight(5);
-    total_liters = current_weight;
+    total_liters = hx.get_weight(5)
+    total_liters = current_weight
     hx.power_down()
     hx.power_up()
     time.sleep(0.01)
-    
-    if total_liters < 0:
-       total_liters = 0
     
     sio.emit(
         "socket-event",
@@ -325,14 +296,12 @@ def manualDispense(command):
 
     time_start = time.time()
     while checkCommand() != "Standby":
-        total_liters = hx.get_weight(5);
-        total_liters = current_weight;
+        total_liters = hx.get_weight(5)
+        total_liters = current_weight
         hx.power_down()
         hx.power_up()
         time.sleep(0.01)
 
-        if total_liters < 0:
-            total_liters = 0
         sio.emit(
             "socket-event",
             {
@@ -513,7 +482,7 @@ def controller():
     global temp_cold
     global auto_amount
     global terminate_flag
-    # global hx
+    global hx
     while True:
         mode = check_operation()
         if mode == "Manual":
