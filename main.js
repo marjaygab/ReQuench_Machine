@@ -16,7 +16,7 @@ var connection_counter = 0;
 const cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave';
 const hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave';
 var py_object;
-
+var written_from_web = false;
 //Use this for actual
 var filename = 'main.py';
 
@@ -45,134 +45,161 @@ const admin = require('firebase-admin');
 
 const serviceAccount = require('./requenchweb2019-firebase-adminsdk-ix063-8738f90a17.json');
 admin.initializeApp({
-     credential:admin.credential.cert(serviceAccount)
- });
+    credential: admin.credential.cert(serviceAccount)
+});
 
 const db = admin.firestore();
 
 try {
     if (fs.existsSync('./machine_settings.json')) {
         let settings = require('./machine_settings');
-
-        //var params = {};
-        //params.MU_ID = settings.mu_id;
-        //http_post('Fetch_Machine.php',params,function(response) {
-        //    
-        //},function(error) {
-        //    console.error(error);
-        //},function() {
-        //    console.error('Network Timeout');
-        //});
-
         var machine_settings = settings;
-        machine_settings.status = "online";
-        jsonWrite(machine_settings,()=>console.log("Initialized"));
-        fs.watchFile('./machine_settings.json',(curr,prev)=>{
-            fs.readFile('./machine_settings.json', (err, data) => {  
-                if (err) throw err;
-                machine_settings = JSON.parse(data);
-                var mu_id = machine_settings.mu_id;
-                var current_water_level = machine_settings.current_water_level;
-                var params = machine_settings;
-               http_post('Update_Machine_State.php',params,function(response) {
-                 if (!response.Success) {
-                     console.error('Inserting Values Error');
-                 }else{
-                     console.log(response);
-                 }  
-               },function(error) {
-                   console.error('HTTP Post Error ' + error);
-               },function() {
-                   console.error('Network Timeout');
-               });
-       
-               console.log('Im Here');
-               
-                var rounded_percentage = Math.round(rounded_percentage);
-                if(rounded_percentage <= machine_settings.critical_level){
-                    commandPy(io,{command:"Disable_Temp"});
-                }else{
-                    commandPy(io,{command:"Enable_Temp"});
-                }
-                
-       
-                db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
-                .then(()=>{
-                    console.log("Data inserted");
-                    if (machine_settings.status == 'offline') {
-                        commandPy(io,{command:"Shutdown"});
-                    }else if(machine_settings.status == 'rebooting'){
-                        commandPy(io,{command:"Reboot"});
-                    }
-                })
-                .catch(()=>{
-                    console.error('Firebase Error');
+        var params = {};
+        params.MU_ID = settings.mu_id;
+        http_post('Fetch_Machine.php', params, function (response) {
+            if (response.Success) {
+                var machine_object = response.Machine;
+                machine_settings.location = machine_object.Machine_Location;
+                machine_settings.date_of_purchase = machine_object.Date_of_Purchase;
+                machine_settings.last_maintenance_date = machine_object.Last_Maintenance_Date;
+                machine_settings.Model_Number = machine_object.Model_Number;
+                machine_settings.price_per_ml = machine_object.Price_Per_ML;
+                machine_settings.current_water_level = machine_object.Current_Water_Level;
+                machine_settings.api_key = machine_object.API_KEY;
+                machine_settings.notify_admin = machine_object.Notify_Admin;
+                machine_settings.critical_level = machine_object.Critical_Level;
+                machine_settings.status = "online";
+                machine_settings.mu_id = machine_object.MU_ID;
+                jsonWrite(machine_settings, () => console.log("Initialized"));
+
+
+                db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
+                    written_from_web = true;
+                    jsonWrite(doc,()=> console.log('Received something!'));
                 });
-            });
+
+                fs.watchFile('./machine_settings.json', (curr, prev) => {
+                    fs.readFile('./machine_settings.json', (err, data) => {
+                        if (err) throw err;
+                        machine_settings = JSON.parse(data);
+                        var mu_id = machine_settings.mu_id;
+                        var current_water_level = machine_settings.current_water_level;
+                        var params = machine_settings;
+                        http_post('Update_Machine_State.php', params, function (response) {
+                            if (!response.Success) {
+                                console.error('Inserting Values Error');
+                            } else {
+                                console.log(response);
+                            }
+                        }, function (error) {
+                            console.error('HTTP Post Error ' + error);
+                        }, function () {
+                            console.error('Network Timeout');
+                        });
+
+                        console.log('Im Here');
+
+                        var rounded_percentage = Math.round(getPercentage(current_water_level,20000));
+                        if (rounded_percentage <= machine_settings.critical_level) {
+                            commandPy(io, { command: "Disable_Temp" });
+                        } else {
+                            commandPy(io, { command: "Enable_Temp" });
+                        }
+
+                        if (!written_from_web) {
+                            db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
+                            .then(() => {
+                                console.log("Data inserted");
+                                if (machine_settings.status == 'offline') {
+                                    commandPy(io, { command: "Shutdown" });
+                                } else if (machine_settings.status == 'rebooting') {
+                                    commandPy(io, { command: "Reboot" });
+                                }
+                            })
+                            .catch(() => {
+                                console.error('Firebase Error');
+                            });
+                        }else{
+                            written_from_web = false;
+                        }   
+                        
+                    });
+                });
+            }else{
+                console.log('An Error Occured');
+                console.log('Restarting');
+                //restart here
+            }
+        }, function (error) {
+            console.error(error);
+        }, function () {
+            console.error('Network Timeout');
         });
-       
-       
-       
-       http.listen(3000, function () {
-           console.log('listening on *:3000');
-       });
-       
-       io.on('connection', function (socket) {
-           if (connection_counter >= 2) {
-               socket_ids = [];
-               connection_counter = 0;
-           }
-           socket_ids.push(socket.id);
-           if (socket_ids.length == 2) {
-               console.log(socket_ids);
-           } else {
-               console.log(socket_ids);
-           }
-           connection_counter++;
-           
-           socket.on('socket-event', function (msg) {
-                  io.emit('socket-event', msg);
-               if(msg.content.type != 'TEMP_READING'){
-                   console.log(msg);
-               }
-               
-           });
-       
-           socket.on('reconnect', function () {
-               console.log('User has reconnected');
-           });
-           socket.on('disconnect', (reason) => {
-               if (reason === 'io server disconnect') {
-                   // the disconnection was initiated by the server, you need to reconnect manually
-                   socket.connect();
-               } else {
-                   console.log('Python has disconnected');
-       
-               }
-               // else the socket will automatically try to reconnect
-           });
-       
-       });
-       
-       py_object = new PythonShell(filename, options);
-       
-       //listens for print() from main.py
-       py_object.on('message', function (message) {
-           if (message == 'Ready') {
-               py_ready = true;
-               console.log('Python is running')
-           }else{
-               console.log(message);
-           }
-       });
-       
-       //end the current print stdout
-       py_object.end(function (err, code, signal) {
-           if (err) throw err;
-       });
-    }else{
-        
-    }    
+
+
+
+
+
+        http.listen(3000, function () {
+            console.log('listening on *:3000');
+        });
+
+        io.on('connection', function (socket) {
+            if (connection_counter >= 2) {
+                socket_ids = [];
+                connection_counter = 0;
+            }
+            socket_ids.push(socket.id);
+            if (socket_ids.length == 2) {
+                console.log(socket_ids);
+            } else {
+                console.log(socket_ids);
+            }
+            connection_counter++;
+
+            socket.on('socket-event', function (msg) {
+                io.emit('socket-event', msg);
+                if (msg.content.type != 'TEMP_READING') {
+                    console.log(msg);
+                }
+
+            });
+
+            socket.on('reconnect', function () {
+                console.log('User has reconnected');
+            });
+            socket.on('disconnect', (reason) => {
+                if (reason === 'io server disconnect') {
+                    // the disconnection was initiated by the server, you need to reconnect manually
+                    socket.connect();
+                } else {
+                    console.log('Python has disconnected');
+
+                }
+                // else the socket will automatically try to reconnect
+            });
+
+        });
+
+        py_object = new PythonShell(filename, options);
+
+        //listens for print() from main.py
+        py_object.on('message', function (message) {
+            if (message == 'Ready') {
+                py_ready = true;
+                console.log('Python is running')
+            } else {
+                console.log(message);
+            }
+        });
+
+        //end the current print stdout
+        py_object.end(function (err, code, signal) {
+            if (err) throw err;
+        });
+    } else {
+
+    }
 } catch (error) {
     console.log(error);
 }
@@ -219,43 +246,43 @@ app.on('window-all-closed', function () {
     // to stay active until the user quits explicitly with Cmd + Q
     if (process.platform !== 'darwin') {
         try {
-            if(fs.existsSync('./machine_settings.json')){
+            if (fs.existsSync('./machine_settings.json')) {
                 machine_settings.status = "offline";
-        jsonWrite(machine_settings,()=>{
-            fs.readFile('./machine_settings.json', (err, data) => {  
-                if (err) throw err;
-                machine_settings = JSON.parse(data);
-                var mu_id = machine_settings.mu_id;
-                console.log(mu_id);
-                try {
+                jsonWrite(machine_settings, () => {
+                    fs.readFile('./machine_settings.json', (err, data) => {
+                        if (err) throw err;
+                        machine_settings = JSON.parse(data);
+                        var mu_id = machine_settings.mu_id;
+                        console.log(mu_id);
+                        try {
 
-                    var params = machine_settings;
-                    http_post('Update_Machine_State.php',params,function(response) {
-                        if (!response.Success) {
-                            console.error('Inserting Values Error');
-                        }else{
-                            db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
-                            .then(()=>{
-                                console.log("Data inserted");
-                                app.quit();
-                            });        
-                        }  
-                    },function(error) {
-                        console.error(error);
-                    },function() {
-                        console.error('Network Timeout');
+                            var params = machine_settings;
+                            http_post('Update_Machine_State.php', params, function (response) {
+                                if (!response.Success) {
+                                    console.error('Inserting Values Error');
+                                } else {
+                                    db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
+                                        .then(() => {
+                                            console.log("Data inserted");
+                                            app.quit();
+                                        });
+                                }
+                            }, function (error) {
+                                console.error(error);
+                            }, function () {
+                                console.error('Network Timeout');
+                            });
+
+                        } catch (error) {
+                            console.log('Firebase Error: ' + error);
+                        }
+
+
                     });
-      
-                } catch (error) {
-                    console.log('Firebase Error: ' + error);
-                }
-
-                
-            });
-        });
+                });
             }
         } catch (error) {
-            console.log();   
+            console.log();
         }
     }
 })
@@ -277,7 +304,7 @@ function commandPy(io, content) {
     };
     io.emit('socket-event', msg);
 }
-function jsonWrite(file,callback) {
+function jsonWrite(file, callback) {
     // Use this path for windows.
     //var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
     //Use this path for RasPi
@@ -290,7 +317,7 @@ function jsonWrite(file,callback) {
 
 function http_post(url, parameters, fn_response, fn_error, timeout_cb) {
     console.log('Called');
-    var timeout_callback = timeout_cb || function(){};
+    var timeout_callback = timeout_cb || function () { };
     const data = JSON.stringify(parameters);
     const options = {
         hostname: 'requench-rest.herokuapp.com',
@@ -301,7 +328,7 @@ function http_post(url, parameters, fn_response, fn_error, timeout_cb) {
             'Content-Type': 'application/json',
             'Content-Length': data.length
         },
-        timeout:15000
+        timeout: 15000
     }
 
     const req = https.request(options, (res) => {
@@ -351,7 +378,7 @@ function tryParse(jsonString) {
     return false
 }
 
-function getPercentage(value,overall){
-    var percentage_value = (value / overal) *100;
+function getPercentage(value, overall) {
+    var percentage_value = (value / overal) * 100;
     return percentage_value;
 }
