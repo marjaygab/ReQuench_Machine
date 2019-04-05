@@ -50,6 +50,68 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+
+http.listen(3000, function () {
+    console.log('listening on *:3000');
+});
+
+io.on('connection', function (socket) {
+    if (connection_counter >= 2) {
+        socket_ids = [];
+        connection_counter = 0;
+    }
+    socket_ids.push(socket.id);
+    if (socket_ids.length == 2) {
+        console.log(socket_ids);
+    } else {
+        console.log(socket_ids);
+    }
+    connection_counter++;
+
+    socket.on('socket-event', function (msg) {
+        io.emit('socket-event', msg);
+        if (msg.content.type != 'TEMP_READING') {
+            console.log(msg);
+        }
+
+    });
+
+    socket.on('reconnect', function () {
+        console.log('User has reconnected');
+    });
+    socket.on('disconnect', (reason) => {
+        if (reason === 'io server disconnect') {
+            // the disconnection was initiated by the server, you need to reconnect manually
+            socket.connect();
+        } else {
+            console.log('Python has disconnected');
+
+        }
+        // else the socket will automatically try to reconnect
+    });
+
+});
+
+
+py_object = new PythonShell(filename, options);
+
+//listens for print() from main.py
+py_object.on('message', function (message) {
+    if (message == 'Ready') {
+        py_ready = true;
+        console.log('Python is running')
+    } else {
+        console.log(message);
+    }
+});
+
+//end the current print stdout
+py_object.end(function (err, code, signal) {
+    if (err) throw err;
+});
+
+
+
 try {
     if (fs.existsSync('/home/pi/Documents/ReQuench_Machine/machine_settings.json')) {
         let settings = require('/home/pi/Documents/ReQuench_Machine/machine_settings.json');
@@ -138,67 +200,6 @@ try {
             console.error('Network Timeout');
         });
 
-
-
-
-
-        http.listen(3000, function () {
-            console.log('listening on *:3000');
-        });
-
-        io.on('connection', function (socket) {
-            if (connection_counter >= 2) {
-                socket_ids = [];
-                connection_counter = 0;
-            }
-            socket_ids.push(socket.id);
-            if (socket_ids.length == 2) {
-                console.log(socket_ids);
-            } else {
-                console.log(socket_ids);
-            }
-            connection_counter++;
-
-            socket.on('socket-event', function (msg) {
-                io.emit('socket-event', msg);
-                if (msg.content.type != 'TEMP_READING') {
-                    console.log(msg);
-                }
-
-            });
-
-            socket.on('reconnect', function () {
-                console.log('User has reconnected');
-            });
-            socket.on('disconnect', (reason) => {
-                if (reason === 'io server disconnect') {
-                    // the disconnection was initiated by the server, you need to reconnect manually
-                    socket.connect();
-                } else {
-                    console.log('Python has disconnected');
-
-                }
-                // else the socket will automatically try to reconnect
-            });
-
-        });
-
-        py_object = new PythonShell(filename, options);
-
-        //listens for print() from main.py
-        py_object.on('message', function (message) {
-            if (message == 'Ready') {
-                py_ready = true;
-                console.log('Python is running')
-            } else {
-                console.log(message);
-            }
-        });
-
-        //end the current print stdout
-        py_object.end(function (err, code, signal) {
-            if (err) throw err;
-        });
     } else {
 
     }
