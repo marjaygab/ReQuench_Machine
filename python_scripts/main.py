@@ -327,9 +327,11 @@ def manualDispense(command):
     time_start = time.time()
     while checkCommand() != "Standby":
         total_liters = getCurrentWeight()
-
         if total_liters < 0:
             total_liters = 0
+            stop_dispense()
+            break
+
         sio.emit(
             "socket-event",
             {

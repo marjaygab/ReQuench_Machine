@@ -137,7 +137,7 @@ try {
 
                 db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
                     written_from_web = true;
-                    console.log(doc);
+                    console.log(doc.data());
                     // jsonWrite(doc,()=> console.log('Received something!'));
                 });
 
@@ -253,33 +253,6 @@ app.on('window-all-closed', function () {
                 jsonWrite(machine_settings, () => {
                     fs.readFile('./machine_settings.json', (err, data) => {
                         if (err) throw err;
-                        machine_settings = JSON.parse(data);
-                        var mu_id = machine_settings.mu_id;
-                        console.log(mu_id);
-                        try {
-
-                            var params = machine_settings;
-                            http_post('Update_Machine_State.php', params, function (response) {
-                                if (!response.Success) {
-                                    console.error('Inserting Values Error');
-                                } else {
-                                    db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
-                                        .then(() => {
-                                            console.log("Data inserted");
-                                            app.quit();
-                                        });
-                                }
-                            }, function (error) {
-                                console.error(error);
-                            }, function () {
-                                console.error('Network Timeout');
-                            });
-
-                        } catch (error) {
-                            console.log('Firebase Error: ' + error);
-                        }
-
-
                     });
                 });
             }
