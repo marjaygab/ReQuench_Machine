@@ -800,7 +800,7 @@ function enableAll() {
     $("#cold-button").text("COLD");
     $("#hot-button").prop('disabled', false);
     $("#cold-button").prop('disabled', false);
-    $('#toggle_switch').prop('disable', false);
+    $('#toggle_switch').prop('disabled', false);
 }
 
 function round(value, decimals) {

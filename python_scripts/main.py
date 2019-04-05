@@ -338,13 +338,6 @@ def manualDispense(command):
         if previous > total_liters:
             stop_dispense()
             total_liters = previous
-            sio.emit(
-                "socket-event",
-                {
-                    "destination": "JS",
-                    "content": {"type": "DISPENSE_CONTROL", "body": "Stopped_Dispense"},
-                },
-            )
             break
         sio.emit(
             "socket-event",
@@ -414,16 +407,16 @@ def automaticDispense(command, amount_requested):
 
             if total_liters < 0:
                 total_liters = 0
-            # sio.emit(
-            #     "socket-event",
-            #     {
-            #         "destination": "JS",
-            #         "content": {
-            #             "type": "DISPENSE_READING",
-            #             "body": {"Total": total_liters},
-            #         },
-            #     },
-            # )
+            sio.emit(
+                "socket-event",
+                {
+                    "destination": "JS",
+                    "content": {
+                        "type": "DISPENSE_READING",
+                        "body": {"Total": total_liters},
+                    },
+                },
+            )
             if total_liters >= auto_amount:
                 stop_dispense()
                 break
