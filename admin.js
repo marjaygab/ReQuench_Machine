@@ -86,7 +86,7 @@ $(document).ready(function() {
     }
 
     logout_button.onclick = function() {
-        window.location.assign('login.js');
+        window.location.assign('login.html');
     }
 
     mode_toggle.onclick = function() {
