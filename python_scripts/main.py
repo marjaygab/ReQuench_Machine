@@ -120,10 +120,9 @@ def on_message(data):
             heating = False
             GPIO.output(output_devices['heater'],1)
         elif command == "Get_Baseline":
-            hx.reset()
-            hx.tare()
+            tareNow()
         elif command == "Get_Container":
-            container_weight = getContainerWeight()
+            container_weight = getCurrentWeight()
             container_weight = round(container_weight)
             print("Current Container Weight: " + str(container_weight))
             sys.stdout.flush()
@@ -418,6 +417,8 @@ def automaticDispense(command, amount_requested):
         GPIO.output(output_devices['pump_2'],1)
         GPIO.output(output_devices['solenoid_2'],1)
 
+        print('Actual_Liters' + str(total_liters))
+        sys.stdout.flush()
         sio.emit(
                     "socket-event",
                     {
