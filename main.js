@@ -76,7 +76,8 @@ try {
 
                 db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
                     written_from_web = true;
-                    jsonWrite(doc,()=> console.log('Received something!'));
+                    console.log(doc);
+                    // jsonWrite(doc,()=> console.log('Received something!'));
                 });
 
                 fs.watchFile('/home/pi/Documents/ReQuench_Machine/machine_settings.json', (curr, prev) => {
@@ -380,6 +381,6 @@ function tryParse(jsonString) {
 }
 
 function getPercentage(value, overall) {
-    var percentage_value = (value / overal) * 100;
+    var percentage_value = (value / overall) * 100;
     return percentage_value;
 }
