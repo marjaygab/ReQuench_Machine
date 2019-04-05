@@ -337,6 +337,7 @@ def manualDispense(command):
             total_liters = 0
         if previous > total_liters:
             stop_dispense()
+            total_liters = previous
             sio.emit(
                 "socket-event",
                 {

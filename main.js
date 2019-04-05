@@ -137,6 +137,7 @@ try {
 
                 db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
                     written_from_web = true;
+                    console.log('This is Firebase output');
                     console.log(doc.data());
                     // jsonWrite(doc,()=> console.log('Received something!'));
                 });
@@ -173,11 +174,11 @@ try {
                             db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
                             .then(() => {
                                 console.log("Data inserted");
-                                if (machine_settings.status == 'offline') {
-                                    commandPy(io, { command: "Shutdown" });
-                                } else if (machine_settings.status == 'rebooting') {
-                                    commandPy(io, { command: "Reboot" });
-                                }
+                                //if (machine_settings.status == 'offline') {
+                                //    commandPy(io, { command: "Shutdown" });
+                                //} else if (machine_settings.status == 'rebooting') {
+                                //    commandPy(io, { command: "Reboot" });
+                                //}
                             })
                             .catch(() => {
                                 console.error('Firebase Error');
@@ -312,7 +313,6 @@ function http_post(url, parameters, fn_response, fn_error, timeout_cb) {
             var new_data_string = `${data_string}`;
             var json_object = tryParse(new_data_string);
             if (json_object != false) {
-                console.log(json_object);
                 fn_response(json_object);
             } else {
                 fn_response(false);
