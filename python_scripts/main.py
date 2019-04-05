@@ -6,55 +6,9 @@ import threading
 import sys
 import os
 from hx711 import HX711
-hx = HX711(17, 27)
-hx.set_reading_format("MSB", "MSB")
-hx.set_reference_unit(-193)
-hx.reset()
+
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
-
-output_devices = {
-    "pump_1": 21,
-    "pump_2": 20,
-    "solenoid_1": 16,
-    "solenoid_2": 12,
-    "compressor": 7,
-    "heater": 24,
-    "screen_backlight": 18,
-    "green_led": 14,
-    "red_led": 15,
-    "yellow_red": 18,
-}
-
-
-for index,value in enumerate(output_devices):
-    GPIO.setup(output_devices[value],GPIO.OUT)
-
-cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave'
-hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
-
-enable_temp = True
-mode_manual = False
-mode_auto = True
-temp_hot = False
-temp_cold = False
-cooling = True
-heating = True
-current_baseline = 0
-current_weight = 0
-container_weight = 0
-auto_amount = 0
-total_liters = 0
-base_weight = 0
-terminate_flag = False
-calibration_constant = 0
-
-
-GPIO.output(output_devices['pump_1'],1)
-GPIO.output(output_devices['solenoid_1'],1)
-GPIO.output(output_devices['pump_2'],1)
-GPIO.output(output_devices['solenoid_2'],1)
-
 
 @sio.on("connect")
 def on_connect():
@@ -497,14 +451,64 @@ def controller():
 
 
 def main():
+    hx = HX711(17, 27)
+    hx.set_reading_format("MSB", "MSB")
+    hx.set_reference_unit(-193)
+    hx.reset()
+    output_devices = {
+        "pump_1": 21,
+        "pump_2": 20,
+        "solenoid_1": 16,
+        "solenoid_2": 12,
+        "compressor": 7,
+        "heater": 24,
+        "screen_backlight": 18,
+        "green_led": 14,
+        "red_led": 15,
+        "yellow_red": 18,
+    }
+
+
+    for index,value in enumerate(output_devices):
+        GPIO.setup(output_devices[value],GPIO.OUT)
+
+    cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave'
+    hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
+
+    enable_temp = True
+    mode_manual = False
+    mode_auto = True
+    temp_hot = False
+    temp_cold = False
+    cooling = True
+    heating = True
+    current_baseline = 0
+    current_weight = 0
+    container_weight = 0
+    auto_amount = 0
+    total_liters = 0
+    base_weight = 0
+    terminate_flag = False
+    calibration_constant = 0
+
+    threading.Thread(target=readTemp).start()
+    GPIO.output(output_devices['pump_1'],1)
+    GPIO.output(output_devices['solenoid_1'],1)
+    GPIO.output(output_devices['pump_2'],1)
+    GPIO.output(output_devices['solenoid_2'],1)
     print("Ready")
     sys.stdout.flush()
-    threading.Thread(target=controller).start()
-    threading.Thread(target=readTemp).start()
+    
     while True:
-        pass
-
-
+        mode = check_operation()
+        if mode == "Manual":
+            command = checkCommand()
+            manualMode(command)
+        else:
+            command = checkCommand()
+            automaticMode(command)
+        if terminate_flag:
+            break
 try:
     main()
 except KeyboardInterrupt:

@@ -4,7 +4,7 @@
       "last_maintenance_date": "2019-04-05",
       "Model_Number": "ABC123",
       "price_per_ml": "0.002",
-      "current_water_level": 20000,
+      "current_water_level": "20000",
       "api_key": "566ee18ea4eebbc485074e045381ae98",
       "notify_admin": "0",
       "critical_level": "5",
