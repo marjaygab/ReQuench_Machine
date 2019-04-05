@@ -123,7 +123,7 @@ def on_message(data):
             hx.reset()
             hx.tare()
         elif command == "Get_Container":
-            container_weight = hx.get_weight(5)
+            container_weight = getContainerWeight()
             container_weight = round(container_weight)
             print("Current Container Weight: " + str(container_weight))
             sys.stdout.flush()
@@ -166,8 +166,7 @@ def on_message(data):
                         },
                     },
                 )
-                hx.reset()
-                hx.tare()                
+                tareNow()               
             else:
                 sio.emit(
                     "socket-event",
@@ -221,12 +220,22 @@ def getBaseline():
     pass
     
     
+def tareNow():
+    global hx
+    hx.reset()
+    hx.tare()
+
+
 def getCurrentWeight():
     global hx
     global current_weight
     global current_baseline
     val = hx.get_weight(5)
+    hx.power_down()
+    hx.power_up()
+    time.sleep(0.01)
     current_weight = val
+    return current_weight
 
 def getContainerWeight():
     global hx
@@ -292,15 +301,8 @@ def manualDispense(command):
     global total_liters
     global base_weight
 
-    hx.reset()
-    time.sleep(1)
-    hx.tare()
-
-    total_liters = hx.get_weight(5);
-    total_liters = current_weight;
-    hx.power_down()
-    hx.power_up()
-    time.sleep(0.01)
+    tareNow()
+    total_liters = getCurrentWeight()
     
     if total_liters < 0:
        total_liters = 0
@@ -325,11 +327,7 @@ def manualDispense(command):
 
     time_start = time.time()
     while checkCommand() != "Standby":
-        total_liters = hx.get_weight(5);
-        total_liters = current_weight;
-        hx.power_down()
-        hx.power_up()
-        time.sleep(0.01)
+        total_liters = getCurrentWeight()
 
         if total_liters < 0:
             total_liters = 0
@@ -381,15 +379,9 @@ def automaticDispense(command, amount_requested):
         global auto_amount
         global calibration_constant
 
-        hx.reset()
-        time.sleep(1)
-        hx.tare()
+        tareNow()
 
-        total_liters = hx.get_weight(5);
-        total_liters = current_weight;
-        hx.power_down()
-        hx.power_up()
-        time.sleep(0.01)
+        total_liters = getCurrentWeight()
 
         if total_liters < 0:
             total_liters = 0
@@ -403,10 +395,8 @@ def automaticDispense(command, amount_requested):
         
         time_start = time.time()
         while (total_liters + calibration_constant) < auto_amount:
-            total_liters = hx.get_weight(5);
-            hx.power_down()
-            hx.power_up()
-            time.sleep(0.01)
+            total_liters = getCurrentWeight()
+
             if total_liters < 0:
                 total_liters = 0
             # sio.emit(
