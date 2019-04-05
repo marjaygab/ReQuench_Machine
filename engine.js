@@ -141,6 +141,7 @@ function main() {
                     store.delete('User_Information');
                     store.delete('Purchase_History');
                     store.delete('Transaction_History');
+                    commandPy(socket, { command: 'End_Transaction' });
                     commandPy(socket, { command: 'Terminate' });
                     console.log('Terminated, hopefully');
                     window.location.assign('login.html');
@@ -206,6 +207,8 @@ function main() {
                     }).then((result) => {
                     });
                 } else {
+                    commandPy(socket, { command: 'End_Transaction' });
+                    commandPy(socket, { command: 'Terminate' });
                     store.delete('User_Information');
                     store.delete('Purchase_History');
                     store.delete('Transaction_History');

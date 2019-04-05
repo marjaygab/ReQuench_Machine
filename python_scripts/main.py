@@ -6,16 +6,10 @@ import threading
 import sys
 import os
 from hx711 import HX711
-hx = HX711(17, 27)
-hx.set_reading_format("MSB", "MSB")
-hx.set_reference_unit(-193)
-hx.reset()
 
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
-# GPIO.setwarnings(False)
-# GPIO.setmode(GPIO.BOARD)
 output_devices = {
     "pump_1": 21,
     "pump_2": 20,
@@ -33,13 +27,8 @@ output_devices = {
 for index,value in enumerate(output_devices):
     GPIO.setup(output_devices[value],GPIO.OUT)
 
-# Use this path for actual testing
 cold_probe_path = '/sys/bus/w1/devices/28-0417824753ff/w1_slave'
 hot_probe_path = '/sys/bus/w1/devices/28-0316856147ff/w1_slave'
-
-
-# cold_probe_path = "test.txt"
-# hot_probe_path = "test1.txt"
 
 enable_temp = True
 mode_manual = False
@@ -55,7 +44,6 @@ auto_amount = 0
 total_liters = 0
 base_weight = 0
 terminate_flag = False
-# GPIO.setup(output_devices['pump_1'],GPIO.OUT)
 calibration_constant = 0
 
 
@@ -63,8 +51,6 @@ GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
-# GPIO.output(output_devices['heater'],1)
-# GPIO.output(output_devices['compressor'],1)
 
 
 @sio.on("connect")
@@ -93,7 +79,13 @@ def on_message(data):
             container_weight = 0
             current_weight = 0
             current_baseline = 0
+            hx = HX711(17, 27)
+            hx.set_reading_format("MSB", "MSB")
+            hx.set_reference_unit(-193)
             hx.reset()
+        elif command == "End_Transaction":
+            hx.power_down()
+            del hx
         elif command == "Toggle_Auto":
             mode_auto = True
             mode_manual = False
@@ -111,10 +103,8 @@ def on_message(data):
         elif command == "Disable_Temp":
             enable_temp = False
         elif command == "Set_Amount":
-            auto_amount = data["content"]["amount"]
+            auto_amount = int(data["content"]["amount"])
             time.sleep(1);
-            # print('Amount set to: ' + auto_amount)
-            # sys.stdout.flush()
         elif command == "Stop_Dispense":
             temp_cold = False
             temp_hot = False
@@ -131,17 +121,15 @@ def on_message(data):
             heating = False
             GPIO.output(output_devices['heater'],1)
         elif command == "Get_Baseline":
+            hx.reset()
             hx.tare()
         elif command == "Get_Container":
-            getContainerWeight()
-            # container_weight = hx.get_weight_A(5)
-            # container_weight = container_weight + 1
+            container_weight = hx.get_weight(5)
+            container_weight = round(container_weight)
             print("Current Container Weight: " + str(container_weight))
             sys.stdout.flush()
 
             if container_weight > 0:
-                # getContainerWeight()
-                # time.sleep(3)
                 sio.emit(
                     "socket-event",
                     {
@@ -151,9 +139,7 @@ def on_message(data):
                             "body": "Container Present",
                         },
                     },
-                )
-                hx.reset()
-                hx.tare()                
+                )          
             else:
                 sio.emit(
                     "socket-event",
@@ -209,10 +195,8 @@ def on_message(data):
             GPIO.output(output_devices['solenoid_1'],1)
             GPIO.output(output_devices['solenoid_2'],1)
         elif command == "Shutdown":
-            # Uncomment this for actual tests
             os.system('sudo shutdown now')
         elif command == "Reboot":
-            # Uncomment this for actual tests
             os.system('sudo reboot')
         elif command == "Terminate":
             GPIO.cleanup()
@@ -235,10 +219,6 @@ def check_operation():
 def getBaseline():
     global hx
     global current_baseline
-    # val = hx.get_weight_A(5)
-    # current_baseline = round(val // float(1000),1) * 1000
-    # print('Baseline: ' + str(current_baseline))
-    # sys.stdout.flush()    
     pass
     
     
@@ -248,21 +228,13 @@ def getCurrentWeight():
     global current_baseline
     val = hx.get_weight(5)
     current_weight = val
-    # current_weight = (current_weight) / 183
 
 def getContainerWeight():
     global hx
     global current_baseline
     global container_weight
-
-    # Uncomment this after testing
-    # container_weight = 10
-    # print("Getting Container Weight")
-    # sys.stdout.flush()
     try:
         current_weight = hx.get_weight(5)
-        # current_weight = round(current_weight // float(1000),1) * 1000
-        # container_weight = ((current_weight-current_baseline) / 183)
         container_weight = current_weight
         if container_weight < 0:
     	    container_weight = 0
@@ -271,13 +243,6 @@ def getContainerWeight():
     except Exception as exception:
         print('Error here: ' + exception)
         sys.stdout.flush()
-    
-    # print('Container Weight' + str((current_weight-current_baseline)/200))
-    # sys.stdout.flush()
-    
-    # 	return False
-    # else:
-    # 	return str(container_weight)
 
 
 def checkCommand():
@@ -299,10 +264,8 @@ def getRequestedAmount():
 
 def manualMode(command):
     if command == "Dispense_Hot":
-        # dispense hot here
         manualDispense("HOT")
     elif command == "Dispense_Cold":
-        # dispense cold here
         manualDispense("COLD")
 
 
@@ -311,10 +274,8 @@ def automaticMode(command):
     amount_requested = auto_amount
     if amount_requested != 0:
         if command == "Dispense_Hot":
-            # dispense hot here
             automaticDispense("HOT", amount_requested)
         elif command == "Dispense_Cold":
-            # dispense cold here
             automaticDispense("COLD", amount_requested)
 
 
@@ -332,27 +293,19 @@ def manualDispense(command):
     global total_liters
     global base_weight
 
-    # hx.set_reference_unit(-193)
     hx.reset()
     time.sleep(1)
     hx.tare()
+
+    total_liters = hx.get_weight(5);
+    total_liters = current_weight;
+    hx.power_down()
+    hx.power_up()
+    time.sleep(0.01)
     
-    if command == "COLD":
-        # print("Opened COLD Valve, Opened COLD Pump")
-        # sys.stdout.flush()
-        GPIO.output(output_devices['pump_1'],0)
-        GPIO.output(output_devices['solenoid_1'],0)
-    else:
-        # print("Opened HOT Valve, Opened HOT Pump")
-        # sys.stdout.flush()
-        GPIO.output(output_devices['pump_2'],0)
-        GPIO.output(output_devices['solenoid_2'],0)
-    getCurrentWeight()
-    total_liters = (current_weight)
-    starting_liters = total_liters
-    #if total_liters < 0:
-    #    total_liters = 0
-    # Use this code if not actual testing
+    if total_liters < 0:
+       total_liters = 0
+    
     sio.emit(
         "socket-event",
         {
@@ -364,15 +317,23 @@ def manualDispense(command):
         },
     )
 
+    if command == "COLD":
+        GPIO.output(output_devices['pump_1'],0)
+        GPIO.output(output_devices['solenoid_1'],0)
+    else:
+        GPIO.output(output_devices['pump_2'],0)
+        GPIO.output(output_devices['solenoid_2'],0)
+
+    time_start = time.time()
     while checkCommand() != "Standby":
-        # if time_duration >= 0.5:
-        # Use This Code for Actual Testing    
-        getCurrentWeight()
-        total_liters = (current_weight)
-        #if total_liters < 0:
-        #    total_liters = 0
-        # Use this code if not actual testing
-        # total_liters = total_liters + 1
+        total_liters = hx.get_weight(5);
+        total_liters = current_weight;
+        hx.power_down()
+        hx.power_up()
+        time.sleep(0.01)
+
+        if total_liters < 0:
+            total_liters = 0
         sio.emit(
             "socket-event",
             {
@@ -382,11 +343,15 @@ def manualDispense(command):
                     "body": {"Total": total_liters},
                 },
             },
-        )
+        )   
+
         if checkCommand() == "Standby":
             stop_dispense()
             break
-    
+    GPIO.output(output_devices['pump_1'],1)
+    GPIO.output(output_devices['solenoid_1'],1)
+    GPIO.output(output_devices['pump_2'],1)
+    GPIO.output(output_devices['solenoid_2'],1)
     sio.emit(
             "socket-event",
             {
@@ -398,11 +363,6 @@ def manualDispense(command):
             },
         )
     total_liters = 0
-    GPIO.output(output_devices['pump_1'],1)
-    GPIO.output(output_devices['solenoid_1'],1)
-    GPIO.output(output_devices['pump_2'],1)
-    GPIO.output(output_devices['solenoid_2'],1)
-
     sio.emit(
         "socket-event",
         {
@@ -411,83 +371,64 @@ def manualDispense(command):
         },
     )
     
-    #getContainerWeight()
-    hx.reset()
-    # container_weight = total_liters
-    # print("Closed ALL Valve, Closed ALL Pump")
-    # sys.stdout.flush()
-    
 
 
 def automaticDispense(command, amount_requested):
     try:
+        global hx
         global current_weight
         global container_weight
         global total_liters
-        global base_weight
         global auto_amount
         global calibration_constant
-        time_duration = 0
-        time_start = time.time()
 
         hx.reset()
         time.sleep(1)
         hx.tare()
-        
+
+        total_liters = hx.get_weight(5);
+        total_liters = current_weight;
+        hx.power_down()
+        hx.power_up()
+        time.sleep(0.01)
+
+        if total_liters < 0:
+            total_liters = 0
+
         if command == "HOT":   
             GPIO.output(output_devices['pump_2'],0)
             GPIO.output(output_devices['solenoid_2'],0)
         else:
-            # print("Opened HOT Valve, Opened HOoooT Pump")
-            # sys.stdout.flush()
             GPIO.output(output_devices['pump_1'],0)
             GPIO.output(output_devices['solenoid_1'],0)
-            getCurrentWeight()
-            total_liters = current_weight;
-            if total_liters < 0:
-                calibration_constant = total_liters
-                total_liters = 0
-                
-            # Use this code if not actual testing
-            # total_liters = total_liters + 1
-            sio.emit(
-                "socket-event",
-                {
-                    "destination": "JS",
-                    "content": {
-                        "type": "DISPENSE_READING",
-                        "body": {"Total": total_liters},
-                    },
-                },
-            )
         
-        while (total_liters + calibration_constant) < int(auto_amount):
-            time_end = time.time()
-            time_duration = time_end - time_start
-            if time_duration >= 0.1:
-                # Use This Code for Actual Testing
-                getCurrentWeight()
-                total_liters = current_weight;
-                if total_liters < 0:
-                    total_liters = 0
-
-                # Use this code if not actual testing
-                # total_liters = total_liters + 1
-                time_start = time.time()
-                sio.emit(
-                    "socket-event",
-                    {
-                        "destination": "JS",
-                        "content": {
-                            "type": "DISPENSE_READING",
-                            "body": {"Total": total_liters},
-                        },
-                    },
-                )
-            if (total_liters + calibration_constant) >= auto_amount:
+        time_start = time.time()
+        while (total_liters + calibration_constant) < auto_amount:
+            total_liters = hx.get_weight(5);
+            hx.power_down()
+            hx.power_up()
+            time.sleep(0.01)
+            if total_liters < 0:
+                total_liters = 0
+            # sio.emit(
+            #     "socket-event",
+            #     {
+            #         "destination": "JS",
+            #         "content": {
+            #             "type": "DISPENSE_READING",
+            #             "body": {"Total": total_liters},
+            #         },
+            #     },
+            # )
+            if total_liters >= auto_amount:
                 stop_dispense()
                 break
-        # base_weight = total_liters
+
+        GPIO.output(output_devices['pump_1'],1)
+        GPIO.output(output_devices['solenoid_1'],1)
+        GPIO.output(output_devices['pump_2'],1)
+        GPIO.output(output_devices['solenoid_2'],1)
+
         sio.emit(
                     "socket-event",
                     {
@@ -500,10 +441,7 @@ def automaticDispense(command, amount_requested):
                 )
         total_liters = 0
         auto_amount = 0
-        GPIO.output(output_devices['pump_1'],1)
-        GPIO.output(output_devices['solenoid_1'],1)
-        GPIO.output(output_devices['pump_2'],1)
-        GPIO.output(output_devices['solenoid_2'],1)
+        
         sio.emit(
             "socket-event",
             {
@@ -511,10 +449,6 @@ def automaticDispense(command, amount_requested):
                 "content": {"type": "DISPENSE_CONTROL", "body": "Stopped_Dispense"},
             },
         )
-        # getContainerWeight()
-        hx.reset()
-        # print("Closed ALL Valve, Closed ALL Pump")
-        # sys.stdout.flush()
     except Exception as exception:
         print(exception)
         sys.stdout.flush()
@@ -546,22 +480,14 @@ def readTemp():
 
             if cold_temp <= 6:
                 cooling = False
-                # print("Compressor Off")
-                # sys.stdout.flush()
                 GPIO.output(output_devices['compressor'],1)
             elif cold_temp >= 11:
                 cooling = True
-                # print("Compressor On")
-                # sys.stdout.flush()
                 GPIO.output(output_devices['compressor'],0)
             if hot_temp <= 65:
-                # print("Heater On")
-                # sys.stdout.flush()
                 heating = True
                 GPIO.output(output_devices['heater'],0)
             elif hot_temp >= 80:
-                # print("Heater Off")
-                # sys.stdout.flush()
                 heating = False
                 GPIO.output(output_devices['heater'],1)
             sio.emit(

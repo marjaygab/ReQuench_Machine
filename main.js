@@ -51,11 +51,12 @@ admin.initializeApp({
 const db = admin.firestore();
 
 try {
-    if (fs.existsSync('./machine_settings.json')) {
-        let settings = require('./machine_settings');
+    if (fs.existsSync('/home/pi/Documents/ReQuench_Machine/machine_settings.json')) {
+        let settings = require('/home/pi/Documents/ReQuench_Machine/machine_settings.json');
         var machine_settings = settings;
         var params = {};
         params.MU_ID = settings.mu_id;
+        console.log(params);
         http_post('Fetch_Machine.php', params, function (response) {
             if (response.Success) {
                 var machine_object = response.Machine;
@@ -78,8 +79,8 @@ try {
                     jsonWrite(doc,()=> console.log('Received something!'));
                 });
 
-                fs.watchFile('./machine_settings.json', (curr, prev) => {
-                    fs.readFile('./machine_settings.json', (err, data) => {
+                fs.watchFile('/home/pi/Documents/ReQuench_Machine/machine_settings.json', (curr, prev) => {
+                    fs.readFile('/home/pi/Documents/ReQuench_Machine/machine_settings.json', (err, data) => {
                         if (err) throw err;
                         machine_settings = JSON.parse(data);
                         var mu_id = machine_settings.mu_id;
