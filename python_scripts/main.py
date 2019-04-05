@@ -6,7 +6,9 @@ import threading
 import sys
 import os
 from hx711 import HX711
-
+hx = HX711(17, 27)
+hx.set_reading_format("MSB", "MSB")
+hx.set_reference_unit(-193)
 sio = socketio.Client()
 sio.connect("http://localhost:3000")
 
@@ -79,13 +81,10 @@ def on_message(data):
             container_weight = 0
             current_weight = 0
             current_baseline = 0
-            hx = HX711(17, 27)
-            hx.set_reading_format("MSB", "MSB")
-            hx.set_reference_unit(-193)
             hx.reset()
         elif command == "End_Transaction":
             hx.power_down()
-            del hx
+            # del hx
         elif command == "Toggle_Auto":
             mode_auto = True
             mode_manual = False

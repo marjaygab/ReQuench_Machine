@@ -94,7 +94,6 @@ io.on('connection', function (socket) {
 
 
 py_object = new PythonShell(filename, options);
-
 //listens for print() from main.py
 py_object.on('message', function (message) {
     if (message == 'Ready') {
