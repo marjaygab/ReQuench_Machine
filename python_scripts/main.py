@@ -22,7 +22,7 @@ output_devices = {
     "screen_backlight": 18,
     "blue_led": 18,
     "red_led": 14,
-    "yellow_red": 15,
+    "yellow_led": 15
 }
 
 
@@ -53,6 +53,10 @@ GPIO.output(output_devices['pump_1'],1)
 GPIO.output(output_devices['solenoid_1'],1)
 GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
+GPIO.output(output_devices['blue_led'],1)
+GPIO.output(output_devices['red_led'],1)
+GPIO.output(output_devices['yellow_led'],1)
+
 
 
 @sio.on("connect")
@@ -480,24 +484,38 @@ def readTemp():
             if cold_temp <= 6:
                 cooling = False
                 GPIO.output(output_devices['compressor'],1)
+                GPIO.output(output_devices['blue_led'],1)
+                if (heating == False):
+                    GPIO.output(output_devices['yellow_led'],0)
             elif cold_temp >= 11:
                 cooling = True
                 GPIO.output(output_devices['compressor'],0)
+                GPIO.output(output_devices['blue_led'],0)
+                GPIO.output(output_devices['yellow_led'],1)
+            else:
+                pass
+            
             if hot_temp <= 65:
                 heating = True
                 GPIO.output(output_devices['heater'],0)
+                GPIO.output(output_devices['red_led'],0)
+                GPIO.output(output_devices['yellow_led'],1)
             elif hot_temp >= 80:
                 heating = False
                 GPIO.output(output_devices['heater'],1)
-
-            GPIO.output(output_devices['red_led'],not heating)
-            GPIO.output(output_devices['blue_led'],not cooling)
-
-            if heating or cooling:
-                GPIO.output(output_devices['yellow_led'],0)
+                GPIO.output(output_devices['red_led'],1)
+                if (cooling == False):
+                    GPIO.output(output_devices['yellow_led'],0)
             else:
-                GPIO.output(output_devices['yellow_led'],1)
+                pass
             
+            #yellow_output = heating or cooling
+            
+            #if(yellow_output == True):
+            #GPIO.output(output_devices['yellow_led'],0)
+            #else:
+            #    GPIO.output(output_devices['yellow_led'],0)
+                
             sio.emit(
                 "socket-event",
                 {
@@ -508,6 +526,7 @@ def readTemp():
                     },
                 },
             )
+            
         else:
             GPIO.output(output_devices['compressor'],1)
             GPIO.output(output_devices['heater'],1)
