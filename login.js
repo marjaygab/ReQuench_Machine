@@ -280,6 +280,12 @@ function main() {
 
             httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                 // sessionstorage.setItem('User_Information',json_object);
+                store.delete('Response_Object');
+                store.delete('Account_Type');
+                store.delete('User_Information');
+                store.delete('Purchase_History');
+                store.delete('Transaction_History');
+                store.delete('Login_Method');
 
                 store.set('Response_Object', json_object);
                 store.set('Account_Type', json_object.Account_Type);
