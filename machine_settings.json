@@ -3,10 +3,10 @@
       "date_of_purchase": "2018-08-13",
       "last_maintenance_date": "2019-04-05",
       "Model_Number": "ABC123",
-      "price_per_ml": "0.002",
-      "current_water_level": 5800,
+      "price_per_ml": "0.020",
+      "current_water_level": "5586",
       "api_key": "566ee18ea4eebbc485074e045381ae98",
-      "notify_admin": "0",
+      "notify_admin": "1",
       "critical_level": "5",
       "status": "offline",
       "mu_id": "1"

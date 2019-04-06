@@ -345,7 +345,7 @@ function main() {
 
                         if (current_operation.get() != 'STANDBY') {
                             var date_now = moment().format('YYYY-MM-DD');
-                            var time_now = moment().format('hh:mm:ss');
+                            var time_now = moment().format('HH:mm:ss');
                             params.Time = time_now;
                             params.Date = date_now;
                             params.Temperature = current_operation.get();

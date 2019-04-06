@@ -55,7 +55,7 @@ GPIO.output(output_devices['pump_2'],1)
 GPIO.output(output_devices['solenoid_2'],1)
 GPIO.output(output_devices['blue_led'],1)
 GPIO.output(output_devices['red_led'],1)
-GPIO.output(output_devices['yellow_led'],1)
+GPIO.output(output_devices['yellow_led'],0)
 
 
 
