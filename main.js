@@ -81,8 +81,7 @@ io.on('connection', function (socket) {
             // the disconnection was initiated by the server, you need to reconnect manually
             socket.connect();
         } else {
-            console.log('Python has disconnected');
-
+            console.log('Python has disconnected. ' + reason);
         }
         // else the socket will automatically try to reconnect
     });

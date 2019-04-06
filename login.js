@@ -106,7 +106,7 @@ function main() {
             let machine_settings = require('./machine_settings');
             store.set('Machine_Settings', machine_settings);
             if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
-                
+
                 Swal.fire({
                     type: 'error',
                     title: 'Oops...',
@@ -151,67 +151,67 @@ function main() {
             }
         } else {
             var secret_entered = false;
-        
-                swal_initialize(function(result) {
-                    if (result.value) {
-                        swal_secret(function(result) {
-                           if(result.dismiss == 'cancel'){
-                                window.location.reload();
-                           }else{
-                               var params = {};
-                               params.Secret_Key = result.value;
-                              
-                                httpcustomrequest.http_post("New_Machine.php",params,function(response) {
-                                    if (response.Success) {
-                                        var params = {};
-                                        var machine_object = response.Machine;
-                                        params.location = machine_object.Machine_Location;
-                                        params.date_of_purchase = machine_object.Date_of_Purchase;
-                                        params.last_maintenance_date = machine_object.Last_Maintenance_Date;
-                                        params.Model_Number = machine_object.Model_Number;
-                                        params.price_per_ml = machine_object.Price_Per_ML;
-                                        params.current_water_level = machine_object.Current_Water_Level;
-                                        params.api_key = machine_object.API_KEY;
-                                        params.notify_admin = machine_object.Notify_Admin;
-                                        params.critical_level = machine_object.Critical_Level;
-                                        params.status = machine_object.STATUS;
-                                        params.mu_id = machine_object.MU_ID;
-                                        
-                                        jsonWrite(params,function() {
-                                            //restart whole program here
-                                            remote.app.relaunch();
-                                            remote.app.exit(0);
-                                        });
+
+            swal_initialize(function (result) {
+                if (result.value) {
+                    swal_secret(function (result) {
+                        if (result.dismiss == 'cancel') {
+                            window.location.reload();
+                        } else {
+                            var params = {};
+                            params.Secret_Key = result.value;
+
+                            httpcustomrequest.http_post("New_Machine.php", params, function (response) {
+                                if (response.Success) {
+                                    var params = {};
+                                    var machine_object = response.Machine;
+                                    params.location = machine_object.Machine_Location;
+                                    params.date_of_purchase = machine_object.Date_of_Purchase;
+                                    params.last_maintenance_date = machine_object.Last_Maintenance_Date;
+                                    params.Model_Number = machine_object.Model_Number;
+                                    params.price_per_ml = machine_object.Price_Per_ML;
+                                    params.current_water_level = machine_object.Current_Water_Level;
+                                    params.api_key = machine_object.API_KEY;
+                                    params.notify_admin = machine_object.Notify_Admin;
+                                    params.critical_level = machine_object.Critical_Level;
+                                    params.status = machine_object.STATUS;
+                                    params.mu_id = machine_object.MU_ID;
+
+                                    jsonWrite(params, function () {
+                                        //restart whole program here
+                                        remote.app.relaunch();
+                                        remote.app.exit(0);
+                                    });
+                                }
+                            }, function (error) {
+                                Swal.fire({
+                                    title: 'An error occured. Please try again later.',
+                                    type: 'error',
+                                    confirmButtonColor: '#3085d6',
+                                    confirmButtonText: 'Ok',
+                                    onClose: function () {
+                                        window.location.assign('login.html');
                                     }
-                                },function(error) {
-                                    Swal.fire({
-                                        title: 'An error occured. Please try again later.',
-                                        type: 'error',
-                                        confirmButtonColor: '#3085d6',
-                                        confirmButtonText: 'Ok',
-                                        onClose: function () {
-                                            window.location.assign('login.html');
-                                        }
-                                    }).then((result) => {
-                                        window.location.assign('login.html');
-                                    });
-                                },function() {
-                                    Swal.fire({
-                                        title: 'Network Timeout. Please try again later.',
-                                        type: 'error',
-                                        confirmButtonColor: '#3085d6',
-                                        confirmButtonText: 'Ok',
-                                        onClose: function () {
-                                            window.location.assign('login.html');
-                                        }
-                                    }).then((result) => {
-                                        window.location.assign('login.html');
-                                    });
+                                }).then((result) => {
+                                    window.location.assign('login.html');
                                 });
-                           }
-                        });
-                    }
-                });    
+                            }, function () {
+                                Swal.fire({
+                                    title: 'Network Timeout. Please try again later.',
+                                    type: 'error',
+                                    confirmButtonColor: '#3085d6',
+                                    confirmButtonText: 'Ok',
+                                    onClose: function () {
+                                        window.location.assign('login.html');
+                                    }
+                                }).then((result) => {
+                                    window.location.assign('login.html');
+                                });
+                            });
+                        }
+                    });
+                }
+            });
         }
     } catch (error) {
         console.log(error);
@@ -280,33 +280,42 @@ function main() {
 
             httpcustomrequest.http_post('Machine_Initialize.php', params, function (json_object) {
                 // sessionstorage.setItem('User_Information',json_object);
-                store.delete('Response_Object');
-                store.delete('Account_Type');
-                store.delete('User_Information');
-                store.delete('Purchase_History');
-                store.delete('Transaction_History');
-                store.delete('Login_Method');
+                if (json_object.Success) {
+                    store.set('Response_Object', json_object);
+                    store.set('Account_Type', json_object.Account_Type);
+                    store.set('User_Information', json_object.Account);
+                    //check user persmissions first
+                    store.set('Purchase_History', json_object.Purchase_History);
+                    store.set('Transaction_History', json_object.Transaction_History);
+                    store.set('Login_Method', 'RFID');
+                    var user_info_object = store.get('User_Information');
+                    console.log(user_info_object.Balance);
+                    if (json_object.Account_Type == 'Recorded') {
+                        if (user_info_object.Access_Level == 'USER') {
+                            window.location.assign("HomePage.html");
+                        } else if (user_info_object.Access_Level == 'ADMIN') {
+                            window.location.assign("admin.html");
+                        } else {
 
-                store.set('Response_Object', json_object);
-                store.set('Account_Type', json_object.Account_Type);
-                store.set('User_Information', json_object.Account);
-                //check user persmissions first
-                store.set('Purchase_History', json_object.Purchase_History);
-                store.set('Transaction_History', json_object.Transaction_History);
-                store.set('Login_Method', 'RFID');
-                var user_info_object = store.get('User_Information');
-                console.log(user_info_object.Balance);
-                if (json_object.Account_Type == 'Recorded') {
-                    if (user_info_object.Access_Level == 'USER') {
-                        window.location.assign("HomePage.html");
-                    } else if (user_info_object.Access_Level == 'ADMIN') {
-                        window.location.assign("admin.html");
+                        }
                     } else {
-
+                        window.location.assign("HomePage.html");
                     }
-                } else {
-                    window.location.assign("HomePage.html");
+                }else{
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'User not found!',
+                        confirmButtonText: "Try again",
+                        onClose: () => {
+                            otp_string = '';
+                            $("#otp_field").val('');
+                            $('#enterotpbutton').text("Enter OTP");
+                        }
+                    })
                 }
+
+
             }, function (error) {
                 console.log(`Error 1: ${error}`);
             });
@@ -632,16 +641,16 @@ function sendNotification(title, body, fn_response, fn_error) {
 }
 
 
-function jsonWrite(file,callback) {
+function jsonWrite(file, callback) {
     // Use this path for windows.
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
     // var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile('./machine_settings.json', JSON.stringify(file, null, 6), function (err) {
-        if (err){
+        if (err) {
             callback(false);
-        }else{
+        } else {
             callback(true);
         }
     });
@@ -652,32 +661,32 @@ async function swal_secret(callback) {
         title: 'Please enter secret code',
         input: 'text',
         inputAttributes: {
-          autocapitalize: 'off'
+            autocapitalize: 'off'
         },
         showCancelButton: true,
         confirmButtonText: 'Submit',
         showLoaderOnConfirm: true,
         allowOutsideClick: false,
-      });
+    });
 
-      let result = await promise;
-      callback(result);
+    let result = await promise;
+    callback(result);
 }
 
 async function swal_initialize(callback) {
-    let promise = new Promise((resolve,reject)=>{
+    let promise = new Promise((resolve, reject) => {
         Swal.fire({
             type: 'error',
             title: 'Oops...',
             text: 'This machine needs initialization. Please call maintenance personnel for assistance.',
             confirmButtonText: "I am an Admin",
             allowOutsideClick: false,
-        }).then((result)=>{
+        }).then((result) => {
             resolve(result);
         })
-        .catch((err)=>{
-            reject(err)
-        });
+            .catch((err) => {
+                reject(err)
+            });
     });
     let result = await promise;
     callback(result);
