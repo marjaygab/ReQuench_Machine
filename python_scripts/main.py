@@ -20,9 +20,9 @@ output_devices = {
     "compressor": 7,
     "heater": 24,
     "screen_backlight": 18,
-    "green_led": 14,
-    "red_led": 15,
-    "yellow_red": 18,
+    "blue_led": 18,
+    "red_led": 14,
+    "yellow_red": 15,
 }
 
 
@@ -402,7 +402,7 @@ def automaticDispense(command, amount_requested):
             GPIO.output(output_devices['solenoid_1'],0)
         
         time_start = time.time()
-        while (total_liters + calibration_constant) < auto_amount:
+        while (total_liters) < amount_requested:
             total_liters = getCurrentWeight()
 
             if total_liters < 0:
@@ -417,7 +417,7 @@ def automaticDispense(command, amount_requested):
                     },
                 },
             )
-            if total_liters >= auto_amount:
+            if total_liters > amount_requested:
                 stop_dispense()
                 break
 
@@ -489,6 +489,15 @@ def readTemp():
             elif hot_temp >= 80:
                 heating = False
                 GPIO.output(output_devices['heater'],1)
+
+            GPIO.output(output_devices['red_led'],not heating)
+            GPIO.output(output_devices['blue_led'],not cooling)
+
+            if heating or cooling:
+                GPIO.output(output_devices['yellow_led'],0)
+            else:
+                GPIO.output(output_devices['yellow_led'],1)
+            
             sio.emit(
                 "socket-event",
                 {

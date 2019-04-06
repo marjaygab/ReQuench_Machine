@@ -428,14 +428,26 @@ function main() {
                 });
             } else {
                 var params = {};
-                params.Acc_ID = store.get('User_Information').Acc_ID;
+                params.Account_Type = account_type;
+                
+                if(params.Account_Type == 'Recorded'){
+                    params.Acc_ID = store.get('User_Information').Acc_ID;
+                }else{
+                    params.UU_ID = store.get('User_Information').UU_ID;    
+                }
+                
+                console.log(params);
+                
+                
                 httpcustomrequest.http_post('Machine_Init.php', params, function (json_object) {
                     if (json_object != false) {
                         store.set('Purchase_History', json_object.Purchase_History);
                         store.set('Transaction_History', json_object.Transaction_History);
                         var purchase_history = store.get('Purchase_History');
                         var transaction_history = store.get('Transaction_History');
-
+                        console.log(purchase_history);
+                        console.log(transaction_history);
+                        
                         //function used to sort DATE TIME
                         var compare_function = function (a, b) {
                             if (Date.parse(a.Date) > Date.parse(b.Date)) {
@@ -471,6 +483,7 @@ function main() {
                         } else if (transaction_history == null && purchase_history != null) {
                             full_size = parseInt(user_information.Balance);
                             current_size = full_size;
+                            console.log('I am here!');
                         } else if (transaction_history != null && purchase_history == null) {
                             full_size = parseInt(transaction_history.Remaining_Balance);
                             current_size = full_size;
@@ -497,7 +510,10 @@ function main() {
                         size_percentage = (current_size / full_size);
                         computed_height = size_percentage * 250;
                         $("#water-level").animate({ height: computed_height + 'px' });
-
+                        
+                        console.log('Current: ' + current_size);
+                        console.log('Previous: ' + previous_size);
+                        console.log('Full: ' + full_size);
                         ml_label.innerHTML = `${user_information.Balance} mL`;
                         js_ready = true;
 
