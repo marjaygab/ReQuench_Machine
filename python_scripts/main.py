@@ -1,3 +1,5 @@
+# !/usr/bin/python2
+
 import RPi.GPIO as GPIO
 import json
 import time
@@ -46,7 +48,7 @@ auto_amount = 0
 total_liters = 0
 base_weight = 0
 terminate_flag = False
-calibration_constant = 0
+calibration_constant = 30
 
 
 GPIO.output(output_devices['pump_1'],1)
@@ -85,6 +87,8 @@ def on_message(data):
             container_weight = 0
             current_weight = 0
             current_baseline = 0
+            mode_auto = True
+            mode_manual = False
             hx.reset()
         elif command == "End_Transaction":
             hx.power_down()
@@ -181,27 +185,34 @@ def on_message(data):
                         },
                     },
                 )
-        elif command == "Start_Drain":
+        elif command == "Start_Drain_Hot":
             print("Started Draining")
             sys.stdout.flush()
             GPIO.output(output_devices['pump_1'],0)
-            GPIO.output(output_devices['pump_2'],0)
             GPIO.output(output_devices['solenoid_1'],0)
-            GPIO.output(output_devices['solenoid_2'],0)
-        elif command == "Stop_Drain":
+        elif command == "Stop_Drain_Hot":
             print("Stopped Draining")
             sys.stdout.flush()
             GPIO.output(output_devices['pump_1'],1)
-            GPIO.output(output_devices['pump_2'],1)
             GPIO.output(output_devices['solenoid_1'],1)
+        elif command == "Start_Drain_Cold":
+            print("Started Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_2'],0)
+            GPIO.output(output_devices['solenoid_2'],0)
+        elif command == "Stop_Drain_Cold":
+            print("Stopped Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_2'],1)
             GPIO.output(output_devices['solenoid_2'],1)
         elif command == "Shutdown":
             os.system('sudo shutdown now')
         elif command == "Reboot":
             os.system('sudo reboot')
         elif command == "Terminate":
-            GPIO.cleanup()
-            terminate_flag = True
+            pass
+            # GPIO.cleanup()
+            # terminate_flag = True
 
 
 @sio.on("disconnect")
@@ -303,6 +314,11 @@ def manualDispense(command):
     global container_weight
     global total_liters
     global base_weight
+    global calibration_constant
+    no_container = False
+
+    print("Manual Dispensing Start")
+    sys.stdout.flush()
 
     tareNow()
     total_liters = getCurrentWeight()
@@ -342,6 +358,10 @@ def manualDispense(command):
         if previous > total_liters:
             stop_dispense()
             total_liters = previous
+            print("No container Detected")
+            sys.stdout.flush()
+            print("Previous Amount: " + str(total_liters))
+            sys.stdout.flush()
             break
         sio.emit(
             "socket-event",
@@ -367,7 +387,7 @@ def manualDispense(command):
                 "destination": "JS",
                 "content": {
                     "type": "DISPENSE_READING",
-                    "body": {"Total": total_liters},
+                    "body": {"Total": total_liters + calibration_constant},
                 },
             },
         )
@@ -391,10 +411,18 @@ def automaticDispense(command, amount_requested):
         global auto_amount
         global calibration_constant
 
+        no_container = False
+        
         tareNow()
 
         total_liters = getCurrentWeight()
 
+        print('Amount Received: ' + str(amount_requested))
+        sys.stdout.flush()
+
+        print('Calibration Constant: ' + str(calibration_constant))        
+        sys.stdout.flush()
+        
         if total_liters < 0:
             total_liters = 0
 
@@ -404,13 +432,26 @@ def automaticDispense(command, amount_requested):
         else:
             GPIO.output(output_devices['pump_1'],0)
             GPIO.output(output_devices['solenoid_1'],0)
-        
-        time_start = time.time()
-        while (total_liters) < amount_requested:
-            total_liters = getCurrentWeight()
 
+        time.sleep(0.1)
+        total_liters = getCurrentWeight()
+        if total_liters < 0:
+            total_liters = 0
+        previous = total_liters
+
+        time_start = time.time()
+        while (total_liters + calibration_constant) < amount_requested:
+            total_liters = getCurrentWeight()
+            
             if total_liters < 0:
                 total_liters = 0
+
+            if previous > total_liters:
+                stop_dispense()
+                total_liters = previous
+                no_container = True
+                break
+            previous = total_liters    
             sio.emit(
                 "socket-event",
                 {
@@ -421,7 +462,9 @@ def automaticDispense(command, amount_requested):
                     },
                 },
             )
-            if total_liters > amount_requested:
+            print("Computed Liters: " + str(total_liters + calibration_constant))
+            sys.stdout.flush()
+            if (total_liters + calibration_constant) > amount_requested:
                 stop_dispense()
                 break
 
@@ -432,16 +475,29 @@ def automaticDispense(command, amount_requested):
 
         print('Actual_Liters' + str(total_liters))
         sys.stdout.flush()
-        sio.emit(
-                    "socket-event",
-                    {
-                        "destination": "JS",
-                        "content": {
-                            "type": "DISPENSE_READING",
-                            "body": {"Total": auto_amount},
+        if no_container == False:            
+            sio.emit(
+                        "socket-event",
+                        {
+                            "destination": "JS",
+                            "content": {
+                                "type": "DISPENSE_READING",
+                                "body": {"Total": auto_amount},
+                            },
                         },
-                    },
-                )
+                    )
+        else:
+            sio.emit(
+                        "socket-event",
+                        {
+                            "destination": "JS",
+                            "content": {
+                                "type": "DISPENSE_READING",
+                                "body": {"Total": total_liters + calibration_constant},
+                            },
+                        },
+                    )
+        
         total_liters = 0
         auto_amount = 0
         
@@ -454,6 +510,10 @@ def automaticDispense(command, amount_requested):
         )
     except Exception as exception:
         print(exception)
+        GPIO.output(output_devices['pump_1'],1)
+        GPIO.output(output_devices['solenoid_1'],1)
+        GPIO.output(output_devices['pump_2'],1)
+        GPIO.output(output_devices['solenoid_2'],1)
         sys.stdout.flush()
 
 def readTemp():
@@ -485,8 +545,8 @@ def readTemp():
                 cooling = False
                 GPIO.output(output_devices['compressor'],1)
                 GPIO.output(output_devices['blue_led'],1)
-                if (heating == False):
-                    GPIO.output(output_devices['yellow_led'],0)
+                #if (heating == False):
+                #    GPIO.output(output_devices['yellow_led'],0)
             elif cold_temp >= 11:
                 cooling = True
                 GPIO.output(output_devices['compressor'],0)
@@ -499,13 +559,13 @@ def readTemp():
                 heating = True
                 GPIO.output(output_devices['heater'],0)
                 GPIO.output(output_devices['red_led'],0)
-                GPIO.output(output_devices['yellow_led'],1)
+                #GPIO.output(output_devices['yellow_led'],1)
             elif hot_temp >= 80:
                 heating = False
                 GPIO.output(output_devices['heater'],1)
                 GPIO.output(output_devices['red_led'],1)
-                if (cooling == False):
-                    GPIO.output(output_devices['yellow_led'],0)
+                #if (cooling == False):
+                #    GPIO.output(output_devices['yellow_led'],0)
             else:
                 pass
             

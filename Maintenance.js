@@ -20,8 +20,10 @@ $(document).ready(function() {
     var toggle_timer = document.getElementById('toggle_timer');
     var reset_timer = document.getElementById('reset_timer');
     var steps_control = document.getElementsByClassName('steps_control');
-    var start_drain = document.getElementById('start_drain');
-    var stop_drain = document.getElementById('stop_drain');
+    var start_drain_cold = document.getElementById('start_drain_cold');
+    var stop_drain_cold = document.getElementById('stop_drain_cold');
+    var start_drain_hot = document.getElementById('start_drain_hot');
+    var stop_drain_hot = document.getElementById('stop_drain_hot');
     var steps_size;
     var steps_list;
     var timer;
@@ -34,18 +36,23 @@ $(document).ready(function() {
 
     commandPy(socket, { command: 'Disable_Temp' });
 
-    start_drain.onclick = function() {
+    start_drain_cold.onclick = function() {
         this.disabled = true;
-        stop_drain.disabled = false;
+        stop_drain_cold.disabled = false;
+        start_drain_hot.disabled = true;
+        stop_drain_hot.disabled = true;
         
         left_button.disabled = true;
         right_button.disabled = true;
-        commandPy(socket, { command: 'Start_Drain' });
+        commandPy(socket, { command: 'Start_Drain_Cold' });
     }
 
-    stop_drain.onclick = function() {
+    stop_drain_cold.onclick = function() {
         this.disabled = true;
-        start_drain.disabled = false;
+        start_drain_cold.disabled = false;
+        stop_drain_hot.disabled = true;
+        start_drain_hot.disabled = false;
+        
         if (!maintenance_data.from_maintenance) {
             left_button.disabled = false;
             right_button.disabled = false;
@@ -53,7 +60,33 @@ $(document).ready(function() {
             right_button.disabled = false;
         }
         
-        commandPy(socket, { command: 'Stop_Drain' });
+        commandPy(socket, { command: 'Stop_Drain_Cold' });
+    }
+    
+    start_drain_hot.onclick = function() {
+        this.disabled = true;
+        stop_drain_hot.disabled = false;
+        stop_drain_cold.disabled = true;
+        start_drain_cold.disabled = true;
+        
+        left_button.disabled = true;
+        right_button.disabled = true;
+        commandPy(socket, { command: 'Start_Drain_Hot' });
+    }
+
+    stop_drain_hot.onclick = function() {
+        this.disabled = true;
+        start_drain_hot.disabled = false;
+        stop_drain_cold.disabled = true;
+        start_drain_cold.disabled = false;
+        if (!maintenance_data.from_maintenance) {
+            left_button.disabled = false;
+            right_button.disabled = false;
+        }else{
+            right_button.disabled = false;
+        }
+        
+        commandPy(socket, { command: 'Stop_Drain_Hot' });
     }
 
     readStepsFile(function(list,size) {

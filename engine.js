@@ -107,8 +107,7 @@ function main() {
     }
 
     
-    commandPy(socket, { command: 'New_Transaction' });
-    console.log(response_object);
+    
 
 
     //This function couns every second if a user is idle.
@@ -142,7 +141,7 @@ function main() {
                     store.delete('Purchase_History');
                     store.delete('Transaction_History');
                     commandPy(socket, { command: 'End_Transaction' });
-                    commandPy(socket, { command: 'Terminate' });
+                    //commandPy(socket, { command: 'Terminate' });
                     console.log('Terminated, hopefully');
                     window.location.assign('login.html');
                 }
@@ -208,7 +207,7 @@ function main() {
                     });
                 } else {
                     commandPy(socket, { command: 'End_Transaction' });
-                    commandPy(socket, { command: 'Terminate' });
+                    //commandPy(socket, { command: 'Terminate' });
                     store.delete('User_Information');
                     store.delete('Purchase_History');
                     store.delete('Transaction_History');
@@ -236,7 +235,7 @@ function main() {
                     console.log(current_operation.get());
 
                     try {
-                        if (current_size >= 0) {
+                        if (current_size > 0) {
                             //Get volume reading from python
                             var total = msg.content.body.Total;
 
@@ -520,6 +519,7 @@ function main() {
                         Swal.close();
 
                         var container_promise = new Promise(function (resolve, reject) {
+                            commandPy(socket, { command: 'New_Transaction' });
                             commandPy(socket, { command: 'Get_Baseline' });
                             Swal.fire({
                                 title: 'Waiting for container..',
@@ -817,6 +817,7 @@ function enableAll() {
     $("#hot-button").prop('disabled', false);
     $("#cold-button").prop('disabled', false);
     $('#toggle_switch').prop('disabled', false);
+    
 }
 
 function round(value, decimals) {
