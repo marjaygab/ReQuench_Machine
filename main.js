@@ -19,7 +19,7 @@ var py_object;
 var written_from_web = false;
 //Use this for actual
 var filename = 'main.py';
-
+var onInit = true;
 //User this for Windows testing
 // var filename = 'main_windows.py';
 
@@ -70,7 +70,9 @@ io.on('connection', function (socket) {
 
     socket.on('socket-event', function (msg) {
         io.emit('socket-event', msg);
-        console.log(msg);
+        if(msg.content.type != 'TEMP_READING'){
+            console.log(msg);
+        }
     });
 
     socket.on('reconnect', function () {
@@ -128,15 +130,16 @@ try {
                 machine_settings.critical_level = machine_object.Critical_Level;
                 machine_settings.status = "online";
                 machine_settings.mu_id = machine_object.MU_ID;
-                jsonWrite(machine_settings, () => console.log("Initialized"));
-
+                jsonWrite(machine_settings, () => {});                
 
                 db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
-                    written_from_web = true;
-                    console.log('This is Firebase output');
-                    console.log(doc.data());
-                    // jsonWrite(doc,()=> console.log('Received something!'));
+                    if(!onInit){
+                        console.log('This is Firebase output');
+                        console.log(doc.data());
+                        jsonWrite(doc.data(),()=> console.log('Received something!'));
+                    }
                 });
+
 
                 fs.watchFile('/home/pi/Documents/ReQuench_Machine/machine_settings.json', (curr, prev) => {
                     fs.readFile('/home/pi/Documents/ReQuench_Machine/machine_settings.json', (err, data) => {
@@ -165,23 +168,24 @@ try {
                         } else {
                             commandPy(io, { command: "Enable_Temp" });
                         }
-
-                        if (!written_from_web) {
                             db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
                             .then(() => {
                                 console.log("Data inserted");
-                                //if (machine_settings.status == 'offline') {
-                                //    commandPy(io, { command: "Shutdown" });
-                                //} else if (machine_settings.status == 'rebooting') {
-                                //    commandPy(io, { command: "Reboot" });
-                                //}
+                                if(onInit){
+                                    onInit = false;
+                                }
+                                if(!onInit){
+                                    if (machine_settings.status == 'offline' || machine_settings.status == 'OFFLINE') {
+                                    commandPy(io, { command: "Shutdown" });
+                                    } else if (machine_settings.status == 'rebooting' || machine_settings.status == 'REBOOTING') {
+                                        commandPy(io, { command: "Reboot" });
+                                    }
+                                }                                
                             })
-                            .catch(() => {
+                            .catch((error) => {
                                 console.error('Firebase Error');
+                                console.error(error);
                             });
-                        }else{
-                            written_from_web = false;
-                        }   
                         
                     });
                 });
@@ -212,7 +216,7 @@ let mainWindow;
 let vkb;
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({ width: 500, height: 856 })
+    mainWindow = new BrowserWindow({ width: 500, height: 856 ,fullscreen: true})
     // and load the index.html of the app.
     if (!file.from_maintenance) {
         mainWindow.loadFile('index.html');
