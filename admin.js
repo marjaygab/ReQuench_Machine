@@ -66,7 +66,7 @@ $(document).ready(function() {
                             showConfirmButton: true,
                             showCancelButton: false
                         }).then(()=>{
-                            settings.current_water_level = 20000;
+                            settings.current_water_level = 22500;
                             jsonWrite(settings,()=>{
                                 jsonRead(function(data) {
                                     if (data != false) {

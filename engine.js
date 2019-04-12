@@ -252,7 +252,8 @@ function main() {
                             //Show current mL label
                             ml_label.innerHTML = `${current_size} mL`;
 
-                            if (getPercentage(temp_water_level, 20000) <= machine_settings.critical_level) {
+                            if (getPercentage(temp_water_level, 22500) <= machine_settings.critical_level) {
+                                commandPy(socket, { command: 'Stop_Dispense' });
                                 Swal.fire({
                                     type: 'error',
                                     title: 'Oops...',
@@ -260,7 +261,7 @@ function main() {
                                     confirmButtonText: "Ok",
                                     allowOutsideClick: false,
                                     onBeforeOpen: () => {
-                                        commandPy(socket, { command: 'Stop_Dispense' });
+                                        
                                     },
                                 }).then((result) => {
                                     if (result.value) {
@@ -408,7 +409,7 @@ function main() {
         },
         onOpen: () => {
             console.log('Opened');
-            if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+            if ((machine_settings.current_water_level / 22500 * 100) <= machine_settings.critical_level) {
                 Swal.fire({
                     type: 'error',
                     title: 'Oops...',
