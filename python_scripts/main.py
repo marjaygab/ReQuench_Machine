@@ -493,7 +493,7 @@ def automaticDispense(command, amount_requested):
                             "destination": "JS",
                             "content": {
                                 "type": "DISPENSE_READING",
-                                "body": {"Total": total_liters + calibration_constant},
+                                "body": {"Total": total_liters + (2*calibration_constant)},
                             },
                         },
                     )
