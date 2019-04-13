@@ -306,14 +306,24 @@ function main() {
 
                             //Get current size for GUI presentation
                             current_size = previous_size - total;
-
-                            if (current_size < 0) {
+    
+                            if(toggle_state == 'Manual'){
+                                if (current_size < 0) {
                                 current_size = 0;            
                                 commandPy(socket, { command: 'Stop_Dispense' });
-                                $(".main-controls").prop('disabled',true);
+                                disableAll();
+                                }else{
+                                    current_size = Math.round(current_size);
+                                }
                             }else{
-                                current_size = Math.round(current_size);
+                                if (current_size < 0) {
+                                    current_size = 0;            
+                                }else{
+                                    current_size = Math.round(current_size);
+                                }
                             }
+
+                            
 
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
@@ -444,7 +454,14 @@ function main() {
                         //         jsonWrite(data);
                         //     }
                         // });
-
+                        
+                        if(current_size == 0){
+                        
+                            disableAll();
+                        
+                        }
+                        
+                        
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -890,6 +907,15 @@ function enableAll() {
     $('#toggle_switch').prop('disabled', false);
     
 }
+
+function disableAll() {
+    $("#hot-button").text("HOT");
+    $("#cold-button").text("COLD");
+    $("#hot-button").prop('disabled', true);
+    $("#cold-button").prop('disabled', true);
+    $('#toggle_switch').prop('disabled', true);
+}
+
 
 function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
