@@ -105,7 +105,7 @@ function main() {
         if (fs.existsSync('./machine_settings.json')) {
             let machine_settings = require('./machine_settings');
             store.set('Machine_Settings', machine_settings);
-            if ((machine_settings.current_water_level / 20000 * 100) <= machine_settings.critical_level) {
+            if ((machine_settings.current_water_level / 22500 * 100) <= machine_settings.critical_level) {
 
                 Swal.fire({
                     type: 'error',

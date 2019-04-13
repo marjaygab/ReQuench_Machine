@@ -207,12 +207,11 @@ $(document).ready(function () {
                         jsonRead((data)=>{
                             if (data != false) {
                                 machine_settings = data;
+                                window.location.assign('admin.html');
                             }
                         });
                     }
                 });
-
-                window.location.assign('admin.html');
             }
         })
     }
