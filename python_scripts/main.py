@@ -466,6 +466,11 @@ def automaticDispense(command, amount_requested):
                 stop_dispense()
                 break
 
+            if checkCommand() == "Standby":
+                auto_amount = total_liters + calibration_constant
+                stop_dispense()
+                break
+
         GPIO.output(output_devices['pump_1'],1)
         GPIO.output(output_devices['solenoid_1'],1)
         GPIO.output(output_devices['pump_2'],1)
