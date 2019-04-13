@@ -447,6 +447,8 @@ def automaticDispense(command, amount_requested):
                 total_liters = 0
 
             if previous > total_liters:
+                print("No container detected! Previous: " + str(previous) + " " + "Liters: " + str(total_liters))
+                sys.stdout.flush()
                 stop_dispense()
                 total_liters = previous
                 no_container = True
@@ -509,12 +511,15 @@ def automaticDispense(command, amount_requested):
             },
         )
     except Exception as exception:
+        print("Error!")
+        sys.stdout.flush()
         print(exception)
+        sys.stdout.flush()
         GPIO.output(output_devices['pump_1'],1)
         GPIO.output(output_devices['solenoid_1'],1)
         GPIO.output(output_devices['pump_2'],1)
         GPIO.output(output_devices['solenoid_2'],1)
-        sys.stdout.flush()
+        
 
 def readTemp():
     global sio

@@ -100,8 +100,68 @@ function main() {
     if (user_information.Access_Level == 'ADMIN') {
         mode_toggle.disabled = false;
         mode_toggle.onclick = function() {
-            window.location.assign('admin.html');
+            Swal.fire({
+                title: 'Are you done?',
+                type: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Log me out'
+            }).then((result) => {
+                if (result.value) {
+                    //Send Transaction Here
+                    var params = {};
+                    params.API_KEY = machine_settings.api_key;
+                    params.Account_Type = account_type;
+    
+                    if (account_type == 'Recorded') {
+                        params.Acc_ID = store.get('User_Information').Acc_ID;
+                    } else {
+                        params.UU_ID = store.get('User_Information').UU_ID;
+                    }
+                    params.Transaction = temp_array_transaction;
+    
+                    if (temp_array_transaction.length != 0) {
+                        Swal.fire({
+                            title: 'Please wait..',
+                            allowOutsideClick: false,
+                            onBeforeOpen: () => {
+                                Swal.showLoading();
+                            },
+                            onOpen: () => {
+                                httpcustomrequest.http_post('Save_Transaction.php', params, function (response) {
+                                    if (response.Success) {
+                                        store.delete('User_Information');
+                                        store.delete('Purchase_History');
+                                        store.delete('Transaction_History');
+                                        console.log('Terminated, hopefully');
+                                        Swal.close();
+                                        window.location.assign('login.html');
+                                    } else {
+                                        //handle error here   
+                                    }
+                                }, function (error) {
+                                    //handle error here 
+                                });
+                            },
+                            onClose: () => {
+                            }
+                        }).then((result) => {
+                        });
+                    } else {
+                        commandPy(socket, { command: 'End_Transaction' });
+                        //commandPy(socket, { command: 'Terminate' });
+                        store.delete('User_Information');
+                        store.delete('Purchase_History');
+                        store.delete('Transaction_History');
+                        console.log('Terminated, hopefully');
+                        Swal.close();
+                        window.location.assign('admin.html');
+                    }
+                }
+            });
         }
+        
     }else{
         mode_toggle.disabled = true;
     }
@@ -216,7 +276,7 @@ function main() {
                     window.location.assign('login.html');
                 }
             }
-        })
+        });
     }
 
     //This block of code listens for socket-event then computes for the remaining balance
