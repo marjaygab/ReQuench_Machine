@@ -321,27 +321,21 @@ def manualDispense(command):
     sys.stdout.flush()
 
     tareNow()
+
     total_liters = getCurrentWeight()
     if total_liters < 0:
        total_liters = 0
     
-    sio.emit(
-        "socket-event",
-        {
-            "destination": "JS",
-            "content": {
-                "type": "DISPENSE_READING",
-                "body": {"Total": total_liters},
-            },
-        },
-    )
-    
+
     if command == "COLD":
         GPIO.output(output_devices['pump_1'],0)
         GPIO.output(output_devices['solenoid_1'],0)
+        calibration_constant = 30
     else:
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
+        calibration_constant = 20
+    
 
     time.sleep(0.1)
     total_liters = getCurrentWeight()
@@ -369,7 +363,7 @@ def manualDispense(command):
                 "destination": "JS",
                 "content": {
                     "type": "DISPENSE_READING",
-                    "body": {"Total": total_liters},
+                    "body": {"Total": total_liters + calibration_constant},
                 },
             },
         )   

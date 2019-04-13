@@ -302,9 +302,19 @@ function main() {
                             //Subtract total reading from water level
                             temp_water_level = machine_settings.current_water_level - total;
 
+
+
                             //Get current size for GUI presentation
                             current_size = previous_size - total;
-                            current_size = Math.round(current_size);
+
+                            if (current_size < 0) {
+                                current_size = 0;            
+                                commandPy(socket, { command: 'Stop_Dispense' });
+                                $(".main-controls").prop('disabled',true);
+                            }else{
+                                current_size = Math.round(current_size);
+                            }
+
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
                             $("#water-level").animate({ height: computed_height + 'px' });
