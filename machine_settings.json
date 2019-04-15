@@ -1,13 +1,13 @@
 {
-      "current_water_level": 3146,
-      "location": "Mabini Building",
+      "mu_id": "212",
+      "current_water_level": "9970",
+      "location": "Chez Rafael",
       "notify_admin": "1",
-      "last_maintenance_date": "2019-04-12",
-      "Model_Number": "ABC123",
-      "api_key": "566ee18ea4eebbc485074e045381ae98",
+      "last_maintenance_date": "2019-04-15",
+      "Model_Number": "ABC345",
+      "api_key": "4508aca42c744dc31ea5d2454a96503d",
       "critical_level": "14",
-      "date_of_purchase": "2018-08-13",
-      "price_per_ml": "0.020",
-      "status": "OFFLINE",
-      "mu_id": "1"
+      "date_of_purchase": "2019-04-15",
+      "status": "REBOOTING",
+      "price_per_ml": "0.020"
 }
