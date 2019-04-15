@@ -363,9 +363,9 @@ def manualDispense(command):
             total_liters = previous
             print("No container Detected")
             sys.stdout.flush()
-            print("Previous Amount: " + str(total_liters))
-            sys.stdout.flush()
+            no_container = True
             break
+        previous = total_liters
         sio.emit(
             "socket-event",
             {
@@ -388,16 +388,28 @@ def manualDispense(command):
     GPIO.output(output_devices['solenoid_1'],1)
     GPIO.output(output_devices['pump_2'],1)
     GPIO.output(output_devices['solenoid_2'],1)
-    sio.emit(
-            "socket-event",
-            {
-                "destination": "JS",
-                "content": {
-                    "type": "DISPENSE_READING",
-                    "body": {"Total": total_liters + calibration_constant},
-                },
-            },
-        )
+    if no_container == False:            
+            sio.emit(
+                        "socket-event",
+                        {
+                            "destination": "JS",
+                            "content": {
+                                "type": "DISPENSE_READING",
+                                "body": {"Total": total_liters + calibration_constant},
+                            },
+                        },
+                    )
+    else:
+        sio.emit(
+                    "socket-event",
+                    {
+                        "destination": "JS",
+                        "content": {
+                            "type": "DISPENSE_READING",
+                            "body": {"Total": total_liters + (2*calibration_constant)},
+                        },
+                    },
+                )
     total_liters = 0
     sio.emit(
         "socket-event",
