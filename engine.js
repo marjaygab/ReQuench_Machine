@@ -608,7 +608,6 @@ function main() {
                         ml_label.innerHTML = `${user_information.Balance} mL`;
                         js_ready = true;
                         commandPy(socket, { command: 'Set_Remaining_Balance', amount: current_size });
-                        Swal.close();
 
                         var container_promise = new Promise(function (resolve, reject) {
                             commandPy(socket, { command: 'New_Transaction' });
