@@ -607,36 +607,39 @@ function main() {
                         console.log('Full: ' + full_size);
                         ml_label.innerHTML = `${user_information.Balance} mL`;
                         js_ready = true;
-
+                        commandPy(socket, { command: 'Set_Remaining_Balance', amount: current_size });
                         Swal.close();
 
                         var container_promise = new Promise(function (resolve, reject) {
                             commandPy(socket, { command: 'New_Transaction' });
                             commandPy(socket, { command: 'Get_Baseline' });
                             
-                            Swal.fire({
-                                title: 'Waiting for container..',
-                                allowOutsideClick: false,
-                                onClose: function () {
-                                }, onBeforeOpen: function () {
-                                    Swal.showLoading();
-                                    var timeout = 5;
-                                    var counter = 0;
-                                    var timer = setInterval(() => {
-                                        commandPy(socket, { command: 'Get_Container' });
-                                        if (counter == timeout) {
-                                            clearInterval(timer);
-                                            resolve(false)
-                                        } else {
-                                            if (container_present) {
+                            setTimeout(function() {
+                                commandPy(socket, { command: 'Get_Container' });
+                                Swal.fire({
+                                    title: 'Waiting for container..',
+                                    allowOutsideClick: false,
+                                    onClose: function () {
+                                    }, onBeforeOpen: function () {
+                                        Swal.showLoading();
+                                        var timeout = 5;
+                                        var counter = 0;
+                                        var timer = setInterval(() => {
+                                            commandPy(socket, { command: 'Get_Container' });
+                                            if (counter == timeout) {
                                                 clearInterval(timer);
-                                                resolve(true);
+                                                resolve(false)
+                                            } else {
+                                                if (container_present) {
+                                                    clearInterval(timer);
+                                                    resolve(true);
+                                                }
+                                                counter++;
                                             }
-                                            counter++;
-                                        }
-                                    }, 2000);
-                                }
-                            });
+                                        }, 2000);
+                                    }
+                                });
+                            },2000)
 
                         });
 
