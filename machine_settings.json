@@ -1,13 +1,13 @@
 {
-      "mu_id": "212",
-      "current_water_level": "9970",
+      "current_water_level": 9328.663212435233,
       "location": "Chez Rafael",
-      "notify_admin": "1",
       "last_maintenance_date": "2019-04-15",
+      "notify_admin": "1",
       "Model_Number": "ABC345",
       "api_key": "4508aca42c744dc31ea5d2454a96503d",
-      "critical_level": "14",
       "date_of_purchase": "2019-04-15",
-      "status": "REBOOTING",
-      "price_per_ml": "0.020"
+      "critical_level": "14",
+      "status": "rebooting",
+      "price_per_ml": "0.020",
+      "mu_id": "212"
 }

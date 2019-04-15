@@ -620,7 +620,6 @@ function main() {
                                 onClose: function () {
                                 }, onBeforeOpen: function () {
                                     Swal.showLoading();
-                                    commandPy(socket, { command: 'Get_Container' });
                                     var timeout = 5;
                                     var counter = 0;
                                     var timer = setInterval(() => {
