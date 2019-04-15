@@ -49,6 +49,7 @@ total_liters = 0
 base_weight = 0
 terminate_flag = False
 calibration_constant = 30
+remaining_balance = 0
 
 
 GPIO.output(output_devices['pump_1'],1)
@@ -79,6 +80,7 @@ def on_message(data):
     global current_baseline
     global container_weight
     global enable_temp
+    global remaining_balance
     destination = data["destination"]
     if destination == "Python":
         command = data["content"]["command"]
@@ -111,7 +113,10 @@ def on_message(data):
             enable_temp = False
         elif command == "Set_Amount":
             auto_amount = int(data["content"]["amount"])
-            time.sleep(1);
+            time.sleep(1)
+        elif command == "Set_Remaining_Balance":
+            remaining_balance = int(data["content"]["amount"])
+            time.sleep(1)
         elif command == "Stop_Dispense":
             temp_cold = False
             temp_hot = False
@@ -315,9 +320,13 @@ def manualDispense(command):
     global total_liters
     global base_weight
     global calibration_constant
+    global remaining_balance
     no_container = False
 
     print("Manual Dispensing Start")
+    sys.stdout.flush()
+
+    print("Remaining Balance Received: " + str(remaining_balance))
     sys.stdout.flush()
 
     tareNow()
@@ -367,6 +376,10 @@ def manualDispense(command):
                 },
             },
         )   
+
+        if remaining_balance < (total_liters + calibration_constant):
+            stop_dispense()
+            break
 
         if checkCommand() == "Standby":
             stop_dispense()

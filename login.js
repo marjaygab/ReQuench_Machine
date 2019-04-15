@@ -32,7 +32,7 @@ function main() {
     var legends = document.getElementsByClassName('fas');
     var cold_label = document.getElementById('cold_label');
     var hot_label = document.getElementById('hot_label');
-
+    var Response_Success = store.get('Response_Success');
     var scanned = false;
     var scaninterval;
     var count = 0;
@@ -103,51 +103,56 @@ function main() {
 
     try {
         if (fs.existsSync('./machine_settings.json')) {
-            let machine_settings = require('./machine_settings');
-            store.set('Machine_Settings', machine_settings);
-            if ((machine_settings.current_water_level / 22500 * 100) <= machine_settings.critical_level) {
 
-                Swal.fire({
-                    type: 'error',
-                    title: 'Oops...',
-                    text: 'Water is at critical level. Please call maintenance for Refill.',
-                    confirmButtonText: "I am an Admin",
-                    allowOutsideClick: false,
-                }).then((result) => {
-                    if (result.value) {
-                        Swal.close();
-                    }
-                });
-                if (machine_settings.notify_admin) {
-                    sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) {
-                        console.log(response);
-                    }, function (error) {
-                        console.error(error);
+            if(Response_Success){
+                let machine_settings = require('./machine_settings');
+                store.set('Machine_Settings', machine_settings);
+                if ((machine_settings.current_water_level / 22500 * 100) <= machine_settings.critical_level) {
+
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'Water is at critical level. Please call maintenance for Refill.',
+                        confirmButtonText: "I am an Admin",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.value) {
+                            Swal.close();
+                        }
                     });
-                }
-            }
-
-            //Add Last Maintenance Data notification here
-            var last_maintenance_moment = moment(machine_settings.last_maintenance_date);
-            var today_moment = moment().format("YYYY-MM-DD");
-
-            var after_6_months_moment = last_maintenance_moment.add(6, "months").format("YYYY-MM-DD");
-
-            if (after_6_months_moment <= today_moment) {
-                Swal.fire({
-                    type: 'error',
-                    title: 'Oops...',
-                    text: 'This machine needs maintainance. Please call maintenance personnel for assistance.',
-                    confirmButtonText: "I am an Admin",
-                    allowOutsideClick: false,
-                }).then((result) => {
-                    if (result.value) {
-                        Swal.close();
+                    if (machine_settings.notify_admin) {
+                        sendNotification('Refill Notification', 'Machine ' + machine_settings.Model_Number + ' needs refill!', function (response) {
+                            console.log(response);
+                        }, function (error) {
+                            console.error(error);
+                        });
                     }
-                });
-                if (machine_settings.notify_admin) {
-                    sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response) { }, function (error) { });
                 }
+
+                //Add Last Maintenance Data notification here
+                var last_maintenance_moment = moment(machine_settings.last_maintenance_date);
+                var today_moment = moment().format("YYYY-MM-DD");
+
+                var after_6_months_moment = last_maintenance_moment.add(6, "months").format("YYYY-MM-DD");
+
+                if (after_6_months_moment <= today_moment) {
+                    Swal.fire({
+                        type: 'error',
+                        title: 'Oops...',
+                        text: 'This machine needs maintainance. Please call maintenance personnel for assistance.',
+                        confirmButtonText: "I am an Admin",
+                        allowOutsideClick: false,
+                    }).then((result) => {
+                        if (result.value) {
+                            Swal.close();
+                        }
+                    });
+                    if (machine_settings.notify_admin) {
+                        sendNotification('Maintenance Notification', 'Machine ' + machine_settings.Model_Number + ' needs cleaning!', function (response) { }, function (error) { });
+                    }
+                }
+            }else{
+                //do something here if machine is not in the db
             }
         } else {
             var secret_entered = false;

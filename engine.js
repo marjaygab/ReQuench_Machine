@@ -136,7 +136,7 @@ function main() {
                                         store.delete('Transaction_History');
                                         console.log('Terminated, hopefully');
                                         Swal.close();
-                                        window.location.assign('login.html');
+                                        window.location.assign('admin.html');
                                     } else {
                                         //handle error here   
                                     }
@@ -399,7 +399,7 @@ function main() {
                             }
                         } else {
                             //let python know that there is nothing left
-                            commandPy(socket, { command: 'Stop_Dispense' });
+                            // commandPy(socket, { command: 'Stop_Dispense' });
                             current_size = 0;
                             $("#water-level").animate({ height: 0 + 'px' });
                             //Show current mL label
@@ -418,6 +418,10 @@ function main() {
                         var price_computed = amount_dispensed * machine_settings.price_per_ml;
                         price_computed = round(price_computed, 2);
                         remaining_balance = current_size;
+
+                        commandPy(socket, { command: 'Set_Remaining_Balance', amount: remaining_balance });
+
+
                         water_level_before = machine_settings.current_water_level;
                         water_level_after = temp_water_level;
                         machine_settings.current_water_level = temp_water_level;
@@ -609,12 +613,14 @@ function main() {
                         var container_promise = new Promise(function (resolve, reject) {
                             commandPy(socket, { command: 'New_Transaction' });
                             commandPy(socket, { command: 'Get_Baseline' });
+                            
                             Swal.fire({
                                 title: 'Waiting for container..',
                                 allowOutsideClick: false,
                                 onClose: function () {
                                 }, onBeforeOpen: function () {
                                     Swal.showLoading();
+                                    commandPy(socket, { command: 'Get_Container' });
                                     var timeout = 5;
                                     var counter = 0;
                                     var timer = setInterval(() => {
@@ -629,7 +635,7 @@ function main() {
                                             }
                                             counter++;
                                         }
-                                    }, 5000);
+                                    }, 2000);
                                 }
                             });
 
@@ -905,7 +911,8 @@ function enableAll() {
     $("#hot-button").prop('disabled', false);
     $("#cold-button").prop('disabled', false);
     $('#toggle_switch').prop('disabled', false);
-    
+    $('#hot-button').removeClass().addClass("btn btn-danger");
+    $('#cold-button').removeClass().addClass("btn btn-primary");
 }
 
 function disableAll() {

@@ -190,7 +190,7 @@ $(document).ready(function () {
         }).then((result) => {
             if (result.value) {
                 //get notification status
-                if (notification_toggler_state == 'On') {
+                if (notification_toggler_state) {
                     machine_settings.notify_admin = true
                 } else {
                     machine_settings.notify_admin = false;

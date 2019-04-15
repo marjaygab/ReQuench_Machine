@@ -115,6 +115,7 @@ try {
         params.MU_ID = settings.mu_id;
         console.log(params);
         http_post('Fetch_Machine.php', params, function (response) {
+            store.set('Response_Success',response.Success);
             if (response.Success) {
                 var machine_object = response.Machine;
                 machine_settings.location = machine_object.Machine_Location;
