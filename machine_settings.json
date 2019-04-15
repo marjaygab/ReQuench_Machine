@@ -1,5 +1,5 @@
 {
-      "current_water_level": 9328.663212435233,
+      "current_water_level": "9329",
       "location": "Chez Rafael",
       "last_maintenance_date": "2019-04-15",
       "notify_admin": "1",
@@ -7,7 +7,7 @@
       "api_key": "4508aca42c744dc31ea5d2454a96503d",
       "date_of_purchase": "2019-04-15",
       "critical_level": "14",
-      "status": "rebooting",
       "price_per_ml": "0.020",
+      "status": "rebooting",
       "mu_id": "212"
 }
