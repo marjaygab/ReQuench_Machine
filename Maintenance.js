@@ -33,7 +33,7 @@ $(document).ready(function() {
     var maintenance_data_file = maintenance_data;
     var settings = machine_settings;
 
-
+    right_button.style.display = 'visible';
     commandPy(socket, { command: 'Disable_Temp' });
 
     start_drain_cold.onclick = function() {
@@ -170,6 +170,8 @@ $(document).ready(function() {
                     if (current_step_selected == steps_size-1) {
                         right_button.innerHTML = 'Finish';
                     }   
+                }else if(right_button.innerHTML == 'Cancel'){
+                    window.location.assign('admin.html');
                 }else{
                     
                     maintenance_data_file.from_maintenance = false;
