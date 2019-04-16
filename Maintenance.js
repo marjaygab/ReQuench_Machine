@@ -126,6 +126,7 @@ $(document).ready(function() {
                 if (this.innerHTML == 'Start') {
                     this.innerHTML = 'Previous';
                     right_button.style.display = 'unset';
+                    right_button.innerHTML = 'Next Step';
                     progress_circles[current_step_selected].classList.add('selected');
                     console.log(steps_list[current_step_selected]);
                     showStep(steps_list[current_step_selected],function(initial_time) {

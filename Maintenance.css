@@ -9,7 +9,7 @@
 }
 
 .button-container #right_button{
-    display: none;
+    display: visible;
 }
 
 /* #step_timer{
