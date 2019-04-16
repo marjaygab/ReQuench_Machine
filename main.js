@@ -161,7 +161,7 @@ try {
 
                         console.log('Im Here');
 
-                        var rounded_percentage = getPercentage(current_water_level,22500);
+                        var rounded_percentage = Math.round(getPercentage(current_water_level,22500));
                         if (rounded_percentage <= machine_settings.critical_level) {
                             commandPy(io, { command: "Disable_Temp" });
                         } else {

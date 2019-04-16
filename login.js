@@ -107,7 +107,8 @@ function main() {
             if(Response_Success){
                 let machine_settings = require('./machine_settings');
                 store.set('Machine_Settings', machine_settings);
-                if ((machine_settings.current_water_level / 22500 * 100) <= machine_settings.critical_level) {
+                
+                if (Math.round(getPercentage(machine_settings.current_water_level,22500)) <= machine_settings.critical_level) {
 
                     Swal.fire({
                         type: 'error',
@@ -645,6 +646,10 @@ function sendNotification(title, body, fn_response, fn_error) {
     });
 }
 
+function getPercentage(value, overall) {
+    var percentage_value = (value / overall) * 100
+    return percentage_value;
+}
 
 function jsonWrite(file, callback) {
     // Use this path for windows.

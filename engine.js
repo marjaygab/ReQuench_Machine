@@ -332,7 +332,7 @@ function main() {
                             //Show current mL label
                             ml_label.innerHTML = `${current_size} mL`;
 
-                            if (getPercentage(temp_water_level, 22500) <= machine_settings.critical_level) {
+                            if (Math.round(getPercentage(temp_water_level, 22500)) <= machine_settings.critical_level) {
                                 commandPy(socket, { command: 'Stop_Dispense' });
                                 Swal.fire({
                                     type: 'error',
