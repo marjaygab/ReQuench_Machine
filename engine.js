@@ -93,13 +93,13 @@ function main() {
     }
 
     if (remaining_balance <= 0) {
-        $(".main-controls").prop('disabled',true);
+        $(".main-controls").prop('disabled', true);
     }
 
 
     if (user_information.Access_Level == 'ADMIN') {
         mode_toggle.disabled = false;
-        mode_toggle.onclick = function() {
+        mode_toggle.onclick = function () {
             Swal.fire({
                 title: 'Are you done?',
                 type: 'warning',
@@ -113,14 +113,14 @@ function main() {
                     var params = {};
                     params.API_KEY = machine_settings.api_key;
                     params.Account_Type = account_type;
-    
+
                     if (account_type == 'Recorded') {
                         params.Acc_ID = store.get('User_Information').Acc_ID;
                     } else {
                         params.UU_ID = store.get('User_Information').UU_ID;
                     }
                     params.Transaction = temp_array_transaction;
-    
+
                     if (temp_array_transaction.length != 0) {
                         Swal.fire({
                             title: 'Please wait..',
@@ -161,13 +161,13 @@ function main() {
                 }
             });
         }
-        
-    }else{
+
+    } else {
         mode_toggle.disabled = true;
     }
 
-    
-    
+
+
 
 
     //This function couns every second if a user is idle.
@@ -306,24 +306,24 @@ function main() {
 
                             //Get current size for GUI presentation
                             current_size = previous_size - total;
-    
-                            if(toggle_state == 'Manual'){
+
+                            if (toggle_state == 'Manual') {
                                 if (current_size < 0) {
-                                current_size = 0;            
-                                commandPy(socket, { command: 'Stop_Dispense' });
-                                disableAll();
-                                }else{
+                                    current_size = 0;
+                                    commandPy(socket, { command: 'Stop_Dispense' });
+                                    disableAll();
+                                } else {
                                     current_size = Math.round(current_size);
                                 }
-                            }else{
+                            } else {
                                 if (current_size < 0) {
-                                    current_size = 0;            
-                                }else{
+                                    current_size = 0;
+                                } else {
                                     current_size = Math.round(current_size);
                                 }
                             }
 
-                            
+
 
                             size_percentage = (current_size / full_size);
                             computed_height = size_percentage * 250;
@@ -341,7 +341,7 @@ function main() {
                                     confirmButtonText: "Ok",
                                     allowOutsideClick: false,
                                     onBeforeOpen: () => {
-                                        
+
                                     },
                                 }).then((result) => {
                                     if (result.value) {
@@ -404,7 +404,7 @@ function main() {
                             $("#water-level").animate({ height: 0 + 'px' });
                             //Show current mL label
                             ml_label.innerHTML = `0 mL`;
-                            $(".main-controls").prop('disabled',true);
+                            $(".main-controls").prop('disabled', true);
                             //show alert here
                         }
                     } catch (error) {
@@ -441,31 +441,31 @@ function main() {
                         }
                         temp_array_transaction.push(params);
 
-                        jsonWrite(machine_settings,response => {
+                        jsonWrite(machine_settings, response => {
                             if (response) {
                                 jsonRead(data => {
                                     if (data != false) {
                                         machine_settings = data;
                                     }
-                                });        
+                                });
                             }
                         });
 
-                        
+
 
                         // jsonRead(function (data) {
                         //     if (data != false) {
                         //         jsonWrite(data);
                         //     }
                         // });
-                        
-                        if(current_size == 0){
-                        
+
+                        if (current_size == 0) {
+
                             disableAll();
-                        
+
                         }
-                        
-                        
+
+
                         previous_size = current_size;
                         current_operation.set('STANDBY');
                     }
@@ -520,16 +520,16 @@ function main() {
             } else {
                 var params = {};
                 params.Account_Type = account_type;
-                
-                if(params.Account_Type == 'Recorded'){
+
+                if (params.Account_Type == 'Recorded') {
                     params.Acc_ID = store.get('User_Information').Acc_ID;
-                }else{
-                    params.UU_ID = store.get('User_Information').UU_ID;    
+                } else {
+                    params.UU_ID = store.get('User_Information').UU_ID;
                 }
-                
+
                 console.log(params);
-                
-                
+
+
                 httpcustomrequest.http_post('Machine_Init.php', params, function (json_object) {
                     if (json_object != false) {
                         store.set('Purchase_History', json_object.Purchase_History);
@@ -538,7 +538,7 @@ function main() {
                         var transaction_history = store.get('Transaction_History');
                         console.log(purchase_history);
                         console.log(transaction_history);
-                        
+
                         //function used to sort DATE TIME
                         var compare_function = function (a, b) {
                             if (Date.parse(a.Date) > Date.parse(b.Date)) {
@@ -601,7 +601,7 @@ function main() {
                         size_percentage = (current_size / full_size);
                         computed_height = size_percentage * 250;
                         $("#water-level").animate({ height: computed_height + 'px' });
-                        
+
                         console.log('Current: ' + current_size);
                         console.log('Previous: ' + previous_size);
                         console.log('Full: ' + full_size);
@@ -612,8 +612,8 @@ function main() {
                         var container_promise = new Promise(function (resolve, reject) {
                             commandPy(socket, { command: 'New_Transaction' });
                             commandPy(socket, { command: 'Get_Baseline' });
-                            
-                            setTimeout(function() {
+
+                            setTimeout(function () {
                                 commandPy(socket, { command: 'Get_Container' });
                                 Swal.fire({
                                     title: 'Waiting for container..',
@@ -638,7 +638,7 @@ function main() {
                                         }, 2000);
                                     }
                                 });
-                            },2000)
+                            }, 2000)
 
                         });
 
@@ -769,20 +769,21 @@ function main() {
 
         } else {
             //do things for automatic dispensing
-            var amount = 0.00;
+            var amount = 100.00;
             Swal.fire({
                 title: 'Amount',
                 allowOutsideClick: false,
                 html:
                     'Enter the amount of water to be dispensed:<br/><br/><button id="decrease" class="btn btn-info"><strong>-</strong></button>' +
                     '<input type="text" id=amount>' +
-                    '<button id="increase" class="btn btn-danger"><strong>+</strong></button><br>' + 
-                    '<button id="preset_100" class="presets btn btn-info btn-sm"><strong>100 mL</strong></button>' + 
+                    '<button id="increase" class="btn btn-danger"><strong>+</strong></button><br>' +
+                    '<button id="preset_100" class="presets btn btn-info btn-sm"><strong>100 mL</strong></button>' +
                     '<button id="preset_200" class="presets btn btn-info btn-sm"><strong>200 mL</strong></button>' +
                     '<button id="preset_300" class="presets btn btn-info btn-sm"><strong>300 mL</strong></button>' +
                     '<button id="preset_400" class="presets btn btn-info btn-sm"><strong>400 mL</strong></button>' +
                     '<button id="preset_500" class="presets btn btn-info btn-sm"><strong>500 mL</strong></button>',
                 confirmButtonText: 'Dispense',
+                showCancelButton: true,
                 onBeforeOpen: () => {
                     const content = Swal.getContent();
                     const $ = content.querySelector.bind(content);
@@ -802,7 +803,7 @@ function main() {
                         const content = Swal.getContent();
                         const $ = content.querySelector.bind(content);
                         const input = $('#amount');
-                        if (amount > 0) {
+                        if (amount > 100) {
                             amount = amount - 100;
                             content.querySelector("#amount").value = amount;
                         }
@@ -815,23 +816,23 @@ function main() {
                         content.querySelector("#amount").value = amount;
                     }
 
-                    preset_100.onclick = function() {
+                    preset_100.onclick = function () {
                         amount = 100;
                         content.querySelector("#amount").value = amount;
                     }
-                    preset_200.onclick = function() {
+                    preset_200.onclick = function () {
                         amount = 200;
                         content.querySelector("#amount").value = amount;
                     }
-                    preset_300.onclick = function() {
+                    preset_300.onclick = function () {
                         amount = 300;
                         content.querySelector("#amount").value = amount;
                     }
-                    preset_400.onclick = function() {
+                    preset_400.onclick = function () {
                         amount = 400;
                         content.querySelector("#amount").value = amount;
                     }
-                    preset_500.onclick = function() {
+                    preset_500.onclick = function () {
                         amount = 500;
                         content.querySelector("#amount").value = amount;
                     }
@@ -842,36 +843,38 @@ function main() {
                 }
             }).then((result) => {
 
-                //Check Remaining Balance Here. Block transaction if input mL is greater than remaining balance.
-                if (amount <= remaining_balance) {
-                    commandPy(socket, { command: 'Set_Amount', amount: amount });
-                    current_operation.set(current);
-                    if (current == 'HOT') {
-                        commandPy(socket, { command: 'Toggle_Hot' });
-                        $(this).text("Stop");
-                        $("#hot-button").prop('disabled', true);
-                        $("#cold-button").prop('disabled', true);
-                        $('#toggle_switch').prop('disabled', true);
-                    } else {
-                        commandPy(socket, { command: 'Toggle_Cold' });
-                        $(this).text("Stop");
-                        $("#hot-button").prop('disabled', true);
-                        $("#cold-button").prop('disabled', true);
-                        $('#toggle_switch').prop('disabled', true);
-                    }
-                    amount = 0;
-                } else {
-                    amount = 0;
-                    Swal.fire({
-                        title: "You don't have enough balance.",
-                        type: 'error',
-                        confirmButtonColor: '#3085d6',
-                        confirmButtonText: 'Ok.Sorry',
-                        onClose: function () {
+                if (result.dismiss != 'cancel') {
+                    //Check Remaining Balance Here. Block transaction if input mL is greater than remaining balance.
+                    if (amount <= remaining_balance) {
+                        commandPy(socket, { command: 'Set_Amount', amount: amount });
+                        current_operation.set(current);
+                        if (current == 'HOT') {
+                            commandPy(socket, { command: 'Toggle_Hot' });
+                            $(this).text("Stop");
+                            $("#hot-button").prop('disabled', true);
+                            $("#cold-button").prop('disabled', true);
+                            $('#toggle_switch').prop('disabled', true);
+                        } else {
+                            commandPy(socket, { command: 'Toggle_Cold' });
+                            $(this).text("Stop");
+                            $("#hot-button").prop('disabled', true);
+                            $("#cold-button").prop('disabled', true);
+                            $('#toggle_switch').prop('disabled', true);
                         }
-                    });
+                        amount = 0;
+                    } else {
+                        amount = 0;
+                        Swal.fire({
+                            title: "You don't have enough balance.",
+                            type: 'error',
+                            confirmButtonColor: '#3085d6',
+                            confirmButtonText: 'Ok.Sorry',
+                            onClose: function () {
+                            }
+                        });
+                    }
                 }
-                
+
             });
 
 
@@ -929,16 +932,16 @@ function round(value, decimals) {
     return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
 }
 
-function jsonWrite(file,callback) {
+function jsonWrite(file, callback) {
     // Use this path for windows.
     // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
 
     //Use this path for RasPi
     var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
     fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
-        if (err){
+        if (err) {
             callback(false);
-        }else{
+        } else {
             callback(true);
         }
     });
