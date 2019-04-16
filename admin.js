@@ -54,7 +54,7 @@ $(document).ready(function() {
     refill_button.onclick = function() {
         Swal.fire({
             type: "info",
-            text: "You may start refilling now",
+            title: "You may start refilling now",
             allowOutsideClicks: false,
             showConfirmButton: false,
             onOpen:()=>{
@@ -66,14 +66,29 @@ $(document).ready(function() {
                             showConfirmButton: true,
                             showCancelButton: false
                         }).then(()=>{
-                            settings.current_water_level = 22500;
-                            jsonWrite(settings,()=>{
-                                jsonRead(function(data) {
+
+                            if (file.skipped_refill) {
+                                settings.current_water_level = 20000;
+                                file.skipped_refill = false;
+                            }else{
+                                settings.current_water_level = 22500;
+                            }
+
+                            jsonWriteMaintenance(file,()=>{
+                                jsonReadMaintenance(function(data) {
                                     if (data != false) {
-                                        settings = data;
+                                        file = data;
+                                        jsonWrite(settings,()=>{
+                                            jsonRead(function(data) {
+                                                if (data != false) {
+                                                    settings = data;
+                                                } 
+                                             });
+                                        });
                                     } 
                                  });
                             });
+
                             Swal.close();
                         });
                     },5000);
@@ -111,6 +126,35 @@ $(document).ready(function() {
             callback();
         });
     }
+
+    function jsonWriteMaintenance(file,callback) {
+        // Use this path for windows.
+        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+        //Use this path for RasPi
+        var file_path = '/home/pi/Documents/ReQuench_Machine/maintenance_data.json';
+        fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
+            if (err) return console.log(err);
+            callback();
+        });
+    }
+
+    
+    function jsonReadMaintenance(callback) {
+        // Use this path for windows.
+        // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    
+        var file_path = '/home/pi/Documents/ReQuench_Machine/maintenance_data.json';
+        fs.readFile(file_path, (err, data) => {
+            try {
+                if (err) throw err;
+                var parsed = JSON.parse(data);
+                callback(parsed);
+            } catch (e) {
+                callback(false);
+            }
+        });
+    }
+
 
     function jsonRead(callback) {
         // Use this path for windows.

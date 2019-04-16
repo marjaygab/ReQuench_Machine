@@ -156,10 +156,11 @@ $(document).ready(function() {
                             seconds = 0;
                         });
                     }
-                    if(current_step_selected == 4){
+                    if(current_step_selected == 5){
                         //command pi to shutdown
+                        maintenance_data_file.skipped_refill = false;
                         maintenance_data_file.from_maintenance = true;
-                        maintenance_data_file.current_step = 5;
+                        maintenance_data_file.current_step = 6;
                         settings.status = 'offline';
                         fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
                             if (err) return console.log(err);
@@ -174,7 +175,7 @@ $(document).ready(function() {
                 }else if(right_button.innerHTML == 'Cancel'){
                     window.location.assign('admin.html');
                 }else{
-                    
+                    maintenance_data_file.skipped_refill = false;
                     maintenance_data_file.from_maintenance = false;
                     maintenance_data_file.current_step = 0;
                     settings.last_maintenance_date = moment().format('YYYY-MM-DD');
@@ -190,7 +191,7 @@ $(document).ready(function() {
                 }
             }
 
-            if (current_step_selected == 5 && maintenance_data_file.from_maintenance) {
+            if (current_step_selected == 6 && maintenance_data_file.from_maintenance) {
                 left_button.disabled = true;
                 left_button.classList.remove("btn-success");
                 left_button.classList.add("btn-secondary");
@@ -202,7 +203,7 @@ $(document).ready(function() {
             }
             console.log(current_step_selected);
             
-            if (current_step_selected == 1 || current_step_selected == 5 || current_step_selected == 7) {
+            if (current_step_selected == 1 || current_step_selected == 4 || current_step_selected == 7) {
                 document.getElementById('drain_controls').style.visibility = 'visible';
 
                 //run python here
@@ -242,6 +243,12 @@ $(document).ready(function() {
                       console.log(result);
                     if (result.dismiss == 'cancel') {
                         settings.current_water_level = 0;
+                        maintenance_data_file.skipped_refill = true;
+                        maintenance_data_file.from_maintenance = false;
+                        maintenance_data_file.current_step = current_step_selected;
+                        fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
+                            if (err) return console.log(err);
+                        });
                     }else{
                         settings.current_water_level = 20000;                        
                     }

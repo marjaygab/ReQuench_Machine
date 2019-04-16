@@ -4,7 +4,7 @@
 }
 
 .container{
-    margin-top: 150px;
+    margin-top: 50px;
     vertical-align: middle;
     text-align: center;
 }
@@ -16,4 +16,8 @@
 .control{
     width: 150px;
     height: 150px;
+}
+
+.button-icon{
+    text-align: -webkit-center;
 }

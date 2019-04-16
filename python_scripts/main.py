@@ -193,23 +193,23 @@ def on_message(data):
         elif command == "Start_Drain_Hot":
             print("Started Draining")
             sys.stdout.flush()
-            GPIO.output(output_devices['pump_1'],0)
-            GPIO.output(output_devices['solenoid_1'],0)
-        elif command == "Stop_Drain_Hot":
-            print("Stopped Draining")
-            sys.stdout.flush()
-            GPIO.output(output_devices['pump_1'],1)
-            GPIO.output(output_devices['solenoid_1'],1)
-        elif command == "Start_Drain_Cold":
-            print("Started Draining")
-            sys.stdout.flush()
             GPIO.output(output_devices['pump_2'],0)
             GPIO.output(output_devices['solenoid_2'],0)
-        elif command == "Stop_Drain_Cold":
+        elif command == "Stop_Drain_Hot":
             print("Stopped Draining")
             sys.stdout.flush()
             GPIO.output(output_devices['pump_2'],1)
             GPIO.output(output_devices['solenoid_2'],1)
+        elif command == "Start_Drain_Cold":
+            print("Started Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_1'],0)
+            GPIO.output(output_devices['solenoid_1'],0)
+        elif command == "Stop_Drain_Cold":
+            print("Stopped Draining")
+            sys.stdout.flush()
+            GPIO.output(output_devices['pump_1'],1)
+            GPIO.output(output_devices['solenoid_1'],1)
         elif command == "Shutdown":
             os.system('sudo shutdown now')
         elif command == "Reboot":

@@ -131,9 +131,7 @@ function main() {
                             onOpen: () => {
                                 httpcustomrequest.http_post('Save_Transaction.php', params, function (response) {
                                     if (response.Success) {
-                                        store.delete('User_Information');
-                                        store.delete('Purchase_History');
-                                        store.delete('Transaction_History');
+                                        commandPy(socket, { command: 'End_Transaction' });
                                         console.log('Terminated, hopefully');
                                         Swal.close();
                                         window.location.assign('admin.html');
@@ -151,9 +149,6 @@ function main() {
                     } else {
                         commandPy(socket, { command: 'End_Transaction' });
                         //commandPy(socket, { command: 'Terminate' });
-                        store.delete('User_Information');
-                        store.delete('Purchase_History');
-                        store.delete('Transaction_History');
                         console.log('Terminated, hopefully');
                         Swal.close();
                         window.location.assign('admin.html');

@@ -25,14 +25,14 @@
             "initial_time":1
         },
         {
-            "step_header":"Step 5: Manual Cleaning",
-            "step_content":"The machine will be turned off for you to clean the reservoir manually. Pressing next will turn off the machine. Turn on the machine afterwards.",
+            "step_header":"Step 5 : Draining Again",
+            "step_content":"Please drain all the water remaining. ",
             "timer_control":false,
             "initial_time":0
         },
         {
-            "step_header":"Step 6 : Draining Again",
-            "step_content":"Please drain all the water remaining. ",
+            "step_header":"Step 6: Manual Cleaning",
+            "step_content":"The machine will be turned off for you to clean the reservoir manually. Pressing next will turn off the machine. Turn on the machine afterwards.",
             "timer_control":false,
             "initial_time":0
         },
