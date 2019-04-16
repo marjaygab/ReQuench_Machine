@@ -55,14 +55,14 @@ $(document).ready(function() {
         Swal.fire({
             type: "info",
             title: "You may start refilling now",
-            allowOutsideClicks: false,
+            allowOutsideClick: false,
             showConfirmButton: false,
             onOpen:()=>{
                     var refill_timeout = setTimeout(()=>{
                         Swal.fire({
                             type: "question",
                             title: "Are you done?",
-                            allowOutsideClicks: false,
+                            allowOutsideClick: false,
                             showConfirmButton: true,
                             showCancelButton: false
                         }).then(()=>{
@@ -78,15 +78,16 @@ $(document).ready(function() {
                                 jsonReadMaintenance(function(data) {
                                     if (data != false) {
                                         file = data;
-                                        jsonWrite(settings,()=>{
-                                            jsonRead(function(data) {
-                                                if (data != false) {
-                                                    settings = data;
-                                                } 
-                                             });
-                                        });
                                     } 
                                  });
+                            });
+                            
+                            jsonWrite(settings,()=>{
+                                jsonRead(function(data) {
+                                    if (data != false) {
+                                        settings = data;
+                                    } 
+                                });
                             });
 
                             Swal.close();

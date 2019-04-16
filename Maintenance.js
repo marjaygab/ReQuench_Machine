@@ -101,11 +101,12 @@ $(document).ready(function() {
         if (maintenance_data_file.from_maintenance) {
             current_step_selected = maintenance_data_file.current_step;
             left_button.disabled = true;
+            right_button.innerHTML = 'Next Step';
             left_button.classList.remove("btn-success");
             left_button.classList.add("btn-secondary");
             for (let index = 0; index <= current_step_selected; index++) {
                 left_button.innerHTML = 'Previous';
-                right_button.style.display = 'unset';
+                right_button.style.display = 'visible';
                 progress_circles[index].classList.add('selected');
                 showStep(steps_list[current_step_selected],function(initial_time) {
                     minute = initial_time;

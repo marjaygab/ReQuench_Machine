@@ -339,11 +339,11 @@ def manualDispense(command):
     if command == "COLD":
         GPIO.output(output_devices['pump_1'],0)
         GPIO.output(output_devices['solenoid_1'],0)
-        calibration_constant = 30
+        calibration_constant = 0
     else:
         GPIO.output(output_devices['pump_2'],0)
         GPIO.output(output_devices['solenoid_2'],0)
-        calibration_constant = 20
+        calibration_constant = 0
     
 
     time.sleep(0.1)
@@ -445,11 +445,11 @@ def automaticDispense(command, amount_requested):
         if command == "HOT":   
             GPIO.output(output_devices['pump_2'],0)
             GPIO.output(output_devices['solenoid_2'],0)
-            calibration_constant = 20
+            calibration_constant = 0
         else:
             GPIO.output(output_devices['pump_1'],0)
             GPIO.output(output_devices['solenoid_1'],0)
-            calibration_constant = 30
+            calibration_constant = 0
 
         print('Calibration Constant: ' + str(calibration_constant))        
         sys.stdout.flush()
