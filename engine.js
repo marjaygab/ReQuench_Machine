@@ -339,7 +339,6 @@ function main() {
 
                                     },
                                 }).then((result) => {
-                                    if (result.value) {
                                         //send last transaction here
                                         var params = {};
                                         params.API_KEY = machine_settings.api_key;
@@ -387,9 +386,7 @@ function main() {
                                             Swal.close();
                                             window.location.assign('login.html');
                                         }
-                                        Swal.close();
-                                        window.location.assign('login.html');
-                                    }
+                                    
                                 });
                             }
                         } else {
