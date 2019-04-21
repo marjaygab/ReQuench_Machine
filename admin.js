@@ -1,6 +1,6 @@
 let $ = require("jquery");
 let fs = require('fs');
-let settings = require('./machine_settings');
+const settings = require('./machine_settings');
 const file = require('./maintenance_data');
 let Swal = require('sweetalert2');
 $(document).ready(function() {
@@ -21,6 +21,9 @@ $(document).ready(function() {
     if (file.from_maintenance) {
         window.location.assign('Maintenance.html');
     }
+    //else{
+    //    let settings = require('./machine_settings');
+    //}
 
     power_button.onclick = function() {
         settings.status = "offline";

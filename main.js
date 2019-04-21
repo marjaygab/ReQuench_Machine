@@ -220,7 +220,9 @@ function createWindow() {
     if (!file.from_maintenance) {
         mainWindow.loadFile('index.html');
     } else {
-        mainWindow.loadFile('admin.html');
+        setTimeout(function(){
+                mainWindow.loadFile('admin.html');
+            },1000);
     }
 
     store.set('path', app.getPath('userData'));
