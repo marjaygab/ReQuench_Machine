@@ -677,6 +677,17 @@ function main() {
                     }
                 }, function (error) {
                     console.log(`Error: ${error}`);
+                    Swal.fire({
+                        title: 'A network error occured. Please try again later.',
+                        type: 'error',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Ok',
+                        onClose: function () {
+                            window.location.assign('login.html');
+                        }
+                    }).then((result) => {
+                        window.location.assign('login.html');
+                    })
                 }, function () {
                     Swal.fire({
                         title: 'Network Timeout. Please try again later.',

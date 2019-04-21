@@ -159,14 +159,19 @@ $(document).ready(function() {
                     }
                     if(current_step_selected == 5){
                         //command pi to shutdown
-                        maintenance_data_file.skipped_refill = false;
                         maintenance_data_file.from_maintenance = true;
                         maintenance_data_file.current_step = 6;
                         settings.status = 'offline';
                         fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
                             if (err) return console.log(err);
+                            jsonReadMaintenance(function(data) {
+                               maintenance_data_file = data; 
+                            });
                             fs.writeFile('./machine_settings.json', JSON.stringify(settings,null,6), function (err) {
                                 if (err) return console.log(err);
+                                jsonRead(function(data) {
+                                    settings = data;
+                                });
                             });
                         });
                     }
@@ -176,15 +181,20 @@ $(document).ready(function() {
                 }else if(right_button.innerHTML == 'Cancel'){
                     window.location.assign('admin.html');
                 }else{
-                    maintenance_data_file.skipped_refill = false;
                     maintenance_data_file.from_maintenance = false;
                     maintenance_data_file.current_step = 0;
                     settings.last_maintenance_date = moment().format('YYYY-MM-DD');
                     fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
                         if (err) return console.log(err);
+                        jsonReadMaintenance(function(data) {
+                            maintenance_data_file = data; 
+                         });
                         fs.writeFile('./machine_settings.json', JSON.stringify(settings,null,6), function (err) {
                             if (err) return console.log(err);
-                            window.location.assign('login.html');        
+                            jsonRead(function(data) {
+                                settings = data;
+                                window.location.assign('login.html');        
+                            });
                         }); 
                     });
                     
@@ -245,10 +255,12 @@ $(document).ready(function() {
                     if (result.dismiss == 'cancel') {
                         settings.current_water_level = 0;
                         maintenance_data_file.skipped_refill = true;
-                        maintenance_data_file.from_maintenance = false;
                         maintenance_data_file.current_step = current_step_selected;
                         fs.writeFile('./maintenance_data.json', JSON.stringify(maintenance_data_file,null,6), function (err) {
                             if (err) return console.log(err);
+                            jsonReadMaintenance(function(data) {
+                                maintenance_data_file = data; 
+                            });
                         });
                     }else{
                         settings.current_water_level = 20000;                        
@@ -344,6 +356,53 @@ function commandPy(socket, content) {
     };
     socket.emit('socket-event', msg);
 }
+
+function jsonWriteMaintenance(file,callback) {
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+    //Use this path for RasPi
+    var file_path = '/home/pi/Documents/ReQuench_Machine/maintenance_data.json';
+    fs.writeFile(file_path, JSON.stringify(file, null, 6), function (err) {
+        if (err) return console.log(err);
+        callback();
+    });
+}
+
+
+function jsonReadMaintenance(callback) {
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+
+    var file_path = '/home/pi/Documents/ReQuench_Machine/maintenance_data.json';
+    fs.readFile(file_path, (err, data) => {
+        try {
+            if (err) throw err;
+            var parsed = JSON.parse(data);
+            callback(parsed);
+        } catch (e) {
+            callback(false);
+        }
+    });
+}
+
+function jsonRead(callback) {
+    // Use this path for windows.
+    // var file_path = 'C:/xampp/htdocs/ReQuench_Machine/machine_settings.json';
+
+    var file_path = '/home/pi/Documents/ReQuench_Machine/machine_settings.json';
+    fs.readFile(file_path, (err, data) => {
+        try {
+            if (err) throw err;
+            var parsed = JSON.parse(data);
+            callback(parsed);
+        } catch (e) {
+            callback(false);
+        }
+    });
+}
+
+
+
 
 
 
