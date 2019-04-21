@@ -378,6 +378,7 @@ def manualDispense(command):
         )   
 
         if remaining_balance < (total_liters + calibration_constant):
+            total_liters = remaining_balance
             stop_dispense()
             break
 

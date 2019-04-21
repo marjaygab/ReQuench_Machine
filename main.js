@@ -115,7 +115,7 @@ try {
         params.MU_ID = settings.mu_id;
         console.log(params);
         http_post('Fetch_Machine.php', params, function (response) {
-            store.set('Response_Success',response.Success);
+            store.set('Response_Success', response.Success);
             if (response.Success) {
                 var machine_object = response.Machine;
                 machine_settings.location = machine_object.Machine_Location;
@@ -129,13 +129,13 @@ try {
                 machine_settings.critical_level = machine_object.Critical_Level;
                 machine_settings.status = "online";
                 machine_settings.mu_id = machine_object.MU_ID;
-                jsonWrite(machine_settings, () => {});                
+                jsonWrite(machine_settings, () => { });
 
-                db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc)=>{
-                    if(!onInit){
+                db.collection('Machines').doc(`${machine_settings.mu_id}`).onSnapshot((doc) => {
+                    if (!onInit) {
                         console.log('This is Firebase output');
                         console.log(doc.data());
-                        jsonWrite(doc.data(),()=> console.log('Received something!'));
+                        jsonWrite(doc.data(), () => console.log('Received something!'));
                     }
                 });
 
@@ -152,6 +152,34 @@ try {
                                 console.error('Inserting Values Error');
                             } else {
                                 console.log(response);
+                                db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
+                                    .then(() => {
+                                        console.log("Data inserted");
+                                        if (onInit) {
+                                            onInit = false;
+                                        }
+                                        if (!onInit) {
+                                            if (machine_settings.status == 'offline' || machine_settings.status == 'OFFLINE') {
+                                                commandPy(io, { command: "Shutdown" });
+                                            } else if (machine_settings.status == 'rebooting' || machine_settings.status == 'REBOOTING') {
+                                                commandPy(io, { command: "Reboot" });
+                                            }
+                                        }
+                                    })
+                                    .catch((error) => {
+                                        console.error('Firebase Error');
+                                        console.error(error);
+                                        if (onInit) {
+                                            onInit = false;
+                                        }
+                                        if (!onInit) {
+                                            if (machine_settings.status == 'offline' || machine_settings.status == 'OFFLINE') {
+                                                commandPy(io, { command: "Shutdown" });
+                                            } else if (machine_settings.status == 'rebooting' || machine_settings.status == 'REBOOTING') {
+                                                commandPy(io, { command: "Reboot" });
+                                            }
+                                        }
+                                    });
                             }
                         }, function (error) {
                             console.error('HTTP Post Error ' + error);
@@ -161,34 +189,15 @@ try {
 
                         console.log('Im Here');
 
-                        var rounded_percentage = Math.round(getPercentage(current_water_level,22500));
+                        var rounded_percentage = Math.round(getPercentage(current_water_level, 22500));
                         if (rounded_percentage <= machine_settings.critical_level) {
                             commandPy(io, { command: "Disable_Temp" });
                         } else {
                             commandPy(io, { command: "Enable_Temp" });
                         }
-                            db.collection('Machines').doc(`${mu_id}`).set(machine_settings)
-                            .then(() => {
-                                console.log("Data inserted");
-                                if(onInit){
-                                    onInit = false;
-                                }
-                                if(!onInit){
-                                    if (machine_settings.status == 'offline' || machine_settings.status == 'OFFLINE') {
-                                    commandPy(io, { command: "Shutdown" });
-                                    } else if (machine_settings.status == 'rebooting' || machine_settings.status == 'REBOOTING') {
-                                        commandPy(io, { command: "Reboot" });
-                                    }
-                                }                                
-                            })
-                            .catch((error) => {
-                                console.error('Firebase Error');
-                                console.error(error);
-                            });
-                        
                     });
                 });
-            }else{
+            } else {
                 console.log('An Error Occured');
                 console.log('Restarting');
                 //restart here
@@ -215,14 +224,14 @@ let mainWindow;
 let vkb;
 function createWindow() {
     // Create the browser window.
-    mainWindow = new BrowserWindow({ width: 500, height: 856 ,fullscreen: true})
+    mainWindow = new BrowserWindow({ width: 500, height: 856, fullscreen: true })
     // and load the index.html of the app.
     if (!file.from_maintenance) {
         mainWindow.loadFile('index.html');
     } else {
-        setTimeout(function(){
-                mainWindow.loadFile('admin.html');
-            },1000);
+        setTimeout(function () {
+            mainWindow.loadFile('admin.html');
+        }, 1000);
     }
 
     store.set('path', app.getPath('userData'));
